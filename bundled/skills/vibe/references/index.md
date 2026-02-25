@@ -17,6 +17,7 @@ Navigation guide for all VCO (Vibe Code Orchestrator) documentation.
 | [../docs/hard-migration-batch-a-report.md](../docs/hard-migration-batch-a-report.md) | Batch A hard migration execution and verification report |
 | [../docs/context-retro-advisor-design.md](../docs/context-retro-advisor-design.md) | Retro-only integration design for Agent-Skills context expert guidance |
 | [../docs/gsd-vco-overlay-integration.md](../docs/gsd-vco-overlay-integration.md) | GSD-Lite overlay design (post-route planning hook, non-redundant integration) |
+| [../docs/prompt-overlay-integration.md](../docs/prompt-overlay-integration.md) | prompts.chat prompt-asset overlay design (post-route ambiguity guard, non-redundant integration) |
 | [../templates/cer-report.md.template](../templates/cer-report.md.template) | CER markdown template for human-readable retro reports |
 | [../templates/cer-report.json.template](../templates/cer-report.json.template) | CER JSON template for machine analytics and comparison |
 | [../templates/cer-report.schema.json](../templates/cer-report.schema.json) | CER JSON schema for validation gates |

@@ -15,6 +15,7 @@ This directory stores optional verification scripts for CI and local smoke check
 - `vibe-external-corpus-gate.ps1`: baseline vs candidate gate for external-corpus-driven skill-index updates, with optional smoke chain execution.
 - `vibe-openspec-governance-gate.ps1`: validates zero-conflict OpenSpec governance integration (routing unchanged + grade-based OpenSpec advice + M-lite governance script behavior).
 - `vibe-gsd-overlay-gate.ps1`: validates GSD-Lite overlay trigger semantics through unified VCO route output (scope gating + mode enforcement + routing invariance).
+- `vibe-prompt-overlay-gate.ps1`: validates prompts.chat-oriented prompt overlay semantics (prompt/doc ambiguity detection + confirm_required override + routing invariance outside collision cases).
 
 Related rollout utility:
 
@@ -62,6 +63,12 @@ Run GSD overlay trigger gate:
 
 ```powershell
 & ".\vibe-gsd-overlay-gate.ps1"
+```
+
+Run Prompt overlay trigger gate:
+
+```powershell
+& ".\vibe-prompt-overlay-gate.ps1"
 ```
 
 Compare two CER reports and emit delta artifacts:

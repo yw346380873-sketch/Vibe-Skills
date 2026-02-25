@@ -1,5 +1,30 @@
 # VCO Changelog
 
+## v2.3.4 (2026-02-25)
+
+- 新增 prompts.chat Prompt 资产增强层（post-route overlay，不替代 Pack 路由）：  
+  - 新增配置（main + bundled）：
+    - `config/prompt-overlay.json`
+    - `bundled/skills/vibe/config/prompt-overlay.json`
+  - 路由器输出新增：
+    - `prompt_overlay_advice`
+    - `prompt_overlay_route_override`
+  - 语义行为：
+    - prompt/doc 冲突时，在 soft/strict 策略下将 `pack_overlay` 提升为 `confirm_required`
+    - 非冲突请求保持原路由行为
+- 路由边界收敛（避免 prompt/doc 误路由）：
+  - `prompt-lookup` 扩展 prompt-intent 正关键词并补齐 `canonical_for_task`
+  - `openai-docs` / `openai-knowledge` / `documentation-lookup` 增加 prompt-intent 负关键词
+  - `ai-llm` pack 增补 `prompts.chat` / `prompt refine` 触发词
+- 门禁与可观测性增强：
+  - 新增 `scripts/verify/vibe-prompt-overlay-gate.ps1`
+  - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 `prompt-overlay` main/bundled 一致性检查
+  - `scripts/verify/README.md` 更新执行入口
+- 文档更新：
+  - 新增 `docs/prompt-overlay-integration.md`（main + bundled）
+  - 更新 `README.md`、`SKILL.md`、`references/index.md`
+  - `THIRD_PARTY_LICENSES.md`、`config/upstream-lock.json` 增加 `f/prompts.chat` 集成边界说明
+
 ## v2.3.3 (2026-02-25)
 
 - 新增 GSD-Lite Overlay（post-route protocol hooks，不引入第二编排器）：

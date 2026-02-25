@@ -9,6 +9,7 @@ This file documents notable upstream sources used in the VCO ecosystem and how t
 | Upstream Project | Upstream License | How VCO Uses It | Distribution Boundary |
 |---|---|---|---|
 | `SynkraAI/aios-core` | Upstream project license applies | Methodology and role-pattern integration into the `aios-core` pack and routing config | Use follows upstream license terms; review upstream repo for exact obligations |
+| `f/prompts.chat` | Upstream project license applies | Prompt asset lookup/refine/publish integration via `prompt-lookup` and `prompt-overlay` policy | Treated as optional external service/MCP capability; review upstream terms before redistribution |
 | `x1xhlol/system-prompts-and-models-of-ai-tools` | GPL-3.0 (upstream) | Read-only external corpus input for signal extraction (`scripts/research/*`) and candidate routing suggestions | Raw upstream prompt corpus is not bundled as distributable VCO runtime content; if mirrored locally under `third_party/`, users are responsible for GPL compliance |
 | `muratcankoylan/Agent-Skills-for-Context-Engineering` | MIT (upstream) | Advisory knowledge source for Context Retro Advisor and CER-based retrospectives | Attribution and license notice should be preserved when redistributing derived integrations |
 | `SuperClaude-Org/SuperClaude_Framework` | Upstream project license applies | Optional external enhancement (`sc` command compatibility) | Installed optionally; review upstream license before redistribution |
@@ -26,4 +27,3 @@ This file documents notable upstream sources used in the VCO ecosystem and how t
 - External corpus workflow: `docs/external-corpus-integration.md`
 - Upstream mapping lockfile: `config/upstream-lock.json`
 - Third-party notice: `third_party/NOTICE.md`
-

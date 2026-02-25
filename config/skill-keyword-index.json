@@ -61,7 +61,7 @@
       "keywords": ["openai platform", "model limits", "openai api", "openai平台能力", "模型限制", "api文档解析"]
     },
     "prompt-lookup": {
-      "keywords": ["prompt template", "prompt library", "prompts.chat", "提示词模板", "提示词库", "检索prompt"]
+      "keywords": ["prompt template", "prompt library", "prompts.chat", "system prompt", "improve prompt", "optimize prompt", "提示词模板", "提示词库", "提示词优化", "改进提示词", "检索prompt"]
     },
     "embedding-strategies": {
       "keywords": ["embedding strategy", "chunking", "semantic search", "向量嵌入", "嵌入策略", "语义检索"]

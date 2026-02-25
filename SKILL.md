@@ -103,6 +103,7 @@ After grade and task-type are decided, VCO applies a pack overlay:
 5. If confidence is below threshold, fallback to the legacy Grade×Type matrix above
 
 Pack routing MUST respect grade/task boundaries and Rule 3 command priority.
+When `config/prompt-overlay.json` is enabled, router emits `prompt_overlay_advice` and may elevate ambiguous prompt-vs-doc requests to `confirm_required` without replacing pack selection.
 
 Specialized agents available at ANY grade (exempt from agent boundary rule):
 - build-error-resolver: build-specific errors (compat alias: local `error-resolver`)
@@ -230,6 +231,7 @@ Detect availability AFTER routing selects a tool, BEFORE invoking:
 | extending-vco.md | Guide for adding/updating tools |
 | docs/context-retro-advisor-design.md | Context Retro Advisor design and rollout guide |
 | docs/gsd-vco-overlay-integration.md | GSD-Lite overlay integration (post-route planning hook) |
+| docs/prompt-overlay-integration.md | prompts.chat prompt-asset overlay integration (post-route ambiguity guard) |
 | docs/skills-consolidation-roadmap.md | Pack consolidation phases and gates |
 | changelog.md | Version history |
 | index.md | Navigation index |

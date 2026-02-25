@@ -1556,17 +1556,24 @@
                                                                  "model limits",
                                                                  "official openai docs"
                                                              ],
-                                       "negative_keywords":  [
-                                                                 "embedding strategy",
-                                                                 "semantic retrieval",
-                                                                 "vector database",
-                                                                 "chunking strategy",
-                                                                 "similarity search design",
-                                                                 "embedding策略",
-                                                                 "向量检索",
-                                                                 "分块",
-                                                                 "向量搜索"
-                                                             ],
+                                        "negative_keywords":  [
+                                                                  "embedding strategy",
+                                                                  "semantic retrieval",
+                                                                  "vector database",
+                                                                  "chunking strategy",
+                                                                  "similarity search design",
+                                                                  "embedding策略",
+                                                                  "向量检索",
+                                                                  "分块",
+                                                                  "向量搜索",
+                                                                  "prompt template",
+                                                                  "prompt library",
+                                                                  "prompts.chat",
+                                                                  "system prompt",
+                                                                  "提示词模板",
+                                                                  "提示词库",
+                                                                  "提示词优化"
+                                                              ],
                                        "equivalent_group":  "openai-docs-surface",
                                        "canonical_for_task":  [
                                                                   "research"
@@ -1583,9 +1590,14 @@
                                                                       "api schema",
                                                                       "openai平台能力"
                                                                   ],
-                                            "negative_keywords":  [
-                                                                      "react docs"
-                                                                  ],
+                                             "negative_keywords":  [
+                                                                       "react docs",
+                                                                       "prompt template",
+                                                                       "prompt library",
+                                                                       "prompts.chat",
+                                                                       "提示词模板",
+                                                                       "提示词库"
+                                                                   ],
                                             "equivalent_group":  "openai-docs-surface",
                                             "canonical_for_task":  [
 
@@ -1602,10 +1614,15 @@
                                                                           "framework docs",
                                                                           "官方文档"
                                                                       ],
-                                                "negative_keywords":  [
-                                                                          "openai only",
-                                                                          "mcp server setup"
-                                                                      ],
+                                                 "negative_keywords":  [
+                                                                           "openai only",
+                                                                           "mcp server setup",
+                                                                           "prompt template",
+                                                                           "prompt library",
+                                                                           "prompts.chat",
+                                                                           "提示词模板",
+                                                                           "提示词库"
+                                                                       ],
                                                 "equivalent_group":  null,
                                                 "canonical_for_task":  [
                                                                            "coding"
@@ -1616,19 +1633,33 @@
                                                             "research",
                                                             "planning"
                                                         ],
-                                         "positive_keywords":  [
-                                                                   "prompt template",
-                                                                   "prompt library",
-                                                                   "提示词模板"
-                                                               ],
-                                         "negative_keywords":  [
-                                                                   "ci logs"
-                                                               ],
-                                         "equivalent_group":  null,
-                                         "canonical_for_task":  [
-
-                                                                ]
-                                     },
+                                          "positive_keywords":  [
+                                                                    "prompt template",
+                                                                    "prompt library",
+                                                                    "prompts.chat",
+                                                                    "system prompt",
+                                                                    "improve prompt",
+                                                                    "optimize prompt",
+                                                                    "提示词模板",
+                                                                    "提示词优化",
+                                                                    "改进提示词"
+                                                                ],
+                                          "negative_keywords":  [
+                                                                    "ci logs",
+                                                                    "openai docs",
+                                                                    "responses api",
+                                                                    "chat completions",
+                                                                    "model limits",
+                                                                    "api reference",
+                                                                    "framework docs",
+                                                                    "官方文档"
+                                                                ],
+                                          "equivalent_group":  "prompt-asset-surface",
+                                          "canonical_for_task":  [
+                                                                     "planning",
+                                                                     "research"
+                                                                 ]
+                                      },
                    "embedding-strategies":  {
                                                 "task_allow":  [
                                                                    "planning",

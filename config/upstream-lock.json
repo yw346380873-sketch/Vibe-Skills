@@ -30,12 +30,12 @@
       ]
     },
     {
-      "id": "Th0rgal/open-ralph-wiggum",
-      "upstream_repo": "https://github.com/Th0rgal/open-ralph-wiggum",
-      "upstream_ref": "master",
-      "integration_mode": "optional-external-cli",
+      "id": "f/prompts.chat",
+      "upstream_repo": "https://github.com/f/prompts.chat",
+      "upstream_ref": "main",
+      "integration_mode": "optional-external-service",
       "local_rewrite_required": false,
-      "notes": "Optional backend for local ralph-loop wrapper (`--engine open`), installed via npm package @th0rgal/ralph-wiggum"
+      "notes": "Optional prompt asset API/MCP integration used by prompt-lookup and prompt-overlay"
     },
     {
       "id": "SuperClaude-Org/SuperClaude_Framework",
