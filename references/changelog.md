@@ -1,5 +1,27 @@
 # VCO Changelog
 
+## v2.3.10 (2026-02-25)
+
+- 新增 ML Lifecycle Overlay（Made-With-ML 增强，post-route advice-only，不替代 Pack 路由）：
+  - 新增配置（main + bundled）：
+    - `config/ml-lifecycle-overlay.json`
+    - `bundled/skills/vibe/config/ml-lifecycle-overlay.json`
+  - 路由器输出新增：
+    - `ml_lifecycle_advice`
+  - 语义行为：
+    - `shadow`：仅建议，不改 selected pack/skill
+    - `soft`：生命周期风险仅给出 `confirm_recommended`
+    - `strict`：严格范围内且关键生命周期证据缺失时输出 `confirm_required` advice（仍不改路由分配）
+- 新增验证门禁：
+  - `scripts/verify/vibe-ml-lifecycle-overlay-gate.ps1`
+  - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 `ml-lifecycle-overlay` main/bundled parity
+- 健康检查增强：
+  - `check.ps1`、`check.sh` 新增 `ml-lifecycle-overlay` 配置存在性检查
+- 新增设计文档：
+  - `docs/ml-lifecycle-overlay-integration.md`（main + bundled）
+- 文档同步：
+  - `README.md`、`SKILL.md`、`references/index.md`、`references/tool-registry.md` 更新 ML lifecycle overlay 说明
+
 ## v2.3.9 (2026-02-25)
 
 - 新增 Framework Interop Overlay（Ivy 增强，post-route advice-only，不替代 Pack 路由）：

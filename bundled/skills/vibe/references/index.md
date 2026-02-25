@@ -22,6 +22,7 @@ Navigation guide for all VCO (Vibe Code Orchestrator) documentation.
 | [../docs/data-scale-overlay-integration.md](../docs/data-scale-overlay-integration.md) | Data-scale overlay design (real file probe + spreadsheet/xlsx/xan adaptive selection) |
 | [../docs/quality-debt-overlay-integration.md](../docs/quality-debt-overlay-integration.md) | Quality-debt overlay design (fuck-u-code inspired post-route advisory, no route mutation) |
 | [../docs/framework-interop-overlay-integration.md](../docs/framework-interop-overlay-integration.md) | Framework-interop overlay design (ivy-inspired cross-framework advisory, no route mutation) |
+| [../docs/ml-lifecycle-overlay-integration.md](../docs/ml-lifecycle-overlay-integration.md) | ML lifecycle overlay design (Made-With-ML inspired post-route stage/evidence advisory) |
 | [../templates/cer-report.md.template](../templates/cer-report.md.template) | CER markdown template for human-readable retro reports |
 | [../templates/cer-report.json.template](../templates/cer-report.json.template) | CER JSON template for machine analytics and comparison |
 | [../templates/cer-report.schema.json](../templates/cer-report.schema.json) | CER JSON schema for validation gates |

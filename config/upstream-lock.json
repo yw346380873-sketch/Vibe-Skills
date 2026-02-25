@@ -96,6 +96,14 @@
       "integration_mode": "optional-external-python-lib",
       "local_rewrite_required": false,
       "notes": "Optional framework interop backend used by framework-interop-overlay in advisory mode"
+    },
+    {
+      "id": "GokuMohandas/Made-With-ML",
+      "upstream_repo": "https://github.com/GokuMohandas/Made-With-ML",
+      "upstream_ref": "main",
+      "integration_mode": "methodology-overlay",
+      "local_rewrite_required": false,
+      "notes": "Lifecycle governance methodology source for ml-lifecycle-overlay (post-route advisory integration)"
     }
   ]
 }

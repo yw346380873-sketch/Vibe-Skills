@@ -18,6 +18,7 @@ Complete reference of VCO execution tools, their capabilities, APIs, state paths
 | 10 | xan (optional large-CSV backend) | External CLI | None | Dataset files / shell pipelines | ⚠️ Optional |
 | 11 | fuck-u-code (optional quality debt analyzer) | External CLI | None | Analyzer workspace / report output | ⚠️ Optional |
 | 12 | ivy (optional framework interop backend) | Python library / optional CLI | None | Python runtime / interop artifacts | ⚠️ Optional |
+| 13 | Made-With-ML lifecycle patterns (optional governance source) | Methodology overlay | None | Config-driven advisory metadata | ⚠️ Optional |
 
 ## Verification Status Legend
 
@@ -330,3 +331,21 @@ Characteristics:
 - Does not replace training/evaluation flows in `data-ml`.
 - Missing runtime never blocks routing; status is reported as `tool_unavailable`.
 - Current default is `manual_only` invocation hint mode to keep routing deterministic.
+
+---
+
+## 13. Made-With-ML Lifecycle Patterns (Optional Governance Source)
+
+**Package/Repo**: `GokuMohandas/Made-With-ML`  
+**Type**: Methodology and lifecycle governance reference (no mandatory runtime binary)
+
+### Key Capabilities
+- ML lifecycle stage framing (`develop`, `evaluate`, `deploy`, `iterate`)
+- Evidence-first release discipline (run/eval/baseline/test/monitoring artifacts)
+- Lifecycle-aware risk gating for deployment and iteration loops
+
+### VCO Integration Boundary
+- Integrated through `ml-lifecycle-overlay` as post-route advice only.
+- Does not replace pack routing, training pipeline implementation, or model-serving toolchains.
+- Missing optional analyzer/runtime never blocks routing; status remains advisory.
+- Current default is lifecycle metadata enrichment with mode-gated confirm advice.

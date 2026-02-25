@@ -126,6 +126,18 @@ Framework interop overlay 仅作为“后置跨框架迁移建议层”接入，
 - 配置文件：`config/framework-interop-overlay.json`
 - 设计说明：`docs/framework-interop-overlay-integration.md`
 
+### 11. ML Lifecycle Overlay（Made-With-ML 生命周期治理增强，零冲突接入）
+
+ML lifecycle overlay 仅作为“后置生命周期治理建议层”接入，不替代 Pack 路由、不引入第二编排器：
+
+- 覆盖范围：默认 `data-ml/ai-llm + planning/coding/review/research`（可配置）
+- 接入方式：`resolve-pack-route.ps1` 输出 `ml_lifecycle_advice`
+- 决策依据：生命周期阶段信号（develop/evaluate/deploy/iterate）+ 证据工件覆盖率（run/eval/baseline/tests/monitoring）
+- 路由边界：保持 `selected pack/skill` 不变，strict 阶段仅将建议提升为 `confirm_required`
+- 外部工具：`mlflow` 可选接入，缺失时仅返回 `tool_unavailable`，不阻断主流程
+- 配置文件：`config/ml-lifecycle-overlay.json`
+- 设计说明：`docs/ml-lifecycle-overlay-integration.md`
+
 ## 当前路由能力（Strict-Ready）
 
 本版本已经包含稳定性收敛与规则化路由增强：
@@ -159,6 +171,7 @@ Framework interop overlay 仅作为“后置跨框架迁移建议层”接入，
 | `config/data-scale-overlay.json` | Data scale overlay 策略（真实文件探针 + spreadsheet/xlsx/xan 选择增强） |
 | `config/quality-debt-overlay.json` | Quality debt overlay 策略（风险信号评分 + 可选外部分析器提示） |
 | `config/framework-interop-overlay.json` | Framework interop overlay 策略（跨框架迁移信号评分 + Ivy advisory） |
+| `config/ml-lifecycle-overlay.json` | ML lifecycle overlay 策略（生命周期阶段识别 + 证据工件完备度 advisory） |
 | `scripts/router/resolve-pack-route.ps1` | 路由核心执行器 |
 | `scripts/governance/invoke-openspec-governance.ps1` | OpenSpec 后置治理执行器（零冲突） |
 | `scripts/governance/set-openspec-rollout.ps1` | OpenSpec 模式渐进切换（off/shadow/soft/strict） |
@@ -222,6 +235,7 @@ pwsh -File .\scripts\verify\vibe-memory-governance-gate.ps1
 pwsh -File .\scripts\verify\vibe-data-scale-overlay-gate.ps1
 pwsh -File .\scripts\verify\vibe-quality-debt-overlay-gate.ps1
 pwsh -File .\scripts\verify\vibe-framework-interop-gate.ps1
+pwsh -File .\scripts\verify\vibe-ml-lifecycle-overlay-gate.ps1
 ```
 
 ### 2. OpenSpec 软发布（先验后切，默认不回退）
@@ -299,6 +313,7 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\\.codex\\skills\\ralp
 | `medialab/xan` | 提供超大 CSV 低内存处理能力，作为 data-scale overlay 的可选执行后端 |
 | `Done-0/fuck-u-code` | 提供离线质量债务分析思路，作为 quality-debt overlay 的可选分析后端 |
 | `ivy-llc/ivy` | 提供跨框架互操作能力，作为 framework-interop overlay 的可选 advisory 后端 |
+| `GokuMohandas/Made-With-ML` | 提供 ML 生命周期治理方法论，作为 ml-lifecycle overlay 的阶段/证据 advisory 语义来源 |
 | `x1xhlol/system-prompts-and-models-of-ai-tools` | 作为外部语料镜像来源，提取路由信号与关键词候选，服务 VCO 路由优化 |
 | `muratcankoylan/Agent-Skills-for-Context-Engineering` | 作为 Context Retro Advisor 的专家知识源，驱动 CER 复盘框架 |
 | `SuperClaude_Framework`（可选） | 提供 `sc` 命令体系兼容能力 |
@@ -363,6 +378,7 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\\.codex\\skills\\ralp
 - 完成 Data Scale Overlay 接入（post-route data probe，不替换 Pack 选择，按真实文件规模/格式增强 `spreadsheet/xlsx/xan` 选择）。
 - 完成 Quality Debt Overlay 接入（post-route risk advisory，不替换 Pack 选择，严格模式仅输出 confirm_required 建议）。
 - 完成 Framework Interop Overlay 接入（post-route interop advisory，不替换 Pack 选择，跨框架迁移场景输出 `framework_interop_advice`）。
+- 完成 ML Lifecycle Overlay 接入（post-route lifecycle advisory，不替换 Pack 选择，输出 `ml_lifecycle_advice` 以刻画阶段与证据完备度）。
 - 新增 OpenSpec 单命令 soft 发布脚本（`publish-openspec-soft-rollout.ps1`）：
   - 固定流程：`precheck -> switch -> postcheck`
   - 默认不自动回退，失败保持可见

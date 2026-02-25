@@ -42,6 +42,7 @@ Check-Path -Label "vibe memory governance config" -Path (Join-Path $TargetRoot "
 Check-Path -Label "vibe data scale overlay config" -Path (Join-Path $TargetRoot "skills\vibe\config\data-scale-overlay.json")
 Check-Path -Label "vibe quality debt overlay config" -Path (Join-Path $TargetRoot "skills\vibe\config\quality-debt-overlay.json")
 Check-Path -Label "vibe framework interop overlay config" -Path (Join-Path $TargetRoot "skills\vibe\config\framework-interop-overlay.json")
+Check-Path -Label "vibe ml lifecycle overlay config" -Path (Join-Path $TargetRoot "skills\vibe\config\ml-lifecycle-overlay.json")
 
 foreach ($name in $requiredWorkflow) {
   Check-Path -Label "workflow skill/$name" -Path (Join-Path $TargetRoot "skills\$name\SKILL.md")
