@@ -1,5 +1,32 @@
 # VCO Changelog
 
+## v2.3.3 (2026-02-25)
+
+- 新增 GSD-Lite Overlay（post-route protocol hooks，不引入第二编排器）：
+  - 新增配置（main + bundled）：
+    - `config/gsd-overlay.json`
+    - `bundled/skills/vibe/config/gsd-overlay.json`
+  - 新增 rollout 切换脚本：
+    - `scripts/governance/set-gsd-overlay-rollout.ps1`
+    - 支持 `off|shadow|soft-lxl-planning|strict-lxl-planning`
+- 协议层增强（不修改核心路由）：
+  - `protocols/think.md` 新增 `B5: GSD-Lite Preflight Hook`
+    - brownfield context snapshot
+    - assumption preflight + mode-aware confirm
+  - `protocols/team.md` 新增 `GSD-Lite Wave Contract Hook`
+    - XL planning/coding 的 wave metadata 契约
+- 回退链增强：
+  - `references/fallback-chains.md` 新增 GSD-Lite overlay fallback 规则
+  - 保证 hook 失败时回到既有 VCO 主链，不改变 selected grade/task/pack
+- 验证门禁扩展：
+  - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 `gsd-overlay` main/bundled 一致性校验
+  - `scripts/verify/vibe-gsd-overlay-gate.ps1` 新增统一入口触发语义门禁（scope + mode + enforcement）
+- 路由可观测性增强（不改变路由决策）：
+  - `scripts/router/resolve-pack-route.ps1` 输出新增 `gsd_overlay_advice`
+- 文档更新：
+  - 新增 `docs/gsd-vco-overlay-integration.md`
+  - 更新 `references/index.md`、`README.md`、`scripts/verify/README.md` 对应入口
+
 ## v2.3.2 (2026-02-25)
 
 - 接入 `open-ralph-wiggum` 作为 `ralph-loop` 的可选后端（不替代 VCO 路由层）：

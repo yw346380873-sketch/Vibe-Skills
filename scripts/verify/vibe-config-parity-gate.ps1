@@ -180,7 +180,8 @@ $pairs = @(
     [pscustomobject]@{ id = "router-thresholds"; main = "config/router-thresholds.json"; bundled = "bundled/skills/vibe/config/router-thresholds.json" },
     [pscustomobject]@{ id = "skill-keyword-index"; main = "config/skill-keyword-index.json"; bundled = "bundled/skills/vibe/config/skill-keyword-index.json" },
     [pscustomobject]@{ id = "skill-routing-rules"; main = "config/skill-routing-rules.json"; bundled = "bundled/skills/vibe/config/skill-routing-rules.json" },
-    [pscustomobject]@{ id = "openspec-policy"; main = "config/openspec-policy.json"; bundled = "bundled/skills/vibe/config/openspec-policy.json" }
+    [pscustomobject]@{ id = "openspec-policy"; main = "config/openspec-policy.json"; bundled = "bundled/skills/vibe/config/openspec-policy.json" },
+    [pscustomobject]@{ id = "gsd-overlay"; main = "config/gsd-overlay.json"; bundled = "bundled/skills/vibe/config/gsd-overlay.json" }
 )
 
 $results = @()
@@ -332,4 +333,3 @@ if (-not $gatePassed) {
 }
 
 exit 0
-

@@ -72,6 +72,28 @@ Pack config missing/invalid
   -> fallback to legacy Grade×Type matrix
 ```
 
+## GSD-Lite Overlay Fallback (Planning Hook Layer)
+
+Overlay policy source: `config/gsd-overlay.json` (and bundled mirror).
+
+```
+Overlay disabled/off
+  -> bypass hook, run standard protocol
+Overlay enabled + config missing/parse error
+  -> advisory warning, bypass hook
+Brownfield snapshot failure
+  -> skip snapshot artifact, continue planning flow
+Assumption gate generation failure
+  -> skip confirm escalation, continue standard B1-B4
+Wave contract generation failure
+  -> revert to standard Option A/B team orchestration
+```
+
+Rules:
+1. Overlay fallback never changes selected grade/task/pack.
+2. Overlay fallback never blocks core VCO execution path unless strict policy explicitly requires it.
+3. Overlay artifacts are advisory unless mode/policy marks them required.
+
 ## XL Grade Fallback Chain (3-Level)
 
 ```

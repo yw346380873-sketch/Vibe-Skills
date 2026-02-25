@@ -14,11 +14,13 @@ This directory stores optional verification scripts for CI and local smoke check
 - `vibe-retro-safety-gate.ps1`: full retro safety gate (trigger/classification/routing/pack smoke + protected-file hash invariance) to prove retro flow does not degrade VCO configs/protocols.
 - `vibe-external-corpus-gate.ps1`: baseline vs candidate gate for external-corpus-driven skill-index updates, with optional smoke chain execution.
 - `vibe-openspec-governance-gate.ps1`: validates zero-conflict OpenSpec governance integration (routing unchanged + grade-based OpenSpec advice + M-lite governance script behavior).
+- `vibe-gsd-overlay-gate.ps1`: validates GSD-Lite overlay trigger semantics through unified VCO route output (scope gating + mode enforcement + routing invariance).
 
 Related rollout utility:
 
 - `..\governance\set-openspec-rollout.ps1`: stage switch helper for `off | shadow | soft-lxl-planning | strict-lxl-planning`.
 - `..\governance\publish-openspec-soft-rollout.ps1`: single-command soft rollout with precheck -> switch -> postcheck. Default is no rollback; emergency rollback is opt-in.
+- `..\governance\set-gsd-overlay-rollout.ps1`: GSD-Lite overlay stage switch helper for `off | shadow | soft-lxl-planning | strict-lxl-planning`.
 
 ## Quick Start (Retro Checks)
 
@@ -54,6 +56,12 @@ Run OpenSpec governance gate:
 
 ```powershell
 & ".\vibe-openspec-governance-gate.ps1"
+```
+
+Run GSD overlay trigger gate:
+
+```powershell
+& ".\vibe-gsd-overlay-gate.ps1"
 ```
 
 Compare two CER reports and emit delta artifacts:

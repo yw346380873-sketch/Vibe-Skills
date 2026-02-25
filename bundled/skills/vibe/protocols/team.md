@@ -82,6 +82,36 @@ Always confirm with user at these points:
 3. Before final integration of results
 4. Before committing changes
 
+## GSD-Lite Wave Contract Hook (Optional)
+
+Policy source: `config/gsd-overlay.json`
+
+When `enabled=true`, `mode != off`, and `wave_contract.enabled=true`, apply this hook as orchestration metadata only.
+
+Activation:
+- XL planning: enabled by default
+- XL coding: enabled when the lead expects dependency-sensitive multi-wave execution
+- If `wave_contract.xl_only=true`, never run for M/L
+
+Contract output:
+- Generate `waves.json` (or configured artifact) with:
+  - `wave_id`
+  - `units` (task ids / owners)
+  - `depends_on`
+  - `entry_criteria`
+  - `exit_criteria`
+  - `verify_commands`
+
+Execution semantics:
+1. Independent units run in parallel within a wave.
+2. Waves run sequentially by dependency.
+3. Verification gates must pass before advancing to next wave.
+4. This contract does not alter grade/task assignment.
+
+Failure semantics:
+- If wave contract generation fails or is incomplete, fall back to standard Option A/B orchestration and record an advisory warning.
+- Do not block the entire XL flow unless strict policy explicitly requires a regenerated contract.
+
 ## Quality Injection: Enhanced Tier (XL Default)
 
 In addition to Core Tier (P5, V2, V7 + task-type-specific from vibe-do):

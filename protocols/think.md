@@ -105,6 +105,39 @@ Tool: claude-code-settings:deep-research
 - Multi-agent parallel research workflow
 - Output: Research findings with sources
 
+### B5: GSD-Lite Preflight Hook (Optional, L/XL Planning Only)
+Policy source: `config/gsd-overlay.json`
+
+Run this hook only when all conditions are met:
+1. `enabled=true` and `mode != off`
+2. Current task type is `planning`
+3. Current grade is in `grade_allow` (default: `L`, `XL`)
+
+Hard boundaries:
+- Post-route governance only. Never re-run grade/task/pack routing.
+- Do not introduce `/gsd:*` command flow.
+- Do not create a second source-of-truth state tree.
+
+Hook steps:
+1. **Brownfield context snapshot** (when `brownfield_context.enabled=true`)
+   - Build or refresh a light snapshot under `docs/vco-context/`:
+     - `STACK.md`
+     - `ARCHITECTURE.md`
+     - `CONVENTIONS.md`
+     - `CONCERNS.md`
+   - If snapshot is missing or stale, mark advisory warning and continue.
+2. **Assumption preflight**
+   - Produce a concise assumptions list before writing the final plan.
+   - Persist assumptions to the active planning artifact (or `assumptions.md` when configured).
+3. **Confirm policy by mode**
+   - `shadow`: record advice only, no blocking.
+   - `soft`: require confirm only for grades in `assumption_gate.confirm_required_for`.
+   - `strict`: require confirm for all in-scope grades.
+4. **Handoff**
+   - Carry assumptions + brownfield context into B3 output.
+
+On hook failure, follow `references/fallback-chains.md` GSD-Lite fallback and continue standard B1-B4 flow.
+
 ## Research Mode
 When task is purely research (no implementation):
 1. Skip B1 unless scope is unclear
