@@ -12,6 +12,12 @@ This directory stores optional verification scripts for CI and local smoke check
 - `cer-compare.ps1`: compares two CER JSON reports and outputs Markdown/JSON delta summaries (pattern/fallback/stability/context-pressure/gap).
 - `vibe-retro-safety-gate.ps1`: full retro safety gate (trigger/classification/routing/pack smoke + protected-file hash invariance) to prove retro flow does not degrade VCO configs/protocols.
 - `vibe-external-corpus-gate.ps1`: baseline vs candidate gate for external-corpus-driven skill-index updates, with optional smoke chain execution.
+- `vibe-openspec-governance-gate.ps1`: validates zero-conflict OpenSpec governance integration (routing unchanged + grade-based OpenSpec advice + M-lite governance script behavior).
+
+Related rollout utility:
+
+- `..\governance\set-openspec-rollout.ps1`: stage switch helper for `off | shadow | soft-lxl-planning | strict-lxl-planning`.
+- `..\governance\publish-openspec-soft-rollout.ps1`: single-command soft rollout with precheck -> switch -> postcheck. Default is no rollback; emergency rollback is opt-in.
 
 ## Quick Start (Retro Checks)
 
@@ -35,6 +41,12 @@ Run strict gate (after default gate is passing consistently):
 
 ```powershell
 & ".\vibe-routing-stability-gate.ps1" -Strict -WriteArtifacts
+```
+
+Run OpenSpec governance gate:
+
+```powershell
+& ".\vibe-openspec-governance-gate.ps1"
 ```
 
 Compare two CER reports and emit delta artifacts:

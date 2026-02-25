@@ -1,5 +1,37 @@
 # VCO Changelog
 
+## v2.3.1 (2026-02-25)
+
+- 完成 OpenSpec 治理层零冲突接入（post-route governance overlay）：
+  - 路由器追加 `openspec_advice` 元数据，不改变 `selected pack/skill`
+  - `scripts/router/resolve-pack-route.ps1` 增加 OpenSpec policy 读取与治理建议输出
+  - 新增主/镜像策略文件：
+    - `config/openspec-policy.json`
+    - `bundled/skills/vibe/config/openspec-policy.json`
+- 新增治理与切换脚本：
+  - `scripts/governance/invoke-openspec-governance.ps1`
+  - `scripts/governance/set-openspec-rollout.ps1`
+  - `scripts/governance/publish-openspec-soft-rollout.ps1`（单命令发布）
+- 新增治理门禁脚本：
+  - `scripts/verify/vibe-openspec-governance-gate.ps1`
+- OpenSpec 渐进发布语义收敛：
+  - 默认 `soft-lxl-planning`（`L/XL + planning => confirm_required`）
+  - 发布流程改为 `precheck -> switch -> postcheck`
+  - 默认不自动回退；仅在显式 `-EnableEmergencyRollbackOnFailure` 时执行应急回退
+  - 即使应急回退执行，发布脚本仍以失败退出码返回，避免掩盖问题
+- 文档更新：
+  - `README.md`
+  - `docs/openspec-vco-integration.md`
+  - `scripts/verify/README.md`
+- 验证结果（本地）：
+  - `vibe-pack-regression-matrix.ps1`：`54/54`
+  - `vibe-routing-stability-gate.ps1 -Strict`：`PASS`
+    - `route_stability=1.0000`
+    - `top1_top2_gap=0.3572`
+    - `fallback_rate=0.1500`
+    - `misroute_rate=0.0750`
+  - `vibe-openspec-governance-gate.ps1`：`42/42`
+
 ## v2.2.11 (2026-02-24)
 
 - 新增 CER 对比工具：

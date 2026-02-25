@@ -37,6 +37,19 @@
 - `bundled/superpowers-skills/*`：规划、调试、代码评审等工作流增强技能。
 - 可选外部增强（按需安装）：`SuperClaude_Framework` 命令集、`claude-flow`。
 
+### 4. OpenSpec 治理层（零冲突接入）
+
+OpenSpec 以“后置治理”方式接入，不参与现有 Pack 路由打分，确保路由分配稳定：
+
+- 治理策略：`config/openspec-policy.json`
+- 路由输出附加治理建议（不改变 selected pack/skill）：`scripts/router/resolve-pack-route.ps1`
+- 治理执行器（M 级 Lite 卡片、L/XL Full 产物检查）：`scripts/governance/invoke-openspec-governance.ps1`
+- 渐进切换脚本（默认仅 L/XL planning 触发 confirm）：`scripts/governance/set-openspec-rollout.ps1`
+- 单命令软发布脚本（先验后切，默认不回退）：`scripts/governance/publish-openspec-soft-rollout.ps1`
+- 设计说明：`docs/openspec-vco-integration.md`
+
+当前默认策略：`soft-lxl-planning`（`mode=soft`，`soft_confirm_scope={grades:[L,XL], task_types:[planning]}`）。
+
 ## 当前路由能力（Strict-Ready）
 
 本版本已经包含稳定性收敛与规则化路由增强：
@@ -63,9 +76,14 @@
 | `config/router-thresholds.json` | 路由权重、阈值、候选评分参数 |
 | `config/skill-keyword-index.json` | 技能关键词索引（含中英） |
 | `config/skill-routing-rules.json` | 任务硬过滤与正负关键词规则 |
+| `config/openspec-policy.json` | OpenSpec 治理策略（mode/profile/升级触发） |
 | `scripts/router/resolve-pack-route.ps1` | 路由核心执行器 |
+| `scripts/governance/invoke-openspec-governance.ps1` | OpenSpec 后置治理执行器（零冲突） |
+| `scripts/governance/set-openspec-rollout.ps1` | OpenSpec 模式渐进切换（off/shadow/soft/strict） |
+| `scripts/governance/publish-openspec-soft-rollout.ps1` | OpenSpec soft-lxl-planning 单命令发布（先验后切 + 后验门禁） |
 | `scripts/verify/*.ps1` | 回归矩阵、审计、稳定性门禁 |
 | `docs/skills-overlap-matrix.md` | 技能重叠分类与路由建议 |
+| `docs/openspec-vco-integration.md` | OpenSpec 与 VCO 的分层集成说明 |
 | `bundled/skills/vibe/config/*` | 与主配置镜像同步的 bundled 配置 |
 
 ## 搭建与安装流程
@@ -107,9 +125,39 @@ pwsh -File .\scripts\verify\vibe-pack-regression-matrix.ps1
 pwsh -File .\scripts\verify\vibe-skill-index-routing-audit.ps1
 pwsh -File .\scripts\verify\vibe-routing-stability-gate.ps1 -WriteArtifacts
 pwsh -File .\scripts\verify\vibe-routing-stability-gate.ps1 -Strict
+pwsh -File .\scripts\verify\vibe-openspec-governance-gate.ps1
 ```
 
-### 2. 生态同步（从本地兼容源更新 bundled）
+### 2. OpenSpec 软发布（先验后切，默认不回退）
+
+```powershell
+# 当前推荐：单命令发布到 soft-lxl-planning
+# 内置流程：Precheck(Strict) -> Switch -> Postcheck(Strict + Governance Gate)
+pwsh -File .\scripts\governance\publish-openspec-soft-rollout.ps1
+```
+
+默认语义：
+
+- precheck 失败：直接终止，不切换，不回退
+- postcheck 失败：默认保持当前状态并失败退出（不自动回退，避免掩盖问题）
+
+仅在“特殊事故”场景下显式启用应急回退：
+
+```powershell
+pwsh -File .\scripts\governance\publish-openspec-soft-rollout.ps1 `
+  -EnableEmergencyRollbackOnFailure `
+  -RollbackStage shadow
+```
+
+手动阶段切换（不带门禁）仍可用：
+
+```powershell
+pwsh -File .\scripts\governance\set-openspec-rollout.ps1 -Stage soft-lxl-planning
+
+pwsh -File .\scripts\governance\set-openspec-rollout.ps1 -Stage shadow
+```
+
+### 3. 生态同步（从本地兼容源更新 bundled）
 
 ```powershell
 pwsh -File .\scripts\bootstrap\sync-local-compat.ps1
@@ -177,6 +225,11 @@ pwsh -File .\scripts\bootstrap\sync-local-compat.ps1
 
 - 完成 AIOS-Core Pack 级集成与默认任务技能映射。
 - 完成路由规则层升级（`skill-routing-rules` + `defaults_by_task`）。
+- 完成 OpenSpec 治理层零冲突接入（后置治理，不参与 Pack 打分，不改 selected pack/skill）。
+- 新增 OpenSpec 单命令 soft 发布脚本（`publish-openspec-soft-rollout.ps1`）：
+  - 固定流程：`precheck -> switch -> postcheck`
+  - 默认不自动回退，失败保持可见
+  - 仅在显式应急开关下执行回退
 - 完成 strict-ready 稳定性收敛：
   - 对高重叠组进行非粗暴精调（正负关键词 + 任务硬过滤 + 同义样本分组）。
   - 新增/扩展稳定性指标：`route_stability`、`top1_top2_gap`、`fallback_rate`、`misroute_rate`。
