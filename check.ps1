@@ -75,6 +75,7 @@ Write-Host "Target: $TargetRoot"
 Check-Path -Label "settings.json" -Path (Join-Path $TargetRoot 'settings.json')
 Check-Path -Label "plugins manifest" -Path (Join-Path $TargetRoot 'config\plugins-manifest.codex.json')
 Check-Path -Label "upstream lock" -Path (Join-Path $TargetRoot 'config\upstream-lock.json')
+Check-Path -Label "skills lock" -Path (Join-Path $TargetRoot 'config\skills-lock.json')
 
 foreach ($name in $requiredSkills) {
   Check-Path -Label "skill/$name" -Path (Join-Path $TargetRoot "skills\$name\SKILL.md")
@@ -126,6 +127,7 @@ if ($Deep) {
     $warn++
   } else {
     Invoke-DeepGate -Label "vibe-pack-regression-matrix" -ScriptPath (Join-Path $verifyRoot "vibe-pack-regression-matrix.ps1")
+    Invoke-DeepGate -Label "vibe-offline-skills-gate" -ScriptPath (Join-Path $verifyRoot "vibe-offline-skills-gate.ps1")
     Invoke-DeepGate -Label "vibe-router-contract-gate" -ScriptPath (Join-Path $verifyRoot "vibe-router-contract-gate.ps1")
     Invoke-DeepGate -Label "vibe-routing-stability-gate-strict" -ScriptPath (Join-Path $verifyRoot "vibe-routing-stability-gate.ps1") -Arguments @("-Strict")
     Invoke-DeepGate -Label "vibe-config-parity-gate" -ScriptPath (Join-Path $verifyRoot "vibe-config-parity-gate.ps1")

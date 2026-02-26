@@ -4,6 +4,8 @@ This directory stores optional verification scripts for CI and local smoke check
 - `vibe-pack-routing-smoke.ps1`: validates pack router config integrity, thresholds, and alias safety.
 - `vibe-soft-migration-practice.ps1`: practical soft-migration checks for alias routing and legacy fallback behavior.
 - `vibe-pack-regression-matrix.ps1`: broad pack-level regression matrix and determinism checks.
+- `vibe-offline-skills-gate.ps1`: verifies routed-skill closure against vendored skill mirror + `skills-lock` hash consistency for offline no-degrade deployment.
+- `vibe-generate-skills-lock.ps1`: regenerates `config/skills-lock.json` from `bundled/skills` using deterministic directory hashes.
 - `vibe-keyword-precision-audit.ps1`: bilingual keyword precision audit (EN/ZH), cross-pack interference gap checks, and full skill-by-skill routing sweep.
 - `vibe-skill-index-routing-audit.ps1`: per-skill keyword index routing checks using common Chinese business phrases and ambiguous same-pack scenarios.
 - `vibe-routing-stability-gate.ps1`: synonym-group and task-cross routing gate. Reports `route_stability`, `top1_top2_gap`, `fallback_rate`, and `misroute_rate`, with optional strict thresholds.
@@ -56,6 +58,12 @@ Run strict gate (after default gate is passing consistently):
 
 ```powershell
 & ".\vibe-routing-stability-gate.ps1" -Strict -WriteArtifacts
+```
+
+Run offline closure gate (recommended in CI):
+
+```powershell
+& ".\vibe-offline-skills-gate.ps1"
 ```
 
 Run router contract gate (legacy vs modular):

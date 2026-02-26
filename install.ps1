@@ -1,8 +1,10 @@
-﻿param(
+param(
   [ValidateSet("minimal", "full")]
   [string]$Profile = "full",
   [string]$TargetRoot = (Join-Path $env:USERPROFILE ".codex"),
-  [switch]$InstallExternal
+  [switch]$InstallExternal,
+  [switch]$StrictOffline,
+  [switch]$AllowExternalSkillFallback
 )
 
 $ErrorActionPreference = "Stop"
@@ -24,9 +26,47 @@ function Copy-DirContent {
   Copy-Item -Path (Join-Path $Source '*') -Destination $Destination -Recurse -Force
 }
 
+function Ensure-SkillPresent {
+  param(
+    [string]$Name,
+    [bool]$Required,
+    [string[]]$FallbackSources = @(),
+    [string]$TargetRoot,
+    [bool]$AllowExternalSkillFallback,
+    [System.Collections.Generic.List[string]]$ExternalFallbackUsed,
+    [System.Collections.Generic.List[string]]$MissingRequiredSkills
+  )
+
+  $targetSkillMd = Join-Path $TargetRoot ("skills\" + $Name + "\SKILL.md")
+  if (Test-Path -LiteralPath $targetSkillMd) { return }
+
+  if ($AllowExternalSkillFallback) {
+    foreach ($src in $FallbackSources) {
+      if ([string]::IsNullOrWhiteSpace($src)) { continue }
+      if (Test-Path -LiteralPath $src) {
+        Write-Warning "Using external fallback source for skill '$Name': $src"
+        Copy-DirContent -Source $src -Destination (Join-Path $TargetRoot ("skills\" + $Name))
+        $ExternalFallbackUsed.Add($Name) | Out-Null
+        break
+      }
+    }
+  }
+
+  if (-not (Test-Path -LiteralPath $targetSkillMd)) {
+    if ($Required) {
+      $MissingRequiredSkills.Add($Name) | Out-Null
+      Write-Warning "Missing required vendored skill: $Name"
+    } else {
+      Write-Warning "Missing optional vendored skill: $Name"
+    }
+  }
+}
+
 Write-Host "=== VCO Codex Installer ===" -ForegroundColor Cyan
 Write-Host "Profile: $Profile"
 Write-Host "Target : $TargetRoot"
+Write-Host "StrictOffline: $StrictOffline"
+Write-Host "AllowExternalSkillFallback: $AllowExternalSkillFallback"
 
 $canonicalSkillsRoot = Split-Path -Parent $RepoRoot
 $workspaceRoot = Split-Path -Parent $canonicalSkillsRoot
@@ -54,50 +94,63 @@ if (Test-Path -LiteralPath $vibeRouterSourceDir) {
 }
 
 $requiredCore = @('dialectic', 'local-vco-roles', 'spec-kit-vibe-compat', 'superclaude-framework-compat', 'ralph-loop', 'cancel-ralph', 'tdd-guide', 'think-harder')
-foreach ($name in $requiredCore) {
-  $canonicalSrc = Join-Path $canonicalSkillsRoot $name
-  $bundledSrc = Join-Path $RepoRoot ("bundled\skills\" + $name)
-  if (Test-Path -LiteralPath $canonicalSrc) {
-    Copy-DirContent -Source $canonicalSrc -Destination (Join-Path $TargetRoot "skills\$name")
-  } elseif (Test-Path -LiteralPath $bundledSrc) {
-    Copy-DirContent -Source $bundledSrc -Destination (Join-Path $TargetRoot "skills\$name")
-  } else {
-    Write-Warning "Missing required core skill source: $name"
-  }
-}
-
 $requiredSp = @('brainstorming', 'writing-plans', 'subagent-driven-development', 'systematic-debugging')
 $optionalSp = @('requesting-code-review', 'receiving-code-review', 'verification-before-completion')
 
 $spCanonicalRoot = Join-Path $workspaceRoot 'skills'
 $legacySpRoot = Join-Path $workspaceRoot 'superpowers\skills'
 $spSrcRoot = Join-Path $RepoRoot 'bundled\superpowers-skills'
-foreach ($name in $requiredSp) {
-  $canonicalSrc = Join-Path $spCanonicalRoot $name
-  $legacySrc = Join-Path $legacySpRoot $name
-  $bundledSrc = Join-Path $spSrcRoot $name
-  if (Test-Path -LiteralPath $canonicalSrc) {
-    Copy-DirContent -Source $canonicalSrc -Destination (Join-Path $TargetRoot "skills\$name")
-  } elseif (Test-Path -LiteralPath $legacySrc) {
-    Copy-DirContent -Source $legacySrc -Destination (Join-Path $TargetRoot "skills\$name")
-  } elseif (Test-Path -LiteralPath $bundledSrc) {
-    Copy-DirContent -Source $bundledSrc -Destination (Join-Path $TargetRoot "skills\$name")
-  } else {
-    Write-Warning "Missing required workflow skill source: $name"
-  }
+
+$externalFallbackUsed = New-Object System.Collections.Generic.List[string]
+$missingRequiredSkills = New-Object System.Collections.Generic.List[string]
+
+foreach ($name in $requiredCore) {
+  Ensure-SkillPresent `
+    -Name $name `
+    -Required:$true `
+    -FallbackSources @(
+      (Join-Path $canonicalSkillsRoot $name),
+      (Join-Path $spCanonicalRoot $name),
+      (Join-Path $legacySpRoot $name),
+      (Join-Path $spSrcRoot $name)
+    ) `
+    -TargetRoot $TargetRoot `
+    -AllowExternalSkillFallback:$AllowExternalSkillFallback `
+    -ExternalFallbackUsed $externalFallbackUsed `
+    -MissingRequiredSkills $missingRequiredSkills
 }
+
+foreach ($name in $requiredSp) {
+  Ensure-SkillPresent `
+    -Name $name `
+    -Required:$true `
+    -FallbackSources @(
+      (Join-Path $spCanonicalRoot $name),
+      (Join-Path $legacySpRoot $name),
+      (Join-Path $spSrcRoot $name),
+      (Join-Path $canonicalSkillsRoot $name)
+    ) `
+    -TargetRoot $TargetRoot `
+    -AllowExternalSkillFallback:$AllowExternalSkillFallback `
+    -ExternalFallbackUsed $externalFallbackUsed `
+    -MissingRequiredSkills $missingRequiredSkills
+}
+
 if ($Profile -eq 'full') {
   foreach ($name in $optionalSp) {
-    $canonicalSrc = Join-Path $spCanonicalRoot $name
-    $legacySrc = Join-Path $legacySpRoot $name
-    $bundledSrc = Join-Path $spSrcRoot $name
-    if (Test-Path -LiteralPath $canonicalSrc) {
-      Copy-DirContent -Source $canonicalSrc -Destination (Join-Path $TargetRoot "skills\$name")
-    } elseif (Test-Path -LiteralPath $legacySrc) {
-      Copy-DirContent -Source $legacySrc -Destination (Join-Path $TargetRoot "skills\$name")
-    } elseif (Test-Path -LiteralPath $bundledSrc) {
-      Copy-DirContent -Source $bundledSrc -Destination (Join-Path $TargetRoot "skills\$name")
-    }
+    Ensure-SkillPresent `
+      -Name $name `
+      -Required:$false `
+      -FallbackSources @(
+        (Join-Path $spCanonicalRoot $name),
+        (Join-Path $legacySpRoot $name),
+        (Join-Path $spSrcRoot $name),
+        (Join-Path $canonicalSkillsRoot $name)
+      ) `
+      -TargetRoot $TargetRoot `
+      -AllowExternalSkillFallback:$AllowExternalSkillFallback `
+      -ExternalFallbackUsed $externalFallbackUsed `
+      -MissingRequiredSkills $missingRequiredSkills
   }
 }
 
@@ -108,6 +161,9 @@ Copy-DirContent -Source (Join-Path $RepoRoot 'mcp') -Destination (Join-Path $Tar
 
 Copy-Item -LiteralPath (Join-Path $RepoRoot 'config\plugins-manifest.codex.json') -Destination (Join-Path $TargetRoot 'config\plugins-manifest.codex.json') -Force
 Copy-Item -LiteralPath (Join-Path $RepoRoot 'config\upstream-lock.json') -Destination (Join-Path $TargetRoot 'config\upstream-lock.json') -Force
+if (Test-Path -LiteralPath (Join-Path $RepoRoot 'config\skills-lock.json')) {
+  Copy-Item -LiteralPath (Join-Path $RepoRoot 'config\skills-lock.json') -Destination (Join-Path $TargetRoot 'config\skills-lock.json') -Force
+}
 
 $settingsTarget = Join-Path $TargetRoot 'settings.json'
 if (-not (Test-Path -LiteralPath $settingsTarget)) {
@@ -198,6 +254,31 @@ if ($InstallExternal) {
   } catch {
     Write-Warning "Failed to process plugin manifest"
   }
+}
+
+if ($missingRequiredSkills.Count -gt 0) {
+  throw ("Missing required vendored skills: " + (($missingRequiredSkills | Select-Object -Unique) -join ", "))
+}
+
+if ($StrictOffline) {
+  $offlineGate = Join-Path $RepoRoot 'scripts\verify\vibe-offline-skills-gate.ps1'
+  if (-not (Test-Path -LiteralPath $offlineGate)) {
+    throw "StrictOffline requested, but offline gate script is missing: $offlineGate"
+  }
+
+  & $offlineGate `
+    -SkillsRoot (Join-Path $TargetRoot 'skills') `
+    -PackManifestPath (Join-Path $RepoRoot 'config\pack-manifest.json') `
+    -SkillsLockPath (Join-Path $RepoRoot 'config\skills-lock.json')
+  if ($LASTEXITCODE -ne 0) {
+    throw "StrictOffline validation failed (vibe-offline-skills-gate)."
+  }
+
+  if ($externalFallbackUsed.Count -gt 0) {
+    throw ("StrictOffline rejected external fallback usage: " + (($externalFallbackUsed | Select-Object -Unique) -join ", "))
+  }
+} elseif ($externalFallbackUsed.Count -gt 0) {
+  Write-Warning ("External fallback skills were used (non-reproducible install): " + (($externalFallbackUsed | Select-Object -Unique) -join ", "))
 }
 
 Write-Host ""

@@ -1,0 +1,26 @@
+﻿{
+  "servers": {
+    "github": {
+      "mode": "plugin",
+      "required": false,
+      "note": "Use installed github plugin when available"
+    },
+    "context7": {
+      "mode": "plugin",
+      "required": false
+    },
+    "serena": {
+      "mode": "plugin",
+      "required": false
+    },
+    "claude-flow": {
+      "mode": "stdio",
+      "command": "claude-flow",
+      "args": [
+        "mcp",
+        "start"
+      ],
+      "required": false
+    }
+  }
+}

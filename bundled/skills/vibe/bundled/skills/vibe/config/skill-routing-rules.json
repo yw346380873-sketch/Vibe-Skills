@@ -1,0 +1,2017 @@
+﻿{
+    "version":  1,
+    "updated":  "2026-02-25",
+    "skills":  {
+                   "vibe":  {
+                                "task_allow":  [
+                                                   "planning",
+                                                   "coding",
+                                                   "review",
+                                                   "debug",
+                                                   "research"
+                                               ],
+                                "positive_keywords":  [
+                                                          "vibe",
+                                                          "$vibe",
+                                                          "orchestrate",
+                                                          "route",
+                                                          "编排",
+                                                          "路由"
+                                                      ],
+                                "negative_keywords":  [
+                                                          "xlsx",
+                                                          "scikit-learn",
+                                                          "sentry",
+                                                          "部署",
+                                                          "code review",
+                                                          "代码评审",
+                                                          "maintainability",
+                                                          "bug fix"
+                                                      ],
+                                "equivalent_group":  null,
+                                "canonical_for_task":  [
+                                                           "planning"
+                                                       ]
+                            },
+                   "brainstorming":  {
+                                         "task_allow":  [
+                                                            "planning",
+                                                            "research"
+                                                        ],
+                                         "positive_keywords":  [
+                                                                   "brainstorm",
+                                                                   "ideation",
+                                                                   "头脑风暴",
+                                                                   "方案发散"
+                                                               ],
+                                         "negative_keywords":  [
+                                                                   "直接实现",
+                                                                   "fix bug",
+                                                                   "部署"
+                                                               ],
+                                         "equivalent_group":  null,
+                                         "canonical_for_task":  [
+                                                                    "planning"
+                                                                ]
+                                     },
+                   "writing-plans":  {
+                                         "task_allow":  [
+                                                            "planning"
+                                                        ],
+                                         "positive_keywords":  [
+                                                                   "implementation plan",
+                                                                   "task breakdown",
+                                                                   "计划",
+                                                                   "任务拆解",
+                                                                   "里程碑"
+                                                               ],
+                                         "negative_keywords":  [
+                                                                   "bug",
+                                                                   "traceback",
+                                                                   "security audit"
+                                                               ],
+                                         "equivalent_group":  "plan-authoring",
+                                         "canonical_for_task":  [
+                                                                    "planning"
+                                                                ]
+                                     },
+                   "create-plan":  {
+                                       "task_allow":  [
+                                                          "planning"
+                                                      ],
+                                       "positive_keywords":  [
+                                                                 "create plan",
+                                                                 "roadmap",
+                                                                 "计划"
+                                                             ],
+                                       "negative_keywords":  [
+                                                                 "coding",
+                                                                 "debug",
+                                                                 "deploy"
+                                                             ],
+                                       "equivalent_group":  "plan-authoring",
+                                       "canonical_for_task":  [
+
+                                                              ]
+                                   },
+                   "planning-with-files":  {
+                                               "task_allow":  [
+                                                                  "planning",
+                                                                  "research"
+                                                              ],
+                                               "positive_keywords":  [
+                                                                         "task_plan.md",
+                                                                         "findings.md",
+                                                                         "progress.md",
+                                                                         "file-based planning"
+                                                                     ],
+                                               "negative_keywords":  [
+                                                                         "single quick fix",
+                                                                         "trivial"
+                                                                     ],
+                                               "equivalent_group":  "plan-authoring",
+                                               "canonical_for_task":  [
+
+                                                                      ]
+                                           },
+                   "think-harder":  {
+                                        "task_allow":  [
+                                                           "planning",
+                                                           "debug",
+                                                           "research"
+                                                       ],
+                                        "positive_keywords":  [
+                                                                  "structured analysis",
+                                                                  "4-phase",
+                                                                  "深入分析",
+                                                                  "系统分析"
+                                                              ],
+                                        "negative_keywords":  [
+                                                                  "deploy",
+                                                                  "screenshot"
+                                                              ],
+                                        "equivalent_group":  null,
+                                        "canonical_for_task":  [
+
+                                                               ]
+                                    },
+                   "subagent-driven-development":  {
+                                                       "task_allow":  [
+                                                                          "planning",
+                                                                          "coding",
+                                                                          "review",
+                                                                          "debug",
+                                                                          "research"
+                                                                      ],
+                                                       "positive_keywords":  [
+                                                                                 "subagent",
+                                                                                 "parallel",
+                                                                                 "并行",
+                                                                                 "multi-agent",
+                                                                                 "拆分任务"
+                                                                             ],
+                                                       "negative_keywords":  [
+                                                                                 "single file typo"
+                                                                             ],
+                                                       "equivalent_group":  null,
+                                                       "canonical_for_task":  [
+                                                                                  "coding"
+                                                                              ]
+                                                   },
+                   "autonomous-builder":  {
+                                              "task_allow":  [
+                                                                 "coding",
+                                                                 "planning"
+                                                             ],
+                                              "positive_keywords":  [
+                                                                        "build",
+                                                                        "implement",
+                                                                        "feature",
+                                                                        "开发",
+                                                                        "实现"
+                                                                    ],
+                                              "negative_keywords":  [
+                                                                        "security audit",
+                                                                        "literature"
+                                                                    ],
+                                              "equivalent_group":  null,
+                                              "canonical_for_task":  [
+                                                                         "coding"
+                                                                     ]
+                                          },
+                   "speckit-plan":  {
+                                        "task_allow":  [
+                                                           "planning"
+                                                       ],
+                                        "positive_keywords":  [
+                                                                  "spec",
+                                                                  "technical plan",
+                                                                  "plan.md"
+                                                              ],
+                                        "negative_keywords":  [
+                                                                  "debug",
+                                                                  "incident"
+                                                              ],
+                                        "equivalent_group":  null,
+                                        "canonical_for_task":  [
+
+                                                               ]
+                                    },
+                   "speckit-specify":  {
+                                           "task_allow":  [
+                                                              "planning"
+                                                          ],
+                                           "positive_keywords":  [
+                                                                     "requirements",
+                                                                     "spec.md",
+                                                                     "acceptance criteria"
+                                                                 ],
+                                           "negative_keywords":  [
+                                                                     "fix build",
+                                                                     "deploy"
+                                                                 ],
+                                           "equivalent_group":  null,
+                                           "canonical_for_task":  [
+
+                                                                  ]
+                                       },
+                   "aios-master":  {
+                                       "task_allow":  [
+                                                          "planning",
+                                                          "coding",
+                                                          "review",
+                                                          "debug",
+                                                          "research"
+                                                      ],
+                                       "positive_keywords":  [
+                                                                 "aios master",
+                                                                 "aios orchestrator",
+                                                                 "synkra",
+                                                                 "framework coordination"
+                                                             ],
+                                       "negative_keywords":  [
+                                                                 "single user story"
+                                                             ],
+                                       "equivalent_group":  null,
+                                       "canonical_for_task":  [
+
+                                                              ]
+                                   },
+                   "aios-pm":  {
+                                   "task_allow":  [
+                                                      "planning",
+                                                      "review"
+                                                  ],
+                                   "positive_keywords":  [
+                                                             "aios pm",
+                                                             "prd",
+                                                             "产品需求文档",
+                                                             "产品规划",
+                                                             "epic规划",
+                                                             "roadmap",
+                                                             "product strategy"
+                                                         ],
+                                   "negative_keywords":  [
+                                                             "unit test",
+                                                             "debug stack",
+                                                             "product owner",
+                                                             "backlog prioritization",
+                                                             "acceptance criteria ranking"
+                                                         ],
+                                   "equivalent_group":  null,
+                                   "canonical_for_task":  [
+                                                              "planning"
+                                                          ]
+                               },
+                   "aios-po":  {
+                                   "task_allow":  [
+                                                      "planning",
+                                                      "review"
+                                                  ],
+                                   "positive_keywords":  [
+                                                             "aios po",
+                                                             "product owner",
+                                                             "backlog管理",
+                                                             "验收标准",
+                                                             "优先级排序",
+                                                             "backlog prioritization",
+                                                             "acceptance criteria"
+                                                         ],
+                                   "negative_keywords":  [
+                                                             "prd",
+                                                             "product requirements document",
+                                                             "roadmap drafting"
+                                                         ],
+                                   "equivalent_group":  null,
+                                   "canonical_for_task":  [
+
+                                                          ]
+                               },
+                   "aios-sm":  {
+                                   "task_allow":  [
+                                                      "planning"
+                                                  ],
+                                   "positive_keywords":  [
+                                                             "scrum",
+                                                             "story split",
+                                                             "迭代节奏"
+                                                         ],
+                                   "negative_keywords":  [
+                                                             "architecture deep dive"
+                                                         ],
+                                   "equivalent_group":  null,
+                                   "canonical_for_task":  [
+
+                                                          ]
+                               },
+                   "aios-analyst":  {
+                                        "task_allow":  [
+                                                           "research",
+                                                           "planning"
+                                                       ],
+                                        "positive_keywords":  [
+                                                                  "analysis",
+                                                                  "market research",
+                                                                  "需求调研",
+                                                                  "competition"
+                                                              ],
+                                        "negative_keywords":  [
+                                                                  "unit test",
+                                                                  "ci"
+                                                              ],
+                                        "equivalent_group":  null,
+                                        "canonical_for_task":  [
+                                                                   "research"
+                                                               ]
+                                    },
+                   "aios-architect":  {
+                                          "task_allow":  [
+                                                             "planning",
+                                                             "review"
+                                                         ],
+                                          "positive_keywords":  [
+                                                                    "architecture",
+                                                                    "technical design",
+                                                                    "架构"
+                                                                ],
+                                          "negative_keywords":  [
+                                                                    "copywriting",
+                                                                    "voiceover"
+                                                                ],
+                                          "equivalent_group":  null,
+                                          "canonical_for_task":  [
+
+                                                                 ]
+                                      },
+                   "aios-dev":  {
+                                    "task_allow":  [
+                                                       "coding",
+                                                       "debug"
+                                                   ],
+                                    "positive_keywords":  [
+                                                              "story implementation",
+                                                              "coding",
+                                                              "开发"
+                                                          ],
+                                    "negative_keywords":  [
+                                                              "backlog prioritization"
+                                                          ],
+                                    "equivalent_group":  null,
+                                    "canonical_for_task":  [
+                                                               "coding"
+                                                           ]
+                                },
+                   "aios-devops":  {
+                                       "task_allow":  [
+                                                          "debug",
+                                                          "review",
+                                                          "coding"
+                                                      ],
+                                       "positive_keywords":  [
+                                                                 "devops",
+                                                                 "pipeline",
+                                                                 "deployment",
+                                                                 "发布"
+                                                             ],
+                                       "negative_keywords":  [
+                                                                 "literature"
+                                                             ],
+                                       "equivalent_group":  null,
+                                       "canonical_for_task":  [
+                                                                  "debug"
+                                                              ]
+                                   },
+                   "aios-qa":  {
+                                   "task_allow":  [
+                                                      "review",
+                                                      "coding"
+                                                  ],
+                                   "positive_keywords":  [
+                                                             "quality gate",
+                                                             "qa",
+                                                             "测试策略",
+                                                             "质量门禁"
+                                                         ],
+                                   "negative_keywords":  [
+                                                             "market analysis"
+                                                         ],
+                                   "equivalent_group":  null,
+                                   "canonical_for_task":  [
+                                                              "review"
+                                                          ]
+                               },
+                   "aios-data-engineer":  {
+                                              "task_allow":  [
+                                                                 "coding",
+                                                                 "research"
+                                                             ],
+                                              "positive_keywords":  [
+                                                                        "data pipeline",
+                                                                        "data engineering",
+                                                                        "数据工程"
+                                                                    ],
+                                              "negative_keywords":  [
+                                                                        "ui prototype"
+                                                                    ],
+                                              "equivalent_group":  null,
+                                              "canonical_for_task":  [
+
+                                                                     ]
+                                          },
+                   "aios-squad-creator":  {
+                                              "task_allow":  [
+                                                                 "planning"
+                                                             ],
+                                              "positive_keywords":  [
+                                                                        "squad",
+                                                                        "team composition",
+                                                                        "组建团队"
+                                                                    ],
+                                              "negative_keywords":  [
+                                                                        "code review"
+                                                                    ],
+                                              "equivalent_group":  null,
+                                              "canonical_for_task":  [
+
+                                                                     ]
+                                          },
+                   "aios-ux-design-expert":  {
+                                                 "task_allow":  [
+                                                                    "planning",
+                                                                    "research"
+                                                                ],
+                                                 "positive_keywords":  [
+                                                                           "ux",
+                                                                           "user journey",
+                                                                           "体验设计",
+                                                                           "可用性"
+                                                                       ],
+                                                 "negative_keywords":  [
+                                                                           "ci pipeline"
+                                                                       ],
+                                                 "equivalent_group":  null,
+                                                 "canonical_for_task":  [
+
+                                                                        ]
+                                             },
+                   "code-review":  {
+                                       "task_allow":  [
+                                                          "review",
+                                                          "coding"
+                                                      ],
+                                       "positive_keywords":  [
+                                                                 "code review",
+                                                                 "review comments",
+                                                                 "代码评审"
+                                                             ],
+                                       "negative_keywords":  [
+                                                                 "owasp",
+                                                                 "threat model"
+                                                             ],
+                                       "equivalent_group":  "code-review-core",
+                                       "canonical_for_task":  [
+
+                                                              ]
+                                   },
+                   "code-reviewer":  {
+                                         "task_allow":  [
+                                                            "review",
+                                                            "coding",
+                                                            "debug"
+                                                        ],
+                                         "positive_keywords":  [
+                                                                   "code review",
+                                                                   "quality check",
+                                                                   "best practices",
+                                                                   "代码审查",
+                                                                   "maintainability",
+                                                                   "maintainable",
+                                                                   "review this change",
+                                                                   "bugs",
+                                                                   "bug risk"
+                                                               ],
+                                         "negative_keywords":  [
+                                                                   "threat model only",
+                                                                   "incident response",
+                                                                   "product backlog",
+                                                                   "prd"
+                                                               ],
+                                         "equivalent_group":  "code-review-core",
+                                         "canonical_for_task":  [
+                                                                    "review"
+                                                                ]
+                                     },
+                   "reviewing-code":  {
+                                          "task_allow":  [
+                                                             "review"
+                                                         ],
+                                          "positive_keywords":  [
+                                                                    "review implementation",
+                                                                    "maintainability",
+                                                                    "correctness",
+                                                                    "api design",
+                                                                    "design quality"
+                                                                ],
+                                          "negative_keywords":  [
+                                                                    "security-only",
+                                                                    "deploy",
+                                                                    "prd",
+                                                                    "product owner backlog"
+                                                                ],
+                                          "equivalent_group":  "code-review-core",
+                                          "canonical_for_task":  [
+
+                                                                 ]
+                                      },
+                   "code-review-excellence":  {
+                                                  "task_allow":  [
+                                                                     "review",
+                                                                     "planning"
+                                                                 ],
+                                                  "positive_keywords":  [
+                                                                            "review standards",
+                                                                            "mentoring",
+                                                                            "review process"
+                                                                        ],
+                                                  "negative_keywords":  [
+                                                                            "fix failing tests"
+                                                                        ],
+                                                  "equivalent_group":  null,
+                                                  "canonical_for_task":  [
+
+                                                                         ]
+                                              },
+                   "requesting-code-review":  {
+                                                  "task_allow":  [
+                                                                     "review"
+                                                                 ],
+                                                  "positive_keywords":  [
+                                                                            "request review",
+                                                                            "before merge",
+                                                                            "提交评审"
+                                                                        ],
+                                                  "negative_keywords":  [
+                                                                            "implement feature"
+                                                                        ],
+                                                  "equivalent_group":  null,
+                                                  "canonical_for_task":  [
+
+                                                                         ]
+                                              },
+                   "receiving-code-review":  {
+                                                 "task_allow":  [
+                                                                    "review",
+                                                                    "coding"
+                                                                ],
+                                                 "positive_keywords":  [
+                                                                           "address review",
+                                                                           "feedback",
+                                                                           "评审反馈"
+                                                                       ],
+                                                 "negative_keywords":  [
+                                                                           "new architecture"
+                                                                       ],
+                                                 "equivalent_group":  null,
+                                                 "canonical_for_task":  [
+
+                                                                        ]
+                                             },
+                   "systematic-debugging":  {
+                                                "task_allow":  [
+                                                                   "debug",
+                                                                   "coding"
+                                                               ],
+                                                "positive_keywords":  [
+                                                                          "root cause",
+                                                                          "systematic debugging",
+                                                                          "根因分析",
+                                                                          "故障定位"
+                                                                      ],
+                                                "negative_keywords":  [
+                                                                          "feature ideation"
+                                                                      ],
+                                                "equivalent_group":  "debug-root-cause",
+                                                "canonical_for_task":  [
+                                                                           "debug"
+                                                                       ]
+                                            },
+                   "debugging-strategies":  {
+                                                "task_allow":  [
+                                                                   "debug",
+                                                                   "review"
+                                                               ],
+                                                "positive_keywords":  [
+                                                                          "profiling",
+                                                                          "debug strategy",
+                                                                          "调试策略"
+                                                                      ],
+                                                "negative_keywords":  [
+                                                                          "product planning"
+                                                                      ],
+                                                "equivalent_group":  "debug-root-cause",
+                                                "canonical_for_task":  [
+
+                                                                       ]
+                                            },
+                   "error-resolver":  {
+                                          "task_allow":  [
+                                                             "debug",
+                                                             "coding"
+                                                         ],
+                                          "positive_keywords":  [
+                                                                    "stack trace",
+                                                                    "error message",
+                                                                    "unexpected behavior"
+                                                                ],
+                                          "negative_keywords":  [
+                                                                    "design system"
+                                                                ],
+                                          "equivalent_group":  "debug-root-cause",
+                                          "canonical_for_task":  [
+
+                                                                 ]
+                                      },
+                   "build-error-resolver":  {
+                                                "task_allow":  [
+                                                                   "debug"
+                                                               ],
+                                                "positive_keywords":  [
+                                                                          "build error",
+                                                                          "compile error",
+                                                                          "构建失败"
+                                                                      ],
+                                                "negative_keywords":  [
+                                                                          "product roadmap"
+                                                                      ],
+                                                "equivalent_group":  "debug-root-cause",
+                                                "canonical_for_task":  [
+
+                                                                       ]
+                                            },
+                   "tdd-guide":  {
+                                     "task_allow":  [
+                                                        "coding",
+                                                        "review"
+                                                    ],
+                                     "positive_keywords":  [
+                                                               "tdd",
+                                                               "red green refactor",
+                                                               "测试驱动"
+                                                           ],
+                                     "negative_keywords":  [
+                                                               "deploy"
+                                                           ],
+                                     "equivalent_group":  null,
+                                     "canonical_for_task":  [
+                                                                "coding"
+                                                            ]
+                                 },
+                   "security-reviewer":  {
+                                             "task_allow":  [
+                                                                "review",
+                                                                "debug"
+                                                            ],
+                                             "positive_keywords":  [
+                                                                       "security audit",
+                                                                       "owasp",
+                                                                       "漏洞",
+                                                                       "threat"
+                                                                   ],
+                                             "negative_keywords":  [
+                                                                       "ui polish"
+                                                                   ],
+                                             "equivalent_group":  null,
+                                             "canonical_for_task":  [
+                                                                        "review"
+                                                                    ]
+                                         },
+                   "verification-before-completion":  {
+                                                          "task_allow":  [
+                                                                             "review",
+                                                                             "coding",
+                                                                             "debug"
+                                                                         ],
+                                                          "positive_keywords":  [
+                                                                                    "verify",
+                                                                                    "run tests",
+                                                                                    "completion gate",
+                                                                                    "验收"
+                                                                                ],
+                                                          "negative_keywords":  [
+                                                                                    "requirements discovery"
+                                                                                ],
+                                                          "equivalent_group":  null,
+                                                          "canonical_for_task":  [
+
+                                                                                 ]
+                                                      },
+                   "deslop":  {
+                                  "task_allow":  [
+                                                     "coding",
+                                                     "review"
+                                                 ],
+                                  "positive_keywords":  [
+                                                            "cleanup ai code",
+                                                            "remove slop",
+                                                            "代码清理"
+                                                        ],
+                                  "negative_keywords":  [
+                                                            "incident"
+                                                        ],
+                                  "equivalent_group":  null,
+                                  "canonical_for_task":  [
+
+                                                         ]
+                              },
+                   "generating-test-reports":  {
+                                                   "task_allow":  [
+                                                                      "review",
+                                                                      "research"
+                                                                  ],
+                                                   "positive_keywords":  [
+                                                                             "test report",
+                                                                             "coverage report",
+                                                                             "测试报告"
+                                                                         ],
+                                                   "negative_keywords":  [
+                                                                             "new feature build"
+                                                                         ],
+                                                   "equivalent_group":  null,
+                                                   "canonical_for_task":  [
+
+                                                                          ]
+                                               },
+                   "windows-hook-debugging":  {
+                                                  "task_allow":  [
+                                                                     "debug"
+                                                                 ],
+                                                  "positive_keywords":  [
+                                                                            "windows hook",
+                                                                            "cannot execute binary file",
+                                                                            "WSL",
+                                                                            "Git Bash"
+                                                                        ],
+                                                  "negative_keywords":  [
+                                                                            "model eval"
+                                                                        ],
+                                                  "equivalent_group":  null,
+                                                  "canonical_for_task":  [
+
+                                                                         ]
+                                              },
+                   "scikit-learn":  {
+                                        "task_allow":  [
+                                                           "coding",
+                                                           "research",
+                                                           "review"
+                                                       ],
+                                        "positive_keywords":  [
+                                                                  "scikit-learn",
+                                                                  "sklearn",
+                                                                  "classification",
+                                                                  "regression",
+                                                                  "交叉验证"
+                                                              ],
+                                        "negative_keywords":  [
+                                                                  "single-cell",
+                                                                  "ci pipeline"
+                                                              ],
+                                        "equivalent_group":  null,
+                                        "canonical_for_task":  [
+                                                                   "coding",
+                                                                   "research"
+                                                               ]
+                                    },
+                   "ml-pipeline-workflow":  {
+                                                "task_allow":  [
+                                                                   "planning",
+                                                                   "coding",
+                                                                   "review"
+                                                               ],
+                                                "positive_keywords":  [
+                                                                          "mlops",
+                                                                          "pipeline",
+                                                                          "deployment workflow",
+                                                                          "训练流水线"
+                                                                      ],
+                                                "negative_keywords":  [
+                                                                          "latex manuscript"
+                                                                      ],
+                                                "equivalent_group":  null,
+                                                "canonical_for_task":  [
+                                                                           "planning"
+                                                                       ]
+                                            },
+                   "evaluating-machine-learning-models":  {
+                                                              "task_allow":  [
+                                                                                 "review",
+                                                                                 "research"
+                                                                             ],
+                                                              "positive_keywords":  [
+                                                                                        "model evaluation",
+                                                                                        "metrics",
+                                                                                        "validation",
+                                                                                        "模型评估"
+                                                                                    ],
+                                                              "negative_keywords":  [
+                                                                                        "deploy infra"
+                                                                                    ],
+                                                              "equivalent_group":  null,
+                                                              "canonical_for_task":  [
+                                                                                         "review"
+                                                                                     ]
+                                                          },
+                   "shap":  {
+                                "task_allow":  [
+                                                   "research",
+                                                   "review",
+                                                   "coding"
+                                               ],
+                                "positive_keywords":  [
+                                                          "shap",
+                                                          "feature attribution",
+                                                          "beeswarm",
+                                                          "模型解释"
+                                                      ],
+                                "negative_keywords":  [
+                                                          "just train baseline"
+                                                      ],
+                                "equivalent_group":  null,
+                                "canonical_for_task":  [
+
+                                                       ]
+                            },
+                   "umap-learn":  {
+                                      "task_allow":  [
+                                                         "research",
+                                                         "coding"
+                                                     ],
+                                      "positive_keywords":  [
+                                                                "umap",
+                                                                "dimensionality reduction",
+                                                                "降维"
+                                                            ],
+                                      "negative_keywords":  [
+                                                                "threat model"
+                                                            ],
+                                      "equivalent_group":  null,
+                                      "canonical_for_task":  [
+
+                                                             ]
+                                  },
+                   "statistical-analysis":  {
+                                                "task_allow":  [
+                                                                   "research",
+                                                                   "review"
+                                                               ],
+                                                "positive_keywords":  [
+                                                                          "hypothesis test",
+                                                                          "anova",
+                                                                          "t-test",
+                                                                          "统计分析"
+                                                                      ],
+                                                "negative_keywords":  [
+                                                                          "ui design"
+                                                                      ],
+                                                "equivalent_group":  null,
+                                                "canonical_for_task":  [
+
+                                                                       ]
+                                            },
+                   "statsmodels":  {
+                                       "task_allow":  [
+                                                          "research",
+                                                          "coding"
+                                                      ],
+                                       "positive_keywords":  [
+                                                                 "ols",
+                                                                 "glm",
+                                                                 "arima",
+                                                                 "econometrics"
+                                                             ],
+                                       "negative_keywords":  [
+                                                                 "voiceover"
+                                                             ],
+                                       "equivalent_group":  null,
+                                       "canonical_for_task":  [
+
+                                                              ]
+                                   },
+                   "exploratory-data-analysis":  {
+                                                     "task_allow":  [
+                                                                        "research",
+                                                                        "planning"
+                                                                    ],
+                                                     "positive_keywords":  [
+                                                                               "eda",
+                                                                               "data profiling",
+                                                                               "探索性分析"
+                                                                           ],
+                                                     "negative_keywords":  [
+                                                                               "hardening deployment"
+                                                                           ],
+                                                     "equivalent_group":  null,
+                                                     "canonical_for_task":  [
+
+                                                                            ]
+                                                 },
+                   "ml-data-leakage-guard":  {
+                                                 "task_allow":  [
+                                                                    "coding",
+                                                                    "review",
+                                                                    "research"
+                                                                ],
+                                                 "positive_keywords":  [
+                                                                           "data leakage",
+                                                                           "time leakage",
+                                                                           "防止泄漏"
+                                                                       ],
+                                                 "negative_keywords":  [
+                                                                           "render screenshot"
+                                                                       ],
+                                                 "equivalent_group":  null,
+                                                 "canonical_for_task":  [
+
+                                                                        ]
+                                             },
+                   "creating-data-visualizations":  {
+                                                        "task_allow":  [
+                                                                           "coding",
+                                                                           "research"
+                                                                       ],
+                                                        "positive_keywords":  [
+                                                                                  "chart",
+                                                                                  "plot",
+                                                                                  "visualization",
+                                                                                  "图表"
+                                                                              ],
+                                                        "negative_keywords":  [
+                                                                                  "threat model"
+                                                                              ],
+                                                        "equivalent_group":  null,
+                                                        "canonical_for_task":  [
+
+                                                                               ]
+                                                    },
+                   "biopython":  {
+                                     "task_allow":  [
+                                                        "planning",
+                                                        "coding",
+                                                        "research"
+                                                    ],
+                                     "positive_keywords":  [
+                                                               "biopython",
+                                                               "fasta",
+                                                               "genbank",
+                                                               "序列处理"
+                                                           ],
+                                     "negative_keywords":  [
+                                                               "ci logs",
+                                                               "deployment"
+                                                           ],
+                                     "equivalent_group":  null,
+                                     "canonical_for_task":  [
+                                                                "planning",
+                                                                "coding"
+                                                            ]
+                                 },
+                   "scanpy":  {
+                                  "task_allow":  [
+                                                     "research",
+                                                     "coding"
+                                                 ],
+                                  "positive_keywords":  [
+                                                            "scanpy",
+                                                            "single-cell",
+                                                            "scRNA",
+                                                            "单细胞"
+                                                        ],
+                                  "negative_keywords":  [
+                                                            "vercel"
+                                                        ],
+                                  "equivalent_group":  null,
+                                  "canonical_for_task":  [
+                                                             "research"
+                                                         ]
+                              },
+                   "pydeseq2":  {
+                                    "task_allow":  [
+                                                       "research",
+                                                       "coding"
+                                                   ],
+                                    "positive_keywords":  [
+                                                              "deseq2",
+                                                              "differential expression",
+                                                              "差异表达"
+                                                          ],
+                                    "negative_keywords":  [
+                                                              "prompt engineering"
+                                                          ],
+                                    "equivalent_group":  null,
+                                    "canonical_for_task":  [
+
+                                                           ]
+                                },
+                   "pysam":  {
+                                 "task_allow":  [
+                                                    "research",
+                                                    "coding"
+                                                ],
+                                 "positive_keywords":  [
+                                                           "bam",
+                                                           "sam",
+                                                           "vcf",
+                                                           "coverage"
+                                                       ],
+                                 "negative_keywords":  [
+                                                           "ux workshop"
+                                                       ],
+                                 "equivalent_group":  null,
+                                 "canonical_for_task":  [
+
+                                                        ]
+                             },
+                   "bioservices":  {
+                                       "task_allow":  [
+                                                          "research",
+                                                          "coding"
+                                                      ],
+                                       "positive_keywords":  [
+                                                                 "uniprot",
+                                                                 "kegg",
+                                                                 "chembl",
+                                                                 "多数据库"
+                                                             ],
+                                       "negative_keywords":  [
+                                                                 "build pipeline failure"
+                                                             ],
+                                       "equivalent_group":  null,
+                                       "canonical_for_task":  [
+
+                                                              ]
+                                   },
+                   "gget":  {
+                                "task_allow":  [
+                                                   "research",
+                                                   "coding"
+                                               ],
+                                "positive_keywords":  [
+                                                          "quick blast",
+                                                          "gget",
+                                                          "快速生信查询"
+                                                      ],
+                                "negative_keywords":  [
+                                                          "release notes"
+                                                      ],
+                                "equivalent_group":  null,
+                                "canonical_for_task":  [
+
+                                                       ]
+                            },
+                   "spreadsheet":  {
+                                       "task_allow":  [
+                                                          "coding",
+                                                          "research"
+                                                      ],
+                                       "positive_keywords":  [
+                                                                 "spreadsheet",
+                                                                 "csv",
+                                                                 "tsv",
+                                                                 "表格处理",
+                                                                 "tabular transform",
+                                                                 "data table cleanup"
+                                                             ],
+                                        "negative_keywords":  [
+                                                                  "xlsx",
+                                                                  "workbook",
+                                                                  "preserve formulas",
+                                                                  "保留公式",
+                                                                  "excel model",
+                                                                  "large csv",
+                                                                  "big csv",
+                                                                  "streaming csv",
+                                                                  "million rows",
+                                                                  "gigabyte csv",
+                                                                  "超大csv",
+                                                                  "百万行"
+                                                              ],
+                                        "equivalent_group":  "tabular-processing",
+                                        "canonical_for_task":  [
+                                                                   "coding"
+                                                               ]
+                                    },
+                   "xan":  {
+                               "task_allow":  [
+                                                  "coding",
+                                                  "research"
+                                              ],
+                               "positive_keywords":  [
+                                                         "xan",
+                                                         "large csv",
+                                                         "big csv",
+                                                         "streaming csv",
+                                                         "low memory",
+                                                         "csv pipeline",
+                                                         "million rows",
+                                                         "gigabyte csv",
+                                                         "大csv",
+                                                         "超大csv",
+                                                         "百万行",
+                                                         "低内存",
+                                                         "流式处理"
+                                                     ],
+                               "negative_keywords":  [
+                                                         "xlsx",
+                                                         "workbook",
+                                                         "preserve formulas",
+                                                         "pivot table",
+                                                         "excel chart",
+                                                         "保留公式",
+                                                         "数据透视"
+                                                     ],
+                               "equivalent_group":  "tabular-processing",
+                               "canonical_for_task":  [
+
+                                                      ]
+                           },
+                   "xlsx":  {
+                                "task_allow":  [
+                                                   "coding",
+                                                   "research"
+                                               ],
+                                "positive_keywords":  [
+                                                          "xlsx",
+                                                          "workbook",
+                                                          "保留公式",
+                                                          "excel file",
+                                                          "xlsx formatting",
+                                                          "spreadsheet formatting",
+                                                          "公式"
+                                                      ],
+                                "negative_keywords":  [
+                                                          "docx",
+                                                          "markdown docs",
+                                                          "audio transcription"
+                                                      ],
+                                "equivalent_group":  "tabular-processing",
+                                "canonical_for_task":  [
+
+                                                       ]
+                            },
+                   "excel-analysis":  {
+                                          "task_allow":  [
+                                                             "research",
+                                                             "coding"
+                                                         ],
+                                          "positive_keywords":  [
+                                                                    "pivot table",
+                                                                    "excel analysis",
+                                                                    "数据透视"
+                                                                ],
+                                          "negative_keywords":  [
+                                                                    "threat modeling"
+                                                                ],
+                                          "equivalent_group":  "tabular-processing",
+                                          "canonical_for_task":  [
+
+                                                                 ]
+                                      },
+                   "doc":  {
+                               "task_allow":  [
+                                                  "coding",
+                                                  "research"
+                                              ],
+                               "positive_keywords":  [
+                                                         "docx formatting",
+                                                         "layout fidelity",
+                                                         "文档排版"
+                                                     ],
+                               "negative_keywords":  [
+                                                         "csv transform"
+                                                     ],
+                               "equivalent_group":  "doc-authoring",
+                               "canonical_for_task":  [
+
+                                                      ]
+                           },
+                   "docx":  {
+                                "task_allow":  [
+                                                   "coding",
+                                                   "research"
+                                               ],
+                                "positive_keywords":  [
+                                                          "docx",
+                                                          "tracked changes",
+                                                          "word",
+                                                          "修订"
+                                                      ],
+                                "negative_keywords":  [
+                                                          "xlsx",
+                                                          "screenshot"
+                                                      ],
+                                "equivalent_group":  "doc-authoring",
+                                "canonical_for_task":  [
+
+                                                       ]
+                            },
+                   "pdf":  {
+                               "task_allow":  [
+                                                  "coding",
+                                                  "research"
+                                              ],
+                               "positive_keywords":  [
+                                                         "pdf",
+                                                         "extract text",
+                                                         "render pages",
+                                                         "读取pdf"
+                                                     ],
+                               "negative_keywords":  [
+                                                         "audio transcription"
+                                                     ],
+                               "equivalent_group":  null,
+                               "canonical_for_task":  [
+
+                                                      ]
+                           },
+                   "docs-write":  {
+                                      "task_allow":  [
+                                                         "planning",
+                                                         "coding",
+                                                         "research"
+                                                     ],
+                                      "positive_keywords":  [
+                                                                "write docs",
+                                                                "documentation style",
+                                                                "文档写作"
+                                                            ],
+                                      "negative_keywords":  [
+                                                                "review existing docs only"
+                                                            ],
+                                      "equivalent_group":  "docs-authoring",
+                                      "canonical_for_task":  [
+                                                                 "planning"
+                                                             ]
+                                  },
+                   "writing-docs":  {
+                                        "task_allow":  [
+                                                           "coding",
+                                                           "research"
+                                                       ],
+                                        "positive_keywords":  [
+                                                                  "mdx",
+                                                                  "documentation page",
+                                                                  "docs content"
+                                                              ],
+                                        "negative_keywords":  [
+                                                                  "security incident"
+                                                              ],
+                                        "equivalent_group":  "docs-authoring",
+                                        "canonical_for_task":  [
+
+                                                               ]
+                                    },
+                   "docs-review":  {
+                                       "task_allow":  [
+                                                          "review"
+                                                      ],
+                                       "positive_keywords":  [
+                                                                 "docs review",
+                                                                 "writing style",
+                                                                 "文档审阅"
+                                                             ],
+                                       "negative_keywords":  [
+                                                                 "new feature implementation"
+                                                             ],
+                                       "equivalent_group":  null,
+                                       "canonical_for_task":  [
+                                                                  "review"
+                                                              ]
+                                   },
+                   "content-research-writer":  {
+                                                   "task_allow":  [
+                                                                      "research",
+                                                                      "planning"
+                                                                  ],
+                                                   "positive_keywords":  [
+                                                                             "research writing",
+                                                                             "citations",
+                                                                             "outline"
+                                                                         ],
+                                                   "negative_keywords":  [
+                                                                             "code lint"
+                                                                         ],
+                                                   "equivalent_group":  null,
+                                                   "canonical_for_task":  [
+                                                                              "research"
+                                                                          ]
+                                               },
+                   "speech":  {
+                                  "task_allow":  [
+                                                     "coding",
+                                                     "research"
+                                                 ],
+                                  "positive_keywords":  [
+                                                            "text to speech",
+                                                            "tts",
+                                                            "语音合成"
+                                                        ],
+                                  "negative_keywords":  [
+                                                            "transcribe",
+                                                            "speaker diarization"
+                                                        ],
+                                  "equivalent_group":  null,
+                                  "canonical_for_task":  [
+
+                                                         ]
+                              },
+                   "transcribe":  {
+                                      "task_allow":  [
+                                                         "coding",
+                                                         "research"
+                                                     ],
+                                      "positive_keywords":  [
+                                                                "transcribe",
+                                                                "speech to text",
+                                                                "会议录音转文字",
+                                                                "说话人"
+                                                            ],
+                                      "negative_keywords":  [
+                                                                "tts",
+                                                                "voiceover"
+                                                            ],
+                                      "equivalent_group":  null,
+                                      "canonical_for_task":  [
+
+                                                             ]
+                                  },
+                   "screenshot":  {
+                                      "task_allow":  [
+                                                         "coding",
+                                                         "research"
+                                                     ],
+                                      "positive_keywords":  [
+                                                                "screenshot",
+                                                                "capture",
+                                                                "截图",
+                                                                "屏幕快照"
+                                                            ],
+                                      "negative_keywords":  [
+                                                                "word document edit"
+                                                            ],
+                                      "equivalent_group":  null,
+                                      "canonical_for_task":  [
+
+                                                             ]
+                                  },
+                   "mcp-integration":  {
+                                           "task_allow":  [
+                                                              "planning",
+                                                              "coding",
+                                                              "debug"
+                                                          ],
+                                           "positive_keywords":  [
+                                                                     "mcp",
+                                                                     ".mcp.json",
+                                                                     "model context protocol",
+                                                                     "接入mcp"
+                                                                 ],
+                                           "negative_keywords":  [
+                                                                     "vercel",
+                                                                     "netlify"
+                                                                 ],
+                                           "equivalent_group":  null,
+                                           "canonical_for_task":  [
+                                                                      "planning"
+                                                                  ]
+                                       },
+                   "gh-fix-ci":  {
+                                     "task_allow":  [
+                                                        "debug",
+                                                        "review"
+                                                    ],
+                                     "positive_keywords":  [
+                                                               "github actions",
+                                                               "ci pipeline failure",
+                                                               "pipeline failed",
+                                                               "ci failed",
+                                                               "修复ci",
+                                                               "workflow logs",
+                                                               "流水线失败",
+                                                               "排查ci",
+                                                               "检查ci日志"
+                                                            ],
+                                     "negative_keywords":  [
+                                                               "new feature scaffold",
+                                                               "sentry",
+                                                               "production error",
+                                                               "线上报错"
+                                                            ],
+                                     "equivalent_group":  null,
+                                     "canonical_for_task":  [
+                                                                "debug"
+                                                            ]
+                                 },
+                   "sentry":  {
+                                  "task_allow":  [
+                                                     "debug",
+                                                     "review"
+                                                 ],
+                                  "positive_keywords":  [
+                                                             "sentry",
+                                                             "production error",
+                                                             "production errors",
+                                                             "error tracking",
+                                                             "线上报错",
+                                                             "线上告警"
+                                                         ],
+                                  "negative_keywords":  [
+                                                             "design mock",
+                                                             "github actions",
+                                                             "ci pipeline",
+                                                             "workflow logs",
+                                                             "流水线失败",
+                                                             "ci失败"
+                                                         ],
+                                  "equivalent_group":  null,
+                                  "canonical_for_task":  [
+
+                                                         ]
+                              },
+                   "vercel-deploy":  {
+                                         "task_allow":  [
+                                                            "coding",
+                                                            "debug"
+                                                        ],
+                                         "positive_keywords":  [
+                                                                   "vercel deploy",
+                                                                   "preview deployment",
+                                                                   "部署到vercel"
+                                                               ],
+                                         "negative_keywords":  [
+                                                                   "mcp server"
+                                                               ],
+                                         "equivalent_group":  "web-deploy",
+                                         "canonical_for_task":  [
+                                                                    "coding"
+                                                                ]
+                                     },
+                   "netlify-deploy":  {
+                                          "task_allow":  [
+                                                             "coding",
+                                                             "debug"
+                                                         ],
+                                          "positive_keywords":  [
+                                                                    "netlify deploy",
+                                                                    "部署到netlify"
+                                                                ],
+                                          "negative_keywords":  [
+                                                                    "mcp server"
+                                                                ],
+                                          "equivalent_group":  "web-deploy",
+                                          "canonical_for_task":  [
+
+                                                                 ]
+                                      },
+                   "security-best-practices":  {
+                                                   "task_allow":  [
+                                                                      "review",
+                                                                      "coding"
+                                                                  ],
+                                                   "positive_keywords":  [
+                                                                             "security best practices",
+                                                                             "secure by default",
+                                                                             "安全最佳实践"
+                                                                         ],
+                                                   "negative_keywords":  [
+                                                                             "incident timeline"
+                                                                         ],
+                                                   "equivalent_group":  null,
+                                                   "canonical_for_task":  [
+                                                                              "review"
+                                                                          ]
+                                               },
+                   "security-threat-model":  {
+                                                 "task_allow":  [
+                                                                    "review",
+                                                                    "planning"
+                                                                ],
+                                                 "positive_keywords":  [
+                                                                           "threat model",
+                                                                           "abuse path",
+                                                                           "trust boundary",
+                                                                           "威胁建模"
+                                                                       ],
+                                                 "negative_keywords":  [
+                                                                           "lint",
+                                                                           "unit test"
+                                                                       ],
+                                                 "equivalent_group":  null,
+                                                 "canonical_for_task":  [
+
+                                                                        ]
+                                             },
+                   "security-ownership-map":  {
+                                                  "task_allow":  [
+                                                                     "review",
+                                                                     "research"
+                                                                 ],
+                                                  "positive_keywords":  [
+                                                                            "ownership",
+                                                                            "bus factor",
+                                                                            "security maintainer",
+                                                                            "所有权拓扑"
+                                                                        ],
+                                                  "negative_keywords":  [
+                                                                            "frontend styling"
+                                                                        ],
+                                                  "equivalent_group":  null,
+                                                  "canonical_for_task":  [
+
+                                                                         ]
+                                              },
+                   "gh-address-comments":  {
+                                               "task_allow":  [
+                                                                  "review",
+                                                                  "coding"
+                                                              ],
+                                               "positive_keywords":  [
+                                                                         "pr comments",
+                                                                         "address review comments",
+                                                                         "处理评审意见"
+                                                                     ],
+                                               "negative_keywords":  [
+                                                                         "deploy production"
+                                                                     ],
+                                               "equivalent_group":  null,
+                                               "canonical_for_task":  [
+
+                                                                      ]
+                                           },
+                   "yeet":  {
+                                "task_allow":  [
+                                                   "coding"
+                                               ],
+                                "positive_keywords":  [
+                                                          "stage commit push pr",
+                                                          "open pull request",
+                                                          "一键提交pr"
+                                                      ],
+                                "negative_keywords":  [
+                                                          "research plan"
+                                                      ],
+                                "equivalent_group":  null,
+                                "canonical_for_task":  [
+
+                                                       ]
+                            },
+                   "smart-file-writer":  {
+                                             "task_allow":  [
+                                                                "debug",
+                                                                "coding"
+                                                            ],
+                                             "positive_keywords":  [
+                                                                       "permission denied",
+                                                                       "file lock",
+                                                                       "write error",
+                                                                       "写入失败"
+                                                                   ],
+                                             "negative_keywords":  [
+                                                                       "product requirement"
+                                                                   ],
+                                             "equivalent_group":  null,
+                                             "canonical_for_task":  [
+
+                                                                    ]
+                                         },
+                   "openai-docs":  {
+                                       "task_allow":  [
+                                                          "research",
+                                                          "planning",
+                                                          "coding"
+                                                      ],
+                                       "positive_keywords":  [
+                                                                 "openai docs",
+                                                                 "responses api",
+                                                                 "chat completions",
+                                                                 "openai官方文档",
+                                                                 "model limits",
+                                                                 "official openai docs"
+                                                             ],
+                                        "negative_keywords":  [
+                                                                  "embedding strategy",
+                                                                  "semantic retrieval",
+                                                                  "vector database",
+                                                                  "chunking strategy",
+                                                                  "similarity search design",
+                                                                  "embedding策略",
+                                                                  "向量检索",
+                                                                  "分块",
+                                                                  "向量搜索",
+                                                                  "prompt template",
+                                                                  "prompt library",
+                                                                  "prompts.chat",
+                                                                  "system prompt",
+                                                                  "提示词模板",
+                                                                  "提示词库",
+                                                                  "提示词优化"
+                                                              ],
+                                       "equivalent_group":  "openai-docs-surface",
+                                       "canonical_for_task":  [
+                                                                  "research"
+                                                              ]
+                                   },
+                   "openai-knowledge":  {
+                                            "task_allow":  [
+                                                               "research",
+                                                               "coding"
+                                                           ],
+                                            "positive_keywords":  [
+                                                                      "openai platform",
+                                                                      "model limits",
+                                                                      "api schema",
+                                                                      "openai平台能力"
+                                                                  ],
+                                             "negative_keywords":  [
+                                                                       "react docs",
+                                                                       "prompt template",
+                                                                       "prompt library",
+                                                                       "prompts.chat",
+                                                                       "提示词模板",
+                                                                       "提示词库"
+                                                                   ],
+                                            "equivalent_group":  "openai-docs-surface",
+                                            "canonical_for_task":  [
+
+                                                                   ]
+                                        },
+                   "documentation-lookup":  {
+                                                "task_allow":  [
+                                                                   "planning",
+                                                                   "coding",
+                                                                   "research"
+                                                               ],
+                                                "positive_keywords":  [
+                                                                          "api reference",
+                                                                          "framework docs",
+                                                                          "官方文档"
+                                                                      ],
+                                                 "negative_keywords":  [
+                                                                           "openai only",
+                                                                           "mcp server setup",
+                                                                           "prompt template",
+                                                                           "prompt library",
+                                                                           "prompts.chat",
+                                                                           "提示词模板",
+                                                                           "提示词库"
+                                                                       ],
+                                                "equivalent_group":  null,
+                                                "canonical_for_task":  [
+                                                                           "coding"
+                                                                       ]
+                                            },
+                   "prompt-lookup":  {
+                                         "task_allow":  [
+                                                            "research",
+                                                            "planning"
+                                                        ],
+                                          "positive_keywords":  [
+                                                                    "prompt template",
+                                                                    "prompt library",
+                                                                    "prompts.chat",
+                                                                    "system prompt",
+                                                                    "improve prompt",
+                                                                    "optimize prompt",
+                                                                    "提示词模板",
+                                                                    "提示词优化",
+                                                                    "改进提示词"
+                                                                ],
+                                          "negative_keywords":  [
+                                                                    "ci logs",
+                                                                    "openai docs",
+                                                                    "responses api",
+                                                                    "chat completions",
+                                                                    "model limits",
+                                                                    "api reference",
+                                                                    "framework docs",
+                                                                    "官方文档"
+                                                                ],
+                                          "equivalent_group":  "prompt-asset-surface",
+                                          "canonical_for_task":  [
+                                                                     "planning",
+                                                                     "research"
+                                                                 ]
+                                      },
+                   "embedding-strategies":  {
+                                                "task_allow":  [
+                                                                   "planning",
+                                                                   "coding",
+                                                                   "research"
+                                                               ],
+                                                "positive_keywords":  [
+                                                                          "embedding",
+                                                                          "chunking",
+                                                                          "semantic search",
+                                                                          "向量检索",
+                                                                          "vector retrieval",
+                                                                          "embedding strategy",
+                                                                          "embedding策略",
+                                                                          "分块",
+                                                                          "向量搜索"
+                                                                      ],
+                                                "negative_keywords":  [
+                                                                          "responses api reference",
+                                                                          "chat completions docs",
+                                                                          "openai official docs",
+                                                                          "model limits reference"
+                                                                      ],
+                                                "equivalent_group":  null,
+                                                "canonical_for_task":  [
+                                                                           "planning"
+                                                                       ]
+                                            },
+                   "evaluating-llms-harness":  {
+                                                   "task_allow":  [
+                                                                      "review",
+                                                                      "research"
+                                                                  ],
+                                                   "positive_keywords":  [
+                                                                             "mmlu",
+                                                                             "gsm8k",
+                                                                             "benchmark",
+                                                                             "llm eval"
+                                                                         ],
+                                                   "negative_keywords":  [
+                                                                             "ship to production"
+                                                                         ],
+                                                   "equivalent_group":  null,
+                                                   "canonical_for_task":  [
+                                                                              "review"
+                                                                          ]
+                                               },
+                   "similarity-search-patterns":  {
+                                                      "task_allow":  [
+                                                                         "planning",
+                                                                         "coding",
+                                                                         "research"
+                                                                     ],
+                                                      "positive_keywords":  [
+                                                                                "vector database",
+                                                                                "nearest neighbor",
+                                                                                "similarity search"
+                                                                            ],
+                                                      "negative_keywords":  [
+                                                                                "release notes"
+                                                                            ],
+                                                      "equivalent_group":  null,
+                                                      "canonical_for_task":  [
+
+                                                                             ]
+                                                  },
+                   "transformers":  {
+                                        "task_allow":  [
+                                                           "coding",
+                                                           "research"
+                                                       ],
+                                        "positive_keywords":  [
+                                                                  "transformers",
+                                                                  "huggingface",
+                                                                  "fine-tune",
+                                                                  "预训练模型"
+                                                              ],
+                                        "negative_keywords":  [
+                                                                  "netlify deploy"
+                                                              ],
+                                        "equivalent_group":  null,
+                                        "canonical_for_task":  [
+
+                                                               ]
+                                    },
+                   "research-lookup":  {
+                                           "task_allow":  [
+                                                              "research",
+                                                              "planning"
+                                                          ],
+                                           "positive_keywords":  [
+                                                                     "literature search",
+                                                                     "paper search",
+                                                                     "文献检索"
+                                                                 ],
+                                           "negative_keywords":  [
+                                                                     "build script",
+                                                                     "ci"
+                                                                 ],
+                                           "equivalent_group":  "research-discovery",
+                                           "canonical_for_task":  [
+                                                                      "research"
+                                                                  ]
+                                       },
+                   "comprehensive-research-agent":  {
+                                                        "task_allow":  [
+                                                                           "research",
+                                                                           "review"
+                                                                       ],
+                                                        "positive_keywords":  [
+                                                                                  "comprehensive research",
+                                                                                  "multi-source",
+                                                                                  "thorough validation"
+                                                                              ],
+                                                        "negative_keywords":  [
+                                                                                  "single quick answer"
+                                                                              ],
+                                                        "equivalent_group":  "research-discovery",
+                                                        "canonical_for_task":  [
+
+                                                                               ]
+                                                    },
+                   "scientific-writing":  {
+                                              "task_allow":  [
+                                                                 "research",
+                                                                 "planning"
+                                                             ],
+                                              "positive_keywords":  [
+                                                                        "scientific writing",
+                                                                        "imrad",
+                                                                        "manuscript",
+                                                                        "科研写作"
+                                                                    ],
+                                              "negative_keywords":  [
+                                                                        "ci pipeline"
+                                                                    ],
+                                              "equivalent_group":  null,
+                                              "canonical_for_task":  [
+
+                                                                     ]
+                                          },
+                   "designing-experiments":  {
+                                                 "task_allow":  [
+                                                                    "planning",
+                                                                    "research"
+                                                                ],
+                                                 "positive_keywords":  [
+                                                                           "did",
+                                                                           "its",
+                                                                           "synthetic control",
+                                                                           "实验设计"
+                                                                       ],
+                                                 "negative_keywords":  [
+                                                                           "deploy"
+                                                                       ],
+                                                 "equivalent_group":  null,
+                                                 "canonical_for_task":  [
+                                                                            "planning"
+                                                                        ]
+                                             },
+                   "figma":  {
+                                 "task_allow":  [
+                                                    "planning",
+                                                    "coding",
+                                                    "research"
+                                                ],
+                                 "positive_keywords":  [
+                                                           "figma",
+                                                           "design context",
+                                                           "node id"
+                                                       ],
+                                 "negative_keywords":  [
+                                                           "without figma input"
+                                                       ],
+                                 "equivalent_group":  "figma-workflow",
+                                 "canonical_for_task":  [
+
+                                                        ]
+                             },
+                   "figma-implement-design":  {
+                                                  "task_allow":  [
+                                                                     "coding",
+                                                                     "planning"
+                                                                 ],
+                                                  "positive_keywords":  [
+                                                                            "figma to code",
+                                                                            "implement design",
+                                                                            "还原设计稿"
+                                                                        ],
+                                                  "negative_keywords":  [
+                                                                            "no figma link"
+                                                                        ],
+                                                  "equivalent_group":  "figma-workflow",
+                                                  "canonical_for_task":  [
+
+                                                                         ]
+                                              },
+                   "playwright":  {
+                                      "task_allow":  [
+                                                         "coding",
+                                                         "debug",
+                                                         "research"
+                                                     ],
+                                      "positive_keywords":  [
+                                                                "browser automation",
+                                                                "playwright",
+                                                                "页面自动化"
+                                                            ],
+                                      "negative_keywords":  [
+                                                                "paper writing"
+                                                            ],
+                                      "equivalent_group":  null,
+                                      "canonical_for_task":  [
+
+                                                             ]
+                                  },
+                   "hypothesis-testing":  {
+                                              "task_allow":  [
+                                                                 "coding",
+                                                                 "review"
+                                                             ],
+                                              "positive_keywords":  [
+                                                                        "hypothesis",
+                                                                        "property-based",
+                                                                        "@given"
+                                                                    ],
+                                              "negative_keywords":  [
+                                                                        "business hypothesis"
+                                                                    ],
+                                              "equivalent_group":  "property-testing",
+                                              "canonical_for_task":  [
+
+                                                                     ]
+                                          },
+                   "property-based-testing":  {
+                                                  "task_allow":  [
+                                                                     "coding",
+                                                                     "review"
+                                                                 ],
+                                                  "positive_keywords":  [
+                                                                            "fast-check",
+                                                                            "quickcheck",
+                                                                            "property testing",
+                                                                            "性质测试"
+                                                                        ],
+                                                  "negative_keywords":  [
+                                                                            "clinical hypothesis"
+                                                                        ],
+                                                  "equivalent_group":  "property-testing",
+                                                  "canonical_for_task":  [
+
+                                                                         ]
+                                              },
+                   "scientific-data-preprocessing":  {
+                                                         "task_allow":  [
+                                                                            "planning",
+                                                                            "coding",
+                                                                            "review",
+                                                                            "research"
+                                                                        ],
+                                                         "positive_keywords":  [
+                                                                                   "data preprocessing",
+                                                                                   "leakage",
+                                                                                   "semantic validation",
+                                                                                   "数据预处理"
+                                                                               ],
+                                                         "negative_keywords":  [
+                                                                                   "deploy website"
+                                                                               ],
+                                                         "equivalent_group":  null,
+                                                         "canonical_for_task":  [
+
+                                                                                ]
+                                                     },
+                   "verification-quality-assurance":  {
+                                                          "task_allow":  [
+                                                                             "review",
+                                                                             "research"
+                                                                         ],
+                                                          "positive_keywords":  [
+                                                                                    "quality assurance",
+                                                                                    "verification",
+                                                                                    "truth scoring",
+                                                                                    "质量保证"
+                                                                                ],
+                                                          "negative_keywords":  [
+                                                                                    "new ui build"
+                                                                                ],
+                                                          "equivalent_group":  null,
+                                                          "canonical_for_task":  [
+                                                                                     "review"
+                                                                                 ]
+                                                      },
+                   "ux-researcher-designer":  {
+                                                  "task_allow":  [
+                                                                     "planning",
+                                                                     "research"
+                                                                 ],
+                                                  "positive_keywords":  [
+                                                                            "ux research",
+                                                                            "persona",
+                                                                            "journey map",
+                                                                            "可用性"
+                                                                        ],
+                                                  "negative_keywords":  [
+                                                                            "ci failure logs"
+                                                                        ],
+                                                  "equivalent_group":  null,
+                                                  "canonical_for_task":  [
+
+                                                                         ]
+                                              }
+               }
+}

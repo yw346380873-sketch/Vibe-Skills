@@ -59,6 +59,7 @@ run_deep_gate() {
 }
 
 check_path "settings.json" "${TARGET_ROOT}/settings.json"
+check_path "skills lock" "${TARGET_ROOT}/config/skills-lock.json"
 for n in vibe dialectic local-vco-roles spec-kit-vibe-compat superclaude-framework-compat ralph-loop cancel-ralph tdd-guide think-harder; do
   check_path "skill/${n}" "${TARGET_ROOT}/skills/${n}/SKILL.md"
 done
@@ -95,6 +96,7 @@ if [[ "${DEEP}" == "true" ]]; then
     WARN=$((WARN+1))
   else
     run_deep_gate "vibe-pack-regression-matrix" "${VERIFY_DIR}/vibe-pack-regression-matrix.ps1"
+    run_deep_gate "vibe-offline-skills-gate" "${VERIFY_DIR}/vibe-offline-skills-gate.ps1"
     run_deep_gate "vibe-router-contract-gate" "${VERIFY_DIR}/vibe-router-contract-gate.ps1"
     run_deep_gate "vibe-routing-stability-gate-strict" "${VERIFY_DIR}/vibe-routing-stability-gate.ps1" -Strict
     run_deep_gate "vibe-config-parity-gate" "${VERIFY_DIR}/vibe-config-parity-gate.ps1"
