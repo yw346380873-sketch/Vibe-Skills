@@ -25,6 +25,8 @@ $aliasMapPath = Join-Path $configRoot "skill-alias-map.json"
 $thresholdPath = Join-Path $configRoot "router-thresholds.json"
 $skillKeywordIndexPath = Join-Path $configRoot "skill-keyword-index.json"
 $routingRulesPath = Join-Path $configRoot "skill-routing-rules.json"
+$deepDiscoveryPolicyPath = Join-Path $configRoot "deep-discovery-policy.json"
+$capabilityCatalogPath = Join-Path $configRoot "capability-catalog.json"
 
 $results = @()
 
@@ -34,12 +36,16 @@ $results += Assert-True -Condition (Test-Path -LiteralPath $aliasMapPath) -Messa
 $results += Assert-True -Condition (Test-Path -LiteralPath $thresholdPath) -Message "router-thresholds.json exists"
 $results += Assert-True -Condition (Test-Path -LiteralPath $skillKeywordIndexPath) -Message "skill-keyword-index.json exists"
 $results += Assert-True -Condition (Test-Path -LiteralPath $routingRulesPath) -Message "skill-routing-rules.json exists"
+$results += Assert-True -Condition (Test-Path -LiteralPath $deepDiscoveryPolicyPath) -Message "deep-discovery-policy.json exists"
+$results += Assert-True -Condition (Test-Path -LiteralPath $capabilityCatalogPath) -Message "capability-catalog.json exists"
 
 $packManifest = Get-Content -LiteralPath $packManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $aliasMap = Get-Content -LiteralPath $aliasMapPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $thresholds = Get-Content -LiteralPath $thresholdPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $skillKeywordIndex = Get-Content -LiteralPath $skillKeywordIndexPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $routingRules = Get-Content -LiteralPath $routingRulesPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$deepDiscoveryPolicy = Get-Content -LiteralPath $deepDiscoveryPolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$capabilityCatalog = Get-Content -LiteralPath $capabilityCatalogPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
 $requiredPackIds = @(
     "orchestration-core",
@@ -98,6 +104,8 @@ $results += Assert-True -Condition ($skillKeywordIndex.selection.weights.name_ma
 $results += Assert-True -Condition ($skillKeywordIndex.selection.fallback_to_first_when_score_below -ne $null) -Message "skill index fallback threshold is configured"
 $results += Assert-True -Condition ((@($skillKeywordIndex.skills.PSObject.Properties).Count -gt 0)) -Message "skill index contains skill mappings"
 $results += Assert-True -Condition ((@($routingRules.skills.PSObject.Properties).Count -gt 0)) -Message "routing rules contain skill mappings"
+$results += Assert-True -Condition ($deepDiscoveryPolicy.mode -ne $null) -Message "deep discovery mode configured"
+$results += Assert-True -Condition ((@($capabilityCatalog.capabilities).Count -gt 0)) -Message "capability catalog contains entries"
 
 foreach ($ruleProp in @($routingRules.skills.PSObject.Properties | Select-Object -First 10)) {
     $rule = $ruleProp.Value
@@ -155,3 +163,4 @@ if ($failCount -gt 0) {
 
 Write-Host "Pack routing smoke checks passed."
 exit 0
+

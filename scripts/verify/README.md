@@ -1,15 +1,15 @@
 This directory stores optional verification scripts for CI and local smoke checks.
 
+For a single entrypoint that ties route probing, semantic expansion, threshold tuning, and gates together, read:
+- `..\..\docs\blackbox-probe-and-enhancement-playbook.md`
+
 - `vibe-routing-smoke.ps1`: runtime-neutral terminology and M/L/XL routing behavior smoke tests.
 - `vibe-pack-routing-smoke.ps1`: validates pack router config integrity, thresholds, and alias safety.
 - `vibe-soft-migration-practice.ps1`: practical soft-migration checks for alias routing and legacy fallback behavior.
 - `vibe-pack-regression-matrix.ps1`: broad pack-level regression matrix and determinism checks.
-- `vibe-offline-skills-gate.ps1`: verifies routed-skill closure against vendored skill mirror + `skills-lock` hash consistency for offline no-degrade deployment.
-- `vibe-generate-skills-lock.ps1`: regenerates `config/skills-lock.json` from `bundled/skills` using deterministic directory hashes.
 - `vibe-keyword-precision-audit.ps1`: bilingual keyword precision audit (EN/ZH), cross-pack interference gap checks, and full skill-by-skill routing sweep.
 - `vibe-skill-index-routing-audit.ps1`: per-skill keyword index routing checks using common Chinese business phrases and ambiguous same-pack scenarios.
 - `vibe-routing-stability-gate.ps1`: synonym-group and task-cross routing gate. Reports `route_stability`, `top1_top2_gap`, `fallback_rate`, and `misroute_rate`, with optional strict thresholds.
-- `vibe-router-contract-gate.ps1`: zero-regression contract gate for modular router migration (`legacy` vs `modular` exact JSON equality on fixed matrix).
 - `vibe-config-parity-gate.ps1`: config parity gate for main vs bundled VCO JSON configs using normalized structural comparison + hash + diff-path output.
 - `vibe-context-retro-smoke.ps1`: validates Context Retro Advisor integration in SKILL/protocol/fallback docs and main/bundled sync for retro-critical files.
 - `vibe-retro-context-regression-matrix.ps1`: fixed-case regression matrix for retro trigger thresholds and CF-1..CF-6 classification stability.
@@ -28,7 +28,11 @@ This directory stores optional verification scripts for CI and local smoke check
 - `vibe-system-design-overlay-gate.ps1`: validates system-design-primer overlay semantics (architecture signal + coverage dimensions + strict confirm advice + route invariance).
 - `vibe-cuda-kernel-overlay-gate.ps1`: validates LeetCUDA-inspired CUDA kernel overlay semantics (CUDA optimization signal + coverage dimensions + strict confirm advice + route invariance).
 - `vibe-observability-gate.ps1`: validates observability policy behavior (privacy-safe telemetry fields + profile IDs + deterministic route event capture).
-- `vibe-ai-rerank-gate.ps1`: validates AI rerank B+ overlay behavior (shadow non-mutation, preserve-routing guard, and soft-mode constrained override).
+- `vibe-routing-probe-trace.ps1`: runs multi-case route probes and emits per-stage data-flow traces plus runtime-state prompts to inspect pack and overlay injection behavior end-to-end.
+- `vibe-routing-probe-research.ps1`: runs a larger engineering research matrix (ambiguous vs specific vs overlay-targeted cases), validates stage-chain integrity, summarizes overlay injection statistics, and emits report-ready Markdown/JSON artifacts.
+- `vibe-deep-discovery-gate.ps1`: validates Deep Discovery mode semantics across `off/shadow/soft/strict` (trigger/interview/contract/filter, route mutation boundaries, and fallback safety).
+- `vibe-deep-discovery-scenarios.ps1`: executes multi-scenario Deep Discovery probe runs and outputs stage integrity, contract completeness, filter-application status, and runtime digest snapshots for engineering analysis.
+- `vibe-overlay-threshold-sensitivity-scan.ps1`: runs 0.05-step sensitivity scan for overlay `signal_relaxed_min_score` (`data_scale`, `framework_interop`, `ml_lifecycle`) and outputs an optimal-threshold recommendation table (optionally applies to config + bundled config).
 
 Related rollout utility:
 
@@ -58,18 +62,6 @@ Run strict gate (after default gate is passing consistently):
 
 ```powershell
 & ".\vibe-routing-stability-gate.ps1" -Strict -WriteArtifacts
-```
-
-Run offline closure gate (recommended in CI):
-
-```powershell
-& ".\vibe-offline-skills-gate.ps1"
-```
-
-Run router contract gate (legacy vs modular):
-
-```powershell
-& ".\vibe-router-contract-gate.ps1" -WriteArtifacts
 ```
 
 Run config parity gate (main vs bundled):
@@ -150,10 +142,36 @@ Run observability gate:
 & ".\vibe-observability-gate.ps1"
 ```
 
-Run AI rerank gate:
+Run route probe trace (white-box data-flow inspection):
 
 ```powershell
-& ".\vibe-ai-rerank-gate.ps1"
+& ".\vibe-routing-probe-trace.ps1" -IncludePrompt
+```
+
+Run route probe research matrix (engineering report):
+
+```powershell
+& ".\vibe-routing-probe-research.ps1" -DefaultIncludePrompt
+```
+
+Run Deep Discovery gate:
+
+```powershell
+& ".\vibe-deep-discovery-gate.ps1"
+```
+
+Run Deep Discovery scenarios:
+
+```powershell
+& ".\vibe-deep-discovery-scenarios.ps1" -Mode shadow
+& ".\vibe-deep-discovery-scenarios.ps1" -Mode soft
+& ".\vibe-deep-discovery-scenarios.ps1" -Mode strict
+```
+
+Run overlay threshold sensitivity scan (0.05 step):
+
+```powershell
+& ".\vibe-overlay-threshold-sensitivity-scan.ps1" -Step 0.05
 ```
 
 Keep generated fixture files for manual inspection:

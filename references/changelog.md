@@ -1,5 +1,51 @@
 # VCO Changelog
 
+## v2.3.18 (2026-02-26)
+
+- 新增 Deep Discovery Mode（prepack 可观测扩展链）：
+  - 新增路由阶段：`deep_discovery.trigger` / `deep_discovery.interview` / `deep_discovery.contract` / `deep_discovery.filter`
+  - 默认 `shadow`，不改变既有路由分配；`soft/strict` 可按策略提升确认或执行能力过滤。
+- 新增配置（main + bundled）：
+  - `config/deep-discovery-policy.json`
+  - `config/capability-catalog.json`
+- 路由输出新增关键字段：
+  - `deep_discovery_advice`
+  - `intent_contract`
+  - `deep_discovery_filter`
+  - `deep_discovery_route_filter_applied`
+  - `deep_discovery_route_mode_override`
+  - `runtime_state_prompt_digest`
+- 可观测性增强：
+  - `scripts/router/modules/10-observability.ps1` 新增 deep-discovery 遥测字段。
+  - `scripts/router/modules/11-route-probe.ps1` 在 runtime state prompt 与 final_state 中加入 deep-discovery 摘要。
+- 新增验证脚本：
+  - `scripts/verify/vibe-deep-discovery-gate.ps1`
+  - `scripts/verify/vibe-deep-discovery-scenarios.ps1`
+- 验证与文档入口更新：
+  - `scripts/verify/vibe-config-parity-gate.ps1`
+  - `scripts/verify/vibe-pack-routing-smoke.ps1`
+  - `check.ps1` / `check.sh`
+  - `docs/deep-discovery-mode-design.md`
+  - `docs/blackbox-probe-and-enhancement-playbook.md`
+  - `references/index.md`
+  - `scripts/verify/README.md`
+
+## v2.3.17 (2026-02-26)
+
+- 新增统一复用文档：
+  - `docs/blackbox-probe-and-enhancement-playbook.md`
+  - 汇总 blackbox 探测、语义增强、阈值扫描、回归门禁的模块职责、运行顺序、产物路径与常用命令。
+- 语义增强脚本可复用性提升：
+  - `scripts/research/mine-user-semantic-overlay-signals.ps1` 增加 `/vibe` 与 `$vibe` 前缀归一化、redacted prompt 过滤、报告渲染修复。
+  - 支持将用户语义记录转化为 overlay 词汇增量并安全写回 main/bundled 配置。
+- 阈值扫描稳定性与可控性提升：
+  - `scripts/verify/vibe-overlay-threshold-sensitivity-scan.ps1` 修复执行稳定性问题，固定 `0.05` 步长扫描流程可复现。
+  - 并列最优阈值采用保守 tie-break（优先更高阈值）以降低误触发。
+- 路由模块边界修复：
+  - `scripts/router/modules/34-data-scale-overlay.ps1` 在严格模式下将路径解析结果显式数组化，避免 `.Count` 访问异常。
+- 文档入口同步：
+  - `references/index.md`、`SKILL.md`、`scripts/verify/README.md`、`scripts/research/README.md` 增加该模块总览入口，便于下次快速定位。
+
 ## v2.3.16 (2026-02-26)
 
 - 路由器模块化重构（零退化拆分）：

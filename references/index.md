@@ -28,6 +28,8 @@ Navigation guide for all VCO (Vibe Code Orchestrator) documentation.
 | [../docs/cuda-kernel-overlay-integration.md](../docs/cuda-kernel-overlay-integration.md) | CUDA kernel overlay design (LeetCUDA inspired post-route kernel optimization advisory, no route mutation) |
 | [../docs/observability-consistency-governance.md](../docs/observability-consistency-governance.md) | Strict observability/consistency governance (lean telemetry + manual rollback confirmation policy) |
 | [../docs/ai-rerank-overlay-integration.md](../docs/ai-rerank-overlay-integration.md) | AI rerank B+ overlay design (Top-K constrained ambiguity rerank with shadow-safe rollout) |
+| [../docs/blackbox-probe-and-enhancement-playbook.md](../docs/blackbox-probe-and-enhancement-playbook.md) | Unified playbook for blackbox route probing, user semantic overlay expansion, and threshold sensitivity tuning |
+| [../docs/deep-discovery-mode-design.md](../docs/deep-discovery-mode-design.md) | Deep Discovery mode design (trigger/interview/contract/filter prepack chain with probe-visible data contracts) |
 | [../docs/router-modularization-governance.md](../docs/router-modularization-governance.md) | Router modularization governance (legacy-vs-modular contract gate + zero-regression rollout discipline) |
 | [../templates/cer-report.md.template](../templates/cer-report.md.template) | CER markdown template for human-readable retro reports |
 | [../templates/cer-report.json.template](../templates/cer-report.json.template) | CER JSON template for machine analytics and comparison |

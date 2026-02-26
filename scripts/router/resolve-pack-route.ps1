@@ -5,7 +5,12 @@
     [string]$Grade = "M",
     [ValidateSet("planning", "coding", "review", "debug", "research")]
     [string]$TaskType = "planning",
-    [string]$RequestedSkill
+    [string]$RequestedSkill,
+    [switch]$Probe,
+    [string]$ProbeLabel,
+    [string]$ProbeOutputDir,
+    [switch]$ProbeIncludePrompt,
+    [int]$ProbePromptMaxChars = 1600
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,7 +18,10 @@ $routerModuleRoot = Join-Path $PSScriptRoot "modules"
 $routerModules = @(
     "00-core-utils.ps1",
     "10-observability.ps1",
+    "11-route-probe.ps1",
     "20-routing-rules.ps1",
+    "21-capability-interview.ps1",
+    "22-intent-contract.ps1",
     "30-openspec.ps1",
     "31-gsd-overlay.ps1",
     "32-prompt-overlay.ps1",
@@ -57,6 +65,9 @@ $systemDesignOverlayPolicyPath = Join-Path $configRoot "system-design-overlay.js
 $cudaKernelOverlayPolicyPath = Join-Path $configRoot "cuda-kernel-overlay.json"
 $observabilityPolicyPath = Join-Path $configRoot "observability-policy.json"
 $aiRerankPolicyPath = Join-Path $configRoot "ai-rerank-policy.json"
+$probePolicyPath = Join-Path $configRoot "router-probe-policy.json"
+$deepDiscoveryPolicyPath = Join-Path $configRoot "deep-discovery-policy.json"
+$capabilityCatalogPath = Join-Path $configRoot "capability-catalog.json"
 
 $packManifest = Get-Content -LiteralPath $packManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $aliasMap = Get-Content -LiteralPath $aliasMapPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -144,6 +155,33 @@ $aiRerankPolicy = if (Test-Path -LiteralPath $aiRerankPolicyPath) {
 } else {
     $null
 }
+$probePolicy = if (Test-Path -LiteralPath $probePolicyPath) {
+    try {
+        Get-Content -LiteralPath $probePolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        $null
+    }
+} else {
+    $null
+}
+$deepDiscoveryPolicy = if (Test-Path -LiteralPath $deepDiscoveryPolicyPath) {
+    try {
+        Get-Content -LiteralPath $deepDiscoveryPolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        $null
+    }
+} else {
+    $null
+}
+$capabilityCatalog = if (Test-Path -LiteralPath $capabilityCatalogPath) {
+    try {
+        Get-Content -LiteralPath $capabilityCatalogPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        $null
+    }
+} else {
+    $null
+}
 
 $weights = $thresholds.weights
 $rules = $thresholds.safety
@@ -153,16 +191,140 @@ $candidateSelectionConfig = if ($thresholds.candidate_selection) { $thresholds.c
 $minTopGap = if ($th.min_top1_top2_gap -ne $null) { [double]$th.min_top1_top2_gap } else { 0.0 }
 $minCandidateSignalForConfirmOverride = if ($th.min_candidate_signal_for_confirm_override -ne $null) { [double]$th.min_candidate_signal_for_confirm_override } else { 0.0 }
 
+$probeContext = New-RouteProbeContext `
+    -ProbeSwitch:$Probe `
+    -PromptText $Prompt `
+    -Grade $Grade `
+    -TaskType $TaskType `
+    -RepoRoot $repoRoot `
+    -ProbeLabel $ProbeLabel `
+    -ProbeOutputDir $ProbeOutputDir `
+    -ProbeIncludePrompt:$ProbeIncludePrompt `
+    -ProbePromptMaxChars $ProbePromptMaxChars `
+    -ProbePolicy $probePolicy
+
+Add-RouteProbeEvent -Context $probeContext -Stage "router.init" -Note "router modules loaded" -Data @{
+    module_count = $routerModules.Count
+    modules = @($routerModules)
+    config_root = $configRoot
+    probe_policy_loaded = [bool]$probePolicy
+}
+
+Add-RouteProbeEvent -Context $probeContext -Stage "router.config" -Note "core router and overlay policies loaded" -Data @{
+    thresholds = @{
+        auto_route = [double]$th.auto_route
+        confirm_required = [double]$th.confirm_required
+        fallback_to_legacy_below = [double]$th.fallback_to_legacy_below
+        min_top1_top2_gap = [double]$minTopGap
+    }
+    policies = @{
+        openspec_mode = if ($openSpecPolicy -and $openSpecPolicy.mode) { [string]$openSpecPolicy.mode } else { "off" }
+        gsd_mode = if ($gsdOverlayPolicy -and $gsdOverlayPolicy.mode) { [string]$gsdOverlayPolicy.mode } else { "off" }
+        prompt_mode = if ($promptOverlayPolicy -and $promptOverlayPolicy.mode) { [string]$promptOverlayPolicy.mode } else { "off" }
+        memory_mode = if ($memoryGovernancePolicy -and $memoryGovernancePolicy.mode) { [string]$memoryGovernancePolicy.mode } else { "off" }
+        data_scale_mode = if ($dataScaleOverlayPolicy -and $dataScaleOverlayPolicy.mode) { [string]$dataScaleOverlayPolicy.mode } else { "off" }
+        quality_debt_mode = if ($qualityDebtOverlayPolicy -and $qualityDebtOverlayPolicy.mode) { [string]$qualityDebtOverlayPolicy.mode } else { "off" }
+        framework_interop_mode = if ($frameworkInteropOverlayPolicy -and $frameworkInteropOverlayPolicy.mode) { [string]$frameworkInteropOverlayPolicy.mode } else { "off" }
+        ml_lifecycle_mode = if ($mlLifecycleOverlayPolicy -and $mlLifecycleOverlayPolicy.mode) { [string]$mlLifecycleOverlayPolicy.mode } else { "off" }
+        python_clean_code_mode = if ($pythonCleanCodeOverlayPolicy -and $pythonCleanCodeOverlayPolicy.mode) { [string]$pythonCleanCodeOverlayPolicy.mode } else { "off" }
+        system_design_mode = if ($systemDesignOverlayPolicy -and $systemDesignOverlayPolicy.mode) { [string]$systemDesignOverlayPolicy.mode } else { "off" }
+        cuda_kernel_mode = if ($cudaKernelOverlayPolicy -and $cudaKernelOverlayPolicy.mode) { [string]$cudaKernelOverlayPolicy.mode } else { "off" }
+        ai_rerank_mode = if ($aiRerankPolicy -and $aiRerankPolicy.mode) { [string]$aiRerankPolicy.mode } else { "off" }
+        observability_mode = if ($observabilityPolicy -and $observabilityPolicy.mode) { [string]$observabilityPolicy.mode } else { "off" }
+        deep_discovery_mode = if ($deepDiscoveryPolicy -and $deepDiscoveryPolicy.mode) { [string]$deepDiscoveryPolicy.mode } else { "off" }
+    }
+}
+
 $aliasResult = Resolve-Alias -Skill $RequestedSkill -AliasMap $aliasMap
 $requestedCanonical = [string]$aliasResult.canonical
-$promptLower = $Prompt.ToLowerInvariant()
+$promptNormalization = Get-RoutingPromptNormalization -PromptText $Prompt
+$promptLower = [string]$promptNormalization.normalized_lower
 $openSpecAdvice = Get-OpenSpecGovernanceAdvice -PromptLower $promptLower -Grade $Grade -TaskType $TaskType -RequestedCanonical $requestedCanonical -OpenSpecPolicy $openSpecPolicy
 $gsdOverlayAdvice = Get-GsdOverlayAdvice -PromptLower $promptLower -Grade $Grade -TaskType $TaskType -GsdOverlayPolicy $gsdOverlayPolicy
 $promptOverlayAdvice = Get-PromptOverlayAdvice -PromptLower $promptLower -Grade $Grade -TaskType $TaskType -PromptOverlayPolicy $promptOverlayPolicy
 $memoryGovernanceAdvice = Get-MemoryGovernanceAdvice -Grade $Grade -TaskType $TaskType -MemoryGovernancePolicy $memoryGovernancePolicy
 
+Add-RouteProbeEvent -Context $probeContext -Stage "router.prepack" -Note "base advice prepared before pack scoring" -Data @{
+    alias = $aliasResult
+    requested_canonical = $requestedCanonical
+    prompt_language_mix = (Get-LanguageMixTag -PromptText $Prompt)
+    prompt_normalization = @{
+        prefix_detected = [bool]$promptNormalization.prefix_detected
+        prefix_token = if ($promptNormalization.prefix_token) { [string]$promptNormalization.prefix_token } else { $null }
+        changed = [bool]$promptNormalization.changed
+        normalized_length = if ($promptNormalization.normalized) { ([string]$promptNormalization.normalized).Length } else { 0 }
+        normalized_hash = Get-HashHex -InputText ([string]$promptNormalization.normalized)
+    }
+    base_advice = @{
+        openspec = Get-RouteProbeAdviceSummary -Advice $openSpecAdvice
+        gsd = Get-RouteProbeAdviceSummary -Advice $gsdOverlayAdvice
+        prompt = Get-RouteProbeAdviceSummary -Advice $promptOverlayAdvice
+        memory = Get-RouteProbeAdviceSummary -Advice $memoryGovernanceAdvice
+    }
+}
+
+$deepDiscoveryAdvice = Get-DeepDiscoveryInterviewAdvice `
+    -PromptText $Prompt `
+    -PromptLower $promptLower `
+    -Grade $Grade `
+    -TaskType $TaskType `
+    -DeepDiscoveryPolicy $deepDiscoveryPolicy `
+    -CapabilityCatalog $capabilityCatalog
+
+Add-RouteProbeEvent -Context $probeContext -Stage "deep_discovery.trigger" -Note "deep discovery trigger evaluated" -Data @{
+    advice = Get-RouteProbeAdviceSummary -Advice $deepDiscoveryAdvice
+    capability_hits = if ($deepDiscoveryAdvice -and $deepDiscoveryAdvice.capability_hits) {
+        @($deepDiscoveryAdvice.capability_hits | Select-Object -First 6 | ForEach-Object {
+            [pscustomobject]@{
+                capability_id = [string]$_.capability_id
+                score = [double]$_.score
+                matched_keywords = @($_.matched_keywords | Select-Object -First 5)
+            }
+        })
+    } else {
+        @()
+    }
+}
+
+Add-RouteProbeEvent -Context $probeContext -Stage "deep_discovery.interview" -Note "deep discovery interview advice prepared" -Data @{
+    interview_required = [bool]($deepDiscoveryAdvice -and $deepDiscoveryAdvice.interview_required)
+    confirm_required = [bool]($deepDiscoveryAdvice -and $deepDiscoveryAdvice.confirm_required)
+    questions = if ($deepDiscoveryAdvice -and $deepDiscoveryAdvice.interview_questions) { @($deepDiscoveryAdvice.interview_questions) } else { @() }
+}
+
+$intentContract = Get-DeepDiscoveryIntentContract `
+    -PromptText $Prompt `
+    -PromptLower $promptLower `
+    -DeepDiscoveryAdvice $deepDiscoveryAdvice `
+    -DeepDiscoveryPolicy $deepDiscoveryPolicy `
+    -CapabilityCatalog $capabilityCatalog
+
+Add-RouteProbeEvent -Context $probeContext -Stage "deep_discovery.contract" -Note "intent contract synthesized from prompt and capability signals" -Data @{
+    completeness = if ($intentContract) { [double]$intentContract.completeness } else { 0.0 }
+    deliverable = if ($intentContract) { [string]$intentContract.deliverable } else { "unknown" }
+    execution_mode = if ($intentContract) { [string]$intentContract.execution_mode } else { "unspecified" }
+    missing_fields = if ($intentContract) { @($intentContract.missing_fields) } else { @("goal", "deliverable", "constraints", "capabilities") }
+    capabilities = if ($intentContract) { @($intentContract.capabilities) } else { @() }
+}
+
+$deepDiscoveryFilter = Get-DeepDiscoveryCandidateFilter `
+    -Packs @($packManifest.packs) `
+    -IntentContract $intentContract `
+    -DeepDiscoveryAdvice $deepDiscoveryAdvice `
+    -DeepDiscoveryPolicy $deepDiscoveryPolicy `
+    -TaskType $TaskType
+$deepDiscoveryFilterSummary = Get-DeepDiscoveryFilterSummary -DeepDiscoveryFilter $deepDiscoveryFilter
+
+Add-RouteProbeEvent -Context $probeContext -Stage "deep_discovery.filter" -Note "deep discovery candidate filter evaluated" -Data $deepDiscoveryFilterSummary
+
+$packsForScoring = if ($deepDiscoveryFilter -and $deepDiscoveryFilter.route_filter_applied -and $deepDiscoveryFilter.filtered_packs -and @($deepDiscoveryFilter.filtered_packs).Count -gt 0) {
+    @($deepDiscoveryFilter.filtered_packs)
+} else {
+    @($packManifest.packs)
+}
+
 $packResults = @()
-foreach ($pack in $packManifest.packs) {
+foreach ($pack in $packsForScoring) {
     $gradeAllowed = ($pack.grade_allow -contains $Grade)
     $taskAllowed = ($pack.task_allow -contains $TaskType)
 
@@ -252,6 +414,40 @@ if (-not $top) {
     $routeReason = "auto_route"
 }
 
+$deepDiscoveryRouteModeOverride = $false
+if ($routeMode -eq "pack_overlay" -and $deepDiscoveryAdvice -and $deepDiscoveryAdvice.scope_applicable -and $deepDiscoveryAdvice.confirm_required) {
+    $routeMode = "confirm_required"
+    $routeReason = "deep_discovery_confirm_required"
+    $confidence = [Math]::Max($confidence, [double]$th.confirm_required)
+    $deepDiscoveryRouteModeOverride = $true
+}
+
+$rankedPreview = @(
+    $ranked | Select-Object -First 3 | ForEach-Object {
+        [pscustomobject]@{
+            pack_id = [string]$_.pack_id
+            score = [double]$_.score
+            selected_candidate = [string]$_.selected_candidate
+            selection_reason = [string]$_.candidate_selection_reason
+            candidate_signal = [double]$_.candidate_signal
+            top1_top2_gap = [double]$_.candidate_top1_top2_gap
+        }
+    }
+)
+
+Add-RouteProbeEvent -Context $probeContext -Stage "router.pack_scoring" -Note "pack ranking and initial route mode" -Data @{
+    pack_count = $packResults.Count
+    pack_source_count = $packsForScoring.Count
+    deep_discovery_filter = $deepDiscoveryFilterSummary
+    ranked_top = @($rankedPreview)
+    initial_route_mode = $routeMode
+    initial_route_reason = $routeReason
+    confidence = [double]$confidence
+    top1_top2_gap = [double]$topGap
+    candidate_signal = [double]$candidateSignal
+    deep_discovery_route_mode_override = [bool]$deepDiscoveryRouteModeOverride
+}
+
 $aiRerankAdvice = Get-AiRerankAdvice `
     -PromptText $Prompt `
     -PromptLower $promptLower `
@@ -277,12 +473,28 @@ if ($aiRerankRouteOverride -and $aiRerankAdvice -and $aiRerankAdvice.override_ta
     }
 }
 
+Add-RouteProbeEvent -Context $probeContext -Stage "overlay.ai_rerank" -Note "ai rerank overlay evaluated" -Data @{
+    advice = Get-RouteProbeAdviceSummary -Advice $aiRerankAdvice
+    route_override_applied = [bool]$aiRerankRouteOverride
+    top_pack_before = if ($top) { [string]$top.pack_id } else { $null }
+    top_pack_after = if ($effectiveTop) { [string]$effectiveTop.pack_id } else { $null }
+    route_mode_after = $routeMode
+    route_reason_after = $routeReason
+}
+
 $promptOverlayRouteOverride = $false
 if ($routeMode -eq "pack_overlay" -and $promptOverlayAdvice -and $promptOverlayAdvice.scope_applicable -and $promptOverlayAdvice.confirm_required) {
     $routeMode = "confirm_required"
     $routeReason = "prompt_overlay_confirm_required"
     $confidence = [Math]::Max($confidence, [double]$th.confirm_required)
     $promptOverlayRouteOverride = $true
+}
+
+Add-RouteProbeEvent -Context $probeContext -Stage "overlay.prompt" -Note "prompt overlay guard check" -Data @{
+    advice = Get-RouteProbeAdviceSummary -Advice $promptOverlayAdvice
+    route_override_applied = [bool]$promptOverlayRouteOverride
+    route_mode_after = $routeMode
+    route_reason_after = $routeReason
 }
 
 $dataScaleAdvice = Get-DataScaleOverlayAdvice `
@@ -316,6 +528,15 @@ if ($effectiveTop -and $dataScaleAdvice -and $dataScaleAdvice.scope_applicable -
         $confidence = [Math]::Max($confidence, [double]$th.confirm_required)
         $dataScaleRouteOverride = $true
     }
+}
+
+Add-RouteProbeEvent -Context $probeContext -Stage "overlay.data_scale" -Note "data-scale overlay evaluated" -Data @{
+    advice = Get-RouteProbeAdviceSummary -Advice $dataScaleAdvice
+    selected_skill_before = if ($effectiveTop) { [string]$effectiveTop.selected_candidate } else { $null }
+    selected_skill_after = $effectiveSelectedSkill
+    route_override_applied = [bool]$dataScaleRouteOverride
+    route_mode_after = $routeMode
+    route_reason_after = $routeReason
 }
 
 $qualityDebtAdvice = Get-QualityDebtOverlayAdvice `
@@ -384,6 +605,15 @@ $cudaKernelAdvice = Get-CudaKernelOverlayAdvice `
     -PackCandidates $(if ($effectiveTop) { @($effectiveTop.candidates) } else { @() }) `
     -CudaKernelOverlayPolicy $cudaKernelOverlayPolicy
 
+Add-RouteProbeEvent -Context $probeContext -Stage "overlay.bundle" -Note "post-route advisory overlays evaluated" -Data @{
+    quality_debt = Get-RouteProbeAdviceSummary -Advice $qualityDebtAdvice
+    framework_interop = Get-RouteProbeAdviceSummary -Advice $frameworkInteropAdvice
+    ml_lifecycle = Get-RouteProbeAdviceSummary -Advice $mlLifecycleAdvice
+    python_clean_code = Get-RouteProbeAdviceSummary -Advice $pythonCleanCodeAdvice
+    system_design = Get-RouteProbeAdviceSummary -Advice $systemDesignAdvice
+    cuda_kernel = Get-RouteProbeAdviceSummary -Advice $cudaKernelAdvice
+}
+
 $result = [pscustomobject]@{
     prompt = $Prompt
     grade = $Grade
@@ -405,6 +635,11 @@ $result = [pscustomobject]@{
     gsd_overlay_advice = $gsdOverlayAdvice
     prompt_overlay_advice = $promptOverlayAdvice
     memory_governance_advice = $memoryGovernanceAdvice
+    deep_discovery_advice = $deepDiscoveryAdvice
+    intent_contract = $intentContract
+    deep_discovery_filter = $deepDiscoveryFilterSummary
+    deep_discovery_route_filter_applied = [bool]($deepDiscoveryFilter -and $deepDiscoveryFilter.route_filter_applied)
+    deep_discovery_route_mode_override = [bool]$deepDiscoveryRouteModeOverride
     prompt_overlay_route_override = $promptOverlayRouteOverride
     ai_rerank_advice = $aiRerankAdvice
     ai_rerank_route_override = $aiRerankRouteOverride
@@ -432,7 +667,38 @@ $result = [pscustomobject]@{
     ranked = @($ranked | Select-Object -First 3)
 }
 
-$null = Write-ObservabilityRouteEvent -PromptText $Prompt -Result $result -ObservabilityPolicy $observabilityPolicy -RepoRoot $repoRoot
+$runtimeDigestEnabled = $false
+if ($deepDiscoveryPolicy -and $deepDiscoveryPolicy.runtime_prompt -and $deepDiscoveryPolicy.runtime_prompt.include_digest -ne $null) {
+    $runtimeDigestEnabled = [bool]$deepDiscoveryPolicy.runtime_prompt.include_digest
+}
+if ($runtimeDigestEnabled) {
+    $runtimeStatePromptDigest = Get-RouteRuntimeStatePromptDigest -Result $result -PromptText $Prompt -FoldOutsideScope $true
+    $result | Add-Member -NotePropertyName "runtime_state_prompt_digest" -NotePropertyValue $runtimeStatePromptDigest
+}
 
-$result | ConvertTo-Json -Depth 10
+$observabilityWrite = Write-ObservabilityRouteEvent -PromptText $Prompt -Result $result -ObservabilityPolicy $observabilityPolicy -RepoRoot $repoRoot
+
+Add-RouteProbeEvent -Context $probeContext -Stage "router.final" -Note "final route output assembled" -Data @{
+    route_mode = $result.route_mode
+    route_reason = $result.route_reason
+    selected_pack = if ($result.selected) { [string]$result.selected.pack_id } else { $null }
+    selected_skill = if ($result.selected) { [string]$result.selected.skill } else { $null }
+    confidence = [double]$result.confidence
+    deep_discovery = [pscustomobject]@{
+        trigger_active = [bool]($result.deep_discovery_advice -and $result.deep_discovery_advice.trigger_active)
+        trigger_score = if ($result.deep_discovery_advice -and $result.deep_discovery_advice.trigger_score -ne $null) { [double]$result.deep_discovery_advice.trigger_score } else { 0.0 }
+        contract_completeness = if ($result.intent_contract -and $result.intent_contract.completeness -ne $null) { [double]$result.intent_contract.completeness } else { 0.0 }
+        route_filter_applied = [bool]$result.deep_discovery_route_filter_applied
+        route_mode_override = [bool]$result.deep_discovery_route_mode_override
+    }
+    observability = if ($observabilityWrite) { $observabilityWrite } else { $null }
+}
+
+$probeArtifact = Write-RouteProbeArtifact -Context $probeContext -PromptText $Prompt -Result $result
+if ($probeArtifact) {
+    $result | Add-Member -NotePropertyName "probe_reference" -NotePropertyValue $probeArtifact
+}
+
+$result | ConvertTo-Json -Depth 12
+
 

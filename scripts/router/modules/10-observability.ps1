@@ -106,8 +106,13 @@ function Write-ObservabilityRouteEvent {
             candidate_signal = [double]$Result.candidate_signal
             selected_pack = $selectedPack
             selected_skill = $selectedSkill
+            deep_discovery_route_filter_applied = [bool]$Result.deep_discovery_route_filter_applied
+            deep_discovery_route_mode_override = [bool]$Result.deep_discovery_route_mode_override
         }
         overlays = [pscustomobject]@{
+            deep_discovery_triggered = [bool]($Result.deep_discovery_advice -and $Result.deep_discovery_advice.trigger_active)
+            deep_discovery_confirm_required = [bool]($Result.deep_discovery_advice -and $Result.deep_discovery_advice.confirm_required)
+            deep_discovery_route_filter_applied = [bool]$Result.deep_discovery_route_filter_applied
             ai_rerank_triggered = [bool]($Result.ai_rerank_advice -and $Result.ai_rerank_advice.trigger -and $Result.ai_rerank_advice.trigger.active)
             ai_rerank_would_override = [bool]($Result.ai_rerank_advice -and $Result.ai_rerank_advice.would_override)
             ai_rerank_route_override = [bool]$Result.ai_rerank_route_override
@@ -146,5 +151,6 @@ function Write-ObservabilityRouteEvent {
         throw
     }
 }
+
 
 
