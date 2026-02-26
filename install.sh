@@ -24,12 +24,12 @@ mkdir -p "${TARGET_ROOT}/skills" "${TARGET_ROOT}/rules" "${TARGET_ROOT}/hooks" "
 
 cp -R "${SCRIPT_DIR}/bundled/skills/." "${TARGET_ROOT}/skills/"
 
-# Ensure unified /vibe entry uses the latest router implementation after install.
-VIBE_ROUTER_SRC="${SCRIPT_DIR}/scripts/router/resolve-pack-route.ps1"
-VIBE_ROUTER_DEST="${TARGET_ROOT}/skills/vibe/scripts/router/resolve-pack-route.ps1"
-if [[ -f "${VIBE_ROUTER_SRC}" ]]; then
-  mkdir -p "$(dirname "${VIBE_ROUTER_DEST}")"
-  cp "${VIBE_ROUTER_SRC}" "${VIBE_ROUTER_DEST}"
+# Ensure unified /vibe entry uses the latest router implementation (script + modules) after install.
+VIBE_ROUTER_SRC_DIR="${SCRIPT_DIR}/scripts/router"
+VIBE_ROUTER_DEST_DIR="${TARGET_ROOT}/skills/vibe/scripts/router"
+if [[ -d "${VIBE_ROUTER_SRC_DIR}" ]]; then
+  mkdir -p "${VIBE_ROUTER_DEST_DIR}"
+  cp -R "${VIBE_ROUTER_SRC_DIR}/." "${VIBE_ROUTER_DEST_DIR}/"
 fi
 
 for n in dialectic local-vco-roles spec-kit-vibe-compat superclaude-framework-compat ralph-loop cancel-ralph tdd-guide think-harder; do

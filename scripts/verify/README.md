@@ -7,6 +7,7 @@ This directory stores optional verification scripts for CI and local smoke check
 - `vibe-keyword-precision-audit.ps1`: bilingual keyword precision audit (EN/ZH), cross-pack interference gap checks, and full skill-by-skill routing sweep.
 - `vibe-skill-index-routing-audit.ps1`: per-skill keyword index routing checks using common Chinese business phrases and ambiguous same-pack scenarios.
 - `vibe-routing-stability-gate.ps1`: synonym-group and task-cross routing gate. Reports `route_stability`, `top1_top2_gap`, `fallback_rate`, and `misroute_rate`, with optional strict thresholds.
+- `vibe-router-contract-gate.ps1`: zero-regression contract gate for modular router migration (`legacy` vs `modular` exact JSON equality on fixed matrix).
 - `vibe-config-parity-gate.ps1`: config parity gate for main vs bundled VCO JSON configs using normalized structural comparison + hash + diff-path output.
 - `vibe-context-retro-smoke.ps1`: validates Context Retro Advisor integration in SKILL/protocol/fallback docs and main/bundled sync for retro-critical files.
 - `vibe-retro-context-regression-matrix.ps1`: fixed-case regression matrix for retro trigger thresholds and CF-1..CF-6 classification stability.
@@ -25,6 +26,7 @@ This directory stores optional verification scripts for CI and local smoke check
 - `vibe-system-design-overlay-gate.ps1`: validates system-design-primer overlay semantics (architecture signal + coverage dimensions + strict confirm advice + route invariance).
 - `vibe-cuda-kernel-overlay-gate.ps1`: validates LeetCUDA-inspired CUDA kernel overlay semantics (CUDA optimization signal + coverage dimensions + strict confirm advice + route invariance).
 - `vibe-observability-gate.ps1`: validates observability policy behavior (privacy-safe telemetry fields + profile IDs + deterministic route event capture).
+- `vibe-ai-rerank-gate.ps1`: validates AI rerank B+ overlay behavior (shadow non-mutation, preserve-routing guard, and soft-mode constrained override).
 
 Related rollout utility:
 
@@ -54,6 +56,12 @@ Run strict gate (after default gate is passing consistently):
 
 ```powershell
 & ".\vibe-routing-stability-gate.ps1" -Strict -WriteArtifacts
+```
+
+Run router contract gate (legacy vs modular):
+
+```powershell
+& ".\vibe-router-contract-gate.ps1" -WriteArtifacts
 ```
 
 Run config parity gate (main vs bundled):
@@ -132,6 +140,12 @@ Run observability gate:
 
 ```powershell
 & ".\vibe-observability-gate.ps1"
+```
+
+Run AI rerank gate:
+
+```powershell
+& ".\vibe-ai-rerank-gate.ps1"
 ```
 
 Keep generated fixture files for manual inspection:

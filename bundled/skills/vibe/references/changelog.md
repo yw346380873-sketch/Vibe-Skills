@@ -1,5 +1,66 @@
 # VCO Changelog
 
+## v2.3.16 (2026-02-26)
+
+- 路由器模块化重构（零退化拆分）：
+  - `scripts/router/resolve-pack-route.ps1` 从单体函数定义改为模块加载编排入口
+  - 新增函数模块目录：
+    - `scripts/router/modules/*.ps1`
+  - 新增 legacy 基线脚本用于契约对比：
+    - `scripts/router/legacy/resolve-pack-route.legacy.ps1`
+- 新增零退化契约门禁：
+  - `scripts/verify/vibe-router-contract-gate.ps1`
+  - 对 `legacy` vs `modular` 在固定矩阵下做严格 JSON 等价校验
+- 安装与运行完整性增强：
+  - `install.ps1` / `install.sh` 改为同步整个 `scripts/router` 目录（脚本 + modules）
+  - `check.ps1` / `check.sh` 新增 router modules 存在性检查
+  - `check.ps1 -Deep` / `check.sh --deep` 纳入 contract gate
+- CI 门禁升级：
+  - `.github/workflows/vco-gates.yml` 纳入 `vibe-router-contract-gate.ps1`
+- 新增治理文档：
+  - `docs/router-modularization-governance.md`（main + bundled）
+- 文档同步：
+  - `SKILL.md`、`references/index.md`、`scripts/verify/README.md` 更新模块化与契约门禁入口
+
+## v2.3.15 (2026-02-26)
+
+- 新增 AI Rerank Overlay（B+：召回安全双阶段路由，默认 shadow 不改路由）：
+  - 新增配置（main + bundled）：
+    - `config/ai-rerank-policy.json`
+    - `bundled/skills/vibe/config/ai-rerank-policy.json`
+  - 路由器输出新增：
+    - `ai_rerank_advice`
+    - `ai_rerank_route_override`
+  - 核心约束：
+    - Top-K 约束（`require_candidate_in_top_k`）
+    - task 边界约束（`enforce_task_allow`）
+    - 最低置信约束（`min_rerank_confidence`）
+    - rollout 采样约束（`max_live_apply_rate`）
+    - `preserve_routing_assignment` 默认保护（soft/strict 下也可阻断覆盖）
+  - 语义行为：
+    - `shadow`：仅给建议与 `would_override`，不改选中路由
+    - `soft/strict`：仅在硬约束全部通过且允许 apply 时才覆盖
+- 新增验证门禁：
+  - `scripts/verify/vibe-ai-rerank-gate.ps1`
+  - `scripts/verify/vibe-config-parity-gate.ps1` 纳入 `ai-rerank-policy` main/bundled parity
+- 健康检查增强：
+  - `check.ps1`、`check.sh` 新增 `ai-rerank-policy` 存在性检查
+  - 新增 deep 模式：
+    - `check.ps1 -Deep`
+    - `check.sh --deep`
+  - deep 模式会串行执行关键 verify gates（含 ai-rerank gate）
+- CI/门禁自动化：
+  - 新增 GitHub Actions：`.github/workflows/vco-gates.yml`
+  - 自动执行回归与治理门禁：
+    - `vibe-pack-regression-matrix`
+    - `vibe-routing-stability-gate -Strict`
+    - `vibe-config-parity-gate`
+    - `vibe-observability-gate`
+    - `vibe-ai-rerank-gate`
+- 新增文档：
+  - `docs/ai-rerank-overlay-integration.md`（main + bundled）
+  - `scripts/verify/README.md`、`references/index.md`、`SKILL.md` 同步更新
+
 ## v2.3.14 (2026-02-26)
 
 - 新增 Observability & Consistency Governance（严格、轻量、低上下文压力）：
