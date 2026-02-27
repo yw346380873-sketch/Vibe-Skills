@@ -59,6 +59,12 @@ Check-Path -Label "vibe retrieval rerank weights config" -Path (Join-Path $Targe
 Check-Path -Label "vibe exploration policy config" -Path (Join-Path $TargetRoot "skills\vibe\config\exploration-policy.json")
 Check-Path -Label "vibe exploration intent profiles config" -Path (Join-Path $TargetRoot "skills\vibe\config\exploration-intent-profiles.json")
 Check-Path -Label "vibe exploration domain map config" -Path (Join-Path $TargetRoot "skills\vibe\config\exploration-domain-map.json")
+Check-Path -Label "vibe bundled retrieval intent profiles config" -Path (Join-Path $TargetRoot "skills\vibe\bundled\skills\vibe\config\retrieval-intent-profiles.json")
+Check-Path -Label "vibe bundled retrieval source registry config" -Path (Join-Path $TargetRoot "skills\vibe\bundled\skills\vibe\config\retrieval-source-registry.json")
+Check-Path -Label "vibe bundled retrieval rerank weights config" -Path (Join-Path $TargetRoot "skills\vibe\bundled\skills\vibe\config\retrieval-rerank-weights.json")
+Check-Path -Label "vibe bundled exploration policy config" -Path (Join-Path $TargetRoot "skills\vibe\bundled\skills\vibe\config\exploration-policy.json")
+Check-Path -Label "vibe bundled exploration intent profiles config" -Path (Join-Path $TargetRoot "skills\vibe\bundled\skills\vibe\config\exploration-intent-profiles.json")
+Check-Path -Label "vibe bundled exploration domain map config" -Path (Join-Path $TargetRoot "skills\vibe\bundled\skills\vibe\config\exploration-domain-map.json")
 
 foreach ($name in $requiredWorkflow) {
   Check-Path -Label "workflow skill/$name" -Path (Join-Path $TargetRoot "skills\$name\SKILL.md")

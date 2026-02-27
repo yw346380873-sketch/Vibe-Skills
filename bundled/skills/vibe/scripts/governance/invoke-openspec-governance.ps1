@@ -70,9 +70,9 @@ Stable requirement truths should be stored here.
 
     $changeDir = Join-Path $ChangesDir $TaskId
     Ensure-Directory -Path $changeDir
-    $changeFile = Join-Path $changeDir "change.md"
-    if (-not (Test-Path -LiteralPath $changeFile)) {
-        Set-Content -LiteralPath $changeFile -Encoding UTF8 -Value @"
+
+    $files = @(
+        @{ Name = "change.md"; Content = @"
 # Change: $TaskId
 
 ## Why
@@ -83,7 +83,35 @@ $Prompt
 
 ## Tasks
 - [ ] 
-"@
+"@ },
+        @{ Name = "tasks.md"; Content = @"
+# Tasks for $TaskId
+
+## Checklist
+- [ ] Identify assumptions
+- [ ] Break work into verifiable steps
+- [ ] Link to related specs
+"@ },
+        @{ Name = "progress.md"; Content = @"
+# Progress for $TaskId
+
+| Date | Status | Notes |
+| ---- | ------ | ----- |
+"@ },
+        @{ Name = "handoff.md"; Content = @"
+# Handoff for $TaskId
+
+- summary:
+- blockers:
+- next_steps:
+"@ }
+    )
+
+    foreach ($file in $files) {
+        $path = Join-Path $changeDir $file.Name
+        if (-not (Test-Path -LiteralPath $path)) {
+            Set-Content -LiteralPath $path -Encoding UTF8 -Value $file.Content
+        }
     }
 }
 
@@ -132,6 +160,8 @@ $wroteArtifacts = $false
 $status = "advisory_only"
 $requiredAction = "none"
 $artifactPath = $null
+$missingFullChangeFiles = @()
+$hasChangeDir = $false
 
 if ($advice.profile -eq "lite" -and $advice.task_applicable) {
     $artifactRel = if ($advice.recommended_artifact) {
@@ -173,33 +203,81 @@ if ($advice.profile -eq "full" -and $advice.task_applicable) {
     $changesDir = Join-Path $repoRoot $changesDirRel
     $changeTaskPath = Join-Path $changesDir $resolvedTaskId
     $artifactPath = $changeTaskPath
+    $requiredChangeFiles = @("change.md", "tasks.md", "progress.md", "handoff.md")
 
     $hasSpecs = (Test-Path -LiteralPath $specsDir) -and ((Get-ChildItem -LiteralPath $specsDir -File -ErrorAction SilentlyContinue).Count -gt 0)
-    $hasChange = Test-Path -LiteralPath $changeTaskPath
+    $hasChangeDir = Test-Path -LiteralPath $changeTaskPath
+    $missingFullChangeFiles = @()
+    if ($hasChangeDir) {
+        foreach ($requiredFile in $requiredChangeFiles) {
+            $requiredPath = Join-Path $changeTaskPath $requiredFile
+            if (-not (Test-Path -LiteralPath $requiredPath)) {
+                $missingFullChangeFiles += $requiredFile
+            }
+        }
+    } else {
+        $missingFullChangeFiles = @($requiredChangeFiles)
+    }
+    $hasChange = $hasChangeDir -and ($missingFullChangeFiles.Count -eq 0)
 
     if ((-not $hasSpecs -or -not $hasChange) -and $WriteArtifacts) {
         Write-FullSkeleton -SpecsDir $specsDir -ChangesDir $changesDir -TaskId $resolvedTaskId -Prompt $Prompt
         $wroteArtifacts = $true
         $hasSpecs = (Test-Path -LiteralPath $specsDir) -and ((Get-ChildItem -LiteralPath $specsDir -File -ErrorAction SilentlyContinue).Count -gt 0)
-        $hasChange = Test-Path -LiteralPath $changeTaskPath
+        $hasChangeDir = Test-Path -LiteralPath $changeTaskPath
+        $missingFullChangeFiles = @()
+        if ($hasChangeDir) {
+            foreach ($requiredFile in $requiredChangeFiles) {
+                $requiredPath = Join-Path $changeTaskPath $requiredFile
+                if (-not (Test-Path -LiteralPath $requiredPath)) {
+                    $missingFullChangeFiles += $requiredFile
+                }
+            }
+        } else {
+            $missingFullChangeFiles = @($requiredChangeFiles)
+        }
+        $hasChange = $hasChangeDir -and ($missingFullChangeFiles.Count -eq 0)
     }
 
     if ($hasSpecs -and $hasChange) {
         $status = "full_ready"
     } else {
         $status = "full_missing"
-        $requiredAction = "create_full_spec_change"
+        if ($missingFullChangeFiles.Count -gt 0 -and $hasChangeDir) {
+            $requiredAction = "complete_full_skeleton_files"
+        } else {
+            $requiredAction = "create_full_spec_change"
+        }
+    }
+}
+
+# strict planning blocking should follow mode semantics, not the enforcement enum value.
+# Backward compatibility: if older route outputs do not expose mode, treat full+required as strict-equivalent.
+$strictOpenSpecMode = $false
+if ($advice.mode -and ([string]$advice.mode -eq "strict")) {
+    $strictOpenSpecMode = $true
+} elseif ((-not $advice.mode) -and $advice.profile -eq "full" -and $advice.enforcement -eq "required") {
+    $strictOpenSpecMode = $true
+}
+
+$strictPlanningBlocking = ($strictOpenSpecMode -and $TaskType -eq "planning" -and $status -eq "full_missing" -and -not $WriteArtifacts)
+if ($strictPlanningBlocking) {
+    if ($requiredAction -eq "complete_full_skeleton_files") {
+        $requiredAction = "rerun_with_WriteArtifacts_to_complete_full_skeleton"
+    } else {
+        $requiredAction = "rerun_with_WriteArtifacts_to_create_full_spec_change"
     }
 }
 
 [pscustomobject]@{
     status = $status
-    enforced = ($advice.enforcement -in @("confirm_required", "required"))
+    enforced = (($advice.enforcement -in @("confirm_required", "required")) -or $strictPlanningBlocking)
     enforcement = $advice.enforcement
     required_action = $requiredAction
     wrote_artifacts = $wroteArtifacts
     task_id = $resolvedTaskId
     artifact_path = $artifactPath
+    missing_full_change_files = $missingFullChangeFiles
     route_mode = $route.route_mode
     selected_pack = $route.selected.pack_id
     selected_skill = $route.selected.skill

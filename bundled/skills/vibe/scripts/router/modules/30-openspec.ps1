@@ -83,9 +83,44 @@ function Get-OpenSpecGovernanceAdvice {
         }
     }
 
+    $requestedSkillWhitelist = @()
+    if ($OpenSpecPolicy.exemptions -and $OpenSpecPolicy.exemptions.requested_skill_whitelist) {
+        $requestedSkillWhitelist = @($OpenSpecPolicy.exemptions.requested_skill_whitelist)
+    }
+
+    # requested skill bypass only applies when explicitly whitelisted
+    $requestedSkillBypassEnabled = $false
+    if ($OpenSpecPolicy.exemptions -and $OpenSpecPolicy.exemptions.requested_skill_bypass) {
+        $requestedSkillBypassEnabled = [bool]$OpenSpecPolicy.exemptions.requested_skill_bypass
+    }
+
+    $requestedCanonicalLower = ""
+    if ($RequestedCanonical) {
+        $requestedCanonicalLower = ([string]$RequestedCanonical).ToLowerInvariant()
+    }
+
+    $requestedSkillWhitelisted = $false
+    if ($requestedCanonicalLower -and $requestedSkillWhitelist.Count -gt 0) {
+        foreach ($whitelistedSkill in $requestedSkillWhitelist) {
+            if (([string]$whitelistedSkill).ToLowerInvariant() -eq $requestedCanonicalLower) {
+                $requestedSkillWhitelisted = $true
+                break
+            }
+        }
+    }
+
     $bypassDueToRequestedSkill = $false
-    if ($RequestedCanonical -and $OpenSpecPolicy.exemptions -and $OpenSpecPolicy.exemptions.requested_skill_bypass) {
-        $bypassDueToRequestedSkill = $true
+    $bypassDueToRequestedSkill = $requestedSkillBypassEnabled -and $requestedSkillWhitelisted
+
+    # trivial prompts stay exempt outside planning
+    $trivialNonPlanningExempt = $false
+    if ($TaskType -ne "planning" -and $OpenSpecPolicy.exemptions -and $OpenSpecPolicy.exemptions.trivial_prompt_patterns) {
+        foreach ($pattern in @($OpenSpecPolicy.exemptions.trivial_prompt_patterns)) {
+            if (Test-KeywordHit -PromptLower $PromptLower -Keyword ([string]$pattern)) {
+                $trivialNonPlanningExempt = $true
+                break
+            }
+        }
     }
 
     $taskId = Get-OpenSpecTaskId -PromptLower $PromptLower -Grade $Grade -TaskType $TaskType
@@ -127,7 +162,9 @@ function Get-OpenSpecGovernanceAdvice {
 
     $enforcement = "none"
     $reason = "task_not_applicable"
-    if ($taskApplicable -and -not $bypassDueToRequestedSkill) {
+    if ($trivialNonPlanningExempt) {
+        $reason = "trivial_non_planning_exempt"
+    } elseif ($taskApplicable -and -not $bypassDueToRequestedSkill) {
         if ($profile -eq "lite") {
             $enforcement = "advisory"
             $reason = "m_lite_card"
@@ -156,7 +193,7 @@ function Get-OpenSpecGovernanceAdvice {
             $reason = "profile_none"
         }
     } elseif ($bypassDueToRequestedSkill) {
-        $reason = "requested_skill_bypass"
+        $reason = "requested_skill_bypass_whitelist"
     }
 
     $upgradeMatches = @()

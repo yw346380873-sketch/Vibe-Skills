@@ -1,5 +1,36 @@
 # VCO Changelog
 
+## v2.3.27 (2026-02-27)
+
+- 修复 OpenSpec strict 阻断语义漂移（`scripts/governance/invoke-openspec-governance.ps1`）：
+  - `strictPlanningBlocking` 从错误的 `enforcement=="strict"` 修正为基于 `mode=="strict"` 判定。
+  - 增加向后兼容：旧路由载荷若缺少 `mode`，则 `profile=full + enforcement=required` 视为 strict 等价。
+  - strict + planning + full_missing 时，`required_action` 统一输出 `rerun_with_WriteArtifacts_to_*` 明确指引。
+- 更新 OpenSpec 门禁断言（`scripts/verify/vibe-openspec-governance-gate.ps1`）：
+  - strict 缺失场景期望改为 `required_action=rerun_with_WriteArtifacts_to_create_full_spec_change`。
+- 健康检查增强，预防 main/bundled 配置漂移复发：
+  - `check.ps1` / `check.sh` 新增 bundled 层 retrieval/exploration 6 个配置存在性检查。
+
+## v2.3.26 (2026-02-27)
+
+- OpenSpec governance gate 用例更新（`scripts/verify/vibe-openspec-governance-gate.ps1`）：
+  - `M + planning` 期望改为 `profile=full` + `enforcement=required`（Governance-First）。
+  - 新增 strict 缺失阻断断言：`full_missing` 时必须 `enforced=true` 且 `required_action=create_full_spec_change`。
+  - 新增 `requested_skill_whitelist` 断言：白名单请求触发 `reason` 匹配 `requested_skill_bypass*`，并标记 `bypass_due_to_requested_skill=true`。
+- OpenSpec 文档改为 Governance-First 口径：
+  - `docs/openspec-vco-integration.md`
+  - `README.md`（仅 OpenSpec 治理段落）
+
+## v2.3.25 (2026-02-27)
+
+- 修复 `vibe-router-contract-gate.ps1` 在模块化后长期红灯的问题：
+  - 默认 gate 从“full JSON 全等”调整为“分层契约校验”（核心路由字段 + schema + 预期差异白名单）。
+  - 新增 `-StrictFullJson` 取证模式，保留完整载荷全等检查能力（仅用于法证/回归定位，不作为默认阻断）。
+  - 新增 `low-signal + legacy_fallback_guard` 的预期差异识别，避免将反静默兜底设计误判为回归。
+- 文档同步更新：
+  - `docs/router-modularization-governance.md`
+  - `scripts/verify/README.md`
+
 ## v2.3.24 (2026-02-27)
 
 - 新增版本与打包治理闭环（main + bundled 同步约束）：

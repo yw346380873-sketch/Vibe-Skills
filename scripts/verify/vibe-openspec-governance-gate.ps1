@@ -2,6 +2,10 @@ param()
 
 $ErrorActionPreference = "Stop"
 
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+$governanceScript = Join-Path $repoRoot "scripts\governance\invoke-openspec-governance.ps1"
+$policyPath = Join-Path $repoRoot "config\openspec-policy.json"
+
 function Assert-True {
     param(
         [bool]$Condition,
@@ -17,6 +21,18 @@ function Assert-True {
     return $false
 }
 
+function Ensure-Property {
+    param(
+        [object]$Object,
+        [string]$Name,
+        [object]$Value
+    )
+
+    if ($null -eq $Object.PSObject.Properties[$Name]) {
+        $Object | Add-Member -NotePropertyName $Name -NotePropertyValue $Value -Force
+    }
+}
+
 function Invoke-Route {
     param(
         [string]$Prompt,
@@ -25,9 +41,7 @@ function Invoke-Route {
         [string]$RequestedSkill
     )
 
-    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
     $resolver = Join-Path $repoRoot "scripts\router\resolve-pack-route.ps1"
-
     $routeArgs = @{
         Prompt = $Prompt
         Grade = $Grade
@@ -50,7 +64,7 @@ $cases = @(
         RequestedSkill = $null
         ExpectedPack = "orchestration-core"
         ExpectedProfile = "full"
-        ExpectedEnforcement = "confirm_required"
+        ExpectedEnforcement = "required"
     },
     [pscustomobject]@{
         Name = "L planning aios-core"
@@ -60,7 +74,7 @@ $cases = @(
         RequestedSkill = $null
         ExpectedPack = "aios-core"
         ExpectedProfile = "full"
-        ExpectedEnforcement = "confirm_required"
+        ExpectedEnforcement = "required"
     },
     [pscustomobject]@{
         Name = "XL planning confirm scope"
@@ -70,7 +84,7 @@ $cases = @(
         RequestedSkill = $null
         ExpectedPack = $null
         ExpectedProfile = "full"
-        ExpectedEnforcement = "confirm_required"
+        ExpectedEnforcement = "required"
     },
     [pscustomobject]@{
         Name = "L non-planning outside scope"
@@ -83,52 +97,115 @@ $cases = @(
         ExpectedEnforcement = "none"
     },
     [pscustomobject]@{
-        Name = "M planning lite profile"
+        Name = "M planning governance-first"
         Prompt = "small module implementation plan without architecture change"
         Grade = "M"
         TaskType = "planning"
         RequestedSkill = $null
         ExpectedPack = "orchestration-core"
-        ExpectedProfile = "lite"
-        ExpectedEnforcement = "advisory"
+        ExpectedProfile = "full"
+        ExpectedEnforcement = "required"
     },
     [pscustomobject]@{
-        Name = "Requested skill bypass"
+        Name = "Requested skill outside whitelist"
         Prompt = "run code review and security scan"
         Grade = "M"
         TaskType = "review"
         RequestedSkill = "code-review"
         ExpectedPack = "code-quality"
-        ExpectedProfile = "lite"
+        ExpectedProfile = "full"
         ExpectedEnforcement = "none"
+        ExpectedBypass = $false
+        ExpectedReason = "task_not_applicable"
+    },
+    [pscustomobject]@{
+        Name = "Requested skill whitelist bypass"
+        Prompt = "plan implementation milestones for module refactor"
+        Grade = "M"
+        TaskType = "planning"
+        RequestedSkill = "writing-plans"
+        ExpectedPack = "orchestration-core"
+        ExpectedProfile = "full"
+        ExpectedEnforcement = "none"
+        ExpectedBypass = $true
+        ExpectedReasonPattern = "requested_skill_bypass*"
     }
 )
 
 $results = @()
 
 Write-Host "=== VCO OpenSpec Governance Gate ==="
-foreach ($case in $cases) {
-    $route = Invoke-Route -Prompt $case.Prompt -Grade $case.Grade -TaskType $case.TaskType -RequestedSkill $case.RequestedSkill
 
-    $results += Assert-True -Condition ($null -ne $route.selected) -Message "[$($case.Name)] selected route exists"
-    if ($case.ExpectedPack) {
-        $results += Assert-True -Condition ($route.selected.pack_id -eq $case.ExpectedPack) -Message "[$($case.Name)] selected pack unchanged ($($case.ExpectedPack))"
+$policyRawBackup = Get-Content -LiteralPath $policyPath -Raw -Encoding UTF8
+try {
+    $policyObj = $policyRawBackup | ConvertFrom-Json
+
+    Ensure-Property -Object $policyObj -Name "profile_by_grade" -Value ([pscustomobject]@{})
+    Ensure-Property -Object $policyObj -Name "required_task_types_by_profile" -Value ([pscustomobject]@{})
+    Ensure-Property -Object $policyObj -Name "exemptions" -Value ([pscustomobject]@{})
+    Ensure-Property -Object $policyObj -Name "soft_confirm_scope" -Value ([pscustomobject]@{})
+    Ensure-Property -Object $policyObj.exemptions -Name "requested_skill_bypass" -Value $false
+    Ensure-Property -Object $policyObj.exemptions -Name "requested_skill_whitelist" -Value @()
+
+    $policyObj.mode = "strict"
+    $policyObj.preserve_routing_assignment = $true
+    $policyObj.profile_by_grade.M = "full"
+    $policyObj.profile_by_grade.L = "full"
+    $policyObj.profile_by_grade.XL = "full"
+    $policyObj.required_task_types_by_profile.full = @("planning")
+    $policyObj.exemptions.requested_skill_bypass = $true
+    $policyObj.exemptions.requested_skill_whitelist = @("sc:design", "brainstorming", "writing-plans")
+
+    Set-Content -LiteralPath $policyPath -Encoding UTF8 -Value ($policyObj | ConvertTo-Json -Depth 30)
+
+    foreach ($case in $cases) {
+        $route = Invoke-Route -Prompt $case.Prompt -Grade $case.Grade -TaskType $case.TaskType -RequestedSkill $case.RequestedSkill
+
+        $results += Assert-True -Condition ($null -ne $route.selected) -Message "[$($case.Name)] selected route exists"
+        if ($case.ExpectedPack) {
+            $results += Assert-True -Condition ($route.selected.pack_id -eq $case.ExpectedPack) -Message "[$($case.Name)] selected pack unchanged ($($case.ExpectedPack))"
+        }
+        $results += Assert-True -Condition ($null -ne $route.openspec_advice) -Message "[$($case.Name)] openspec_advice exists"
+        $results += Assert-True -Condition ($route.openspec_advice.enabled -eq $true) -Message "[$($case.Name)] openspec advice enabled"
+        $results += Assert-True -Condition ($route.openspec_advice.profile -eq $case.ExpectedProfile) -Message "[$($case.Name)] profile is $($case.ExpectedProfile)"
+        $results += Assert-True -Condition ($route.openspec_advice.enforcement -eq $case.ExpectedEnforcement) -Message "[$($case.Name)] enforcement is $($case.ExpectedEnforcement)"
+        if ($null -ne $case.PSObject.Properties["ExpectedBypass"]) {
+            $results += Assert-True -Condition ($route.openspec_advice.bypass_due_to_requested_skill -eq $case.ExpectedBypass) -Message "[$($case.Name)] bypass_due_to_requested_skill is $($case.ExpectedBypass)"
+        }
+        if ($null -ne $case.PSObject.Properties["ExpectedReason"]) {
+            $results += Assert-True -Condition ($route.openspec_advice.reason -eq $case.ExpectedReason) -Message "[$($case.Name)] reason is $($case.ExpectedReason)"
+        }
+        if ($null -ne $case.PSObject.Properties["ExpectedReasonPattern"]) {
+            $results += Assert-True -Condition ($route.openspec_advice.reason -like $case.ExpectedReasonPattern) -Message "[$($case.Name)] reason matches $($case.ExpectedReasonPattern)"
+        }
+        $results += Assert-True -Condition ($route.openspec_advice.preserve_routing_assignment -eq $true) -Message "[$($case.Name)] preserve routing assignment"
     }
-    $results += Assert-True -Condition ($null -ne $route.openspec_advice) -Message "[$($case.Name)] openspec_advice exists"
-    $results += Assert-True -Condition ($route.openspec_advice.enabled -eq $true) -Message "[$($case.Name)] openspec advice enabled"
-    $results += Assert-True -Condition ($route.openspec_advice.profile -eq $case.ExpectedProfile) -Message "[$($case.Name)] profile is $($case.ExpectedProfile)"
-    $results += Assert-True -Condition ($route.openspec_advice.enforcement -eq $case.ExpectedEnforcement) -Message "[$($case.Name)] enforcement is $($case.ExpectedEnforcement)"
-    $results += Assert-True -Condition ($route.openspec_advice.preserve_routing_assignment -eq $true) -Message "[$($case.Name)] preserve routing assignment"
-}
 
-$governance = & (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..\..")) "scripts\governance\invoke-openspec-governance.ps1") `
-    -Prompt "small module implementation plan without architecture change" `
-    -Grade "M" `
-    -TaskType "planning" `
-    -NoAutoCreateLite
-$governanceObj = $governance | ConvertFrom-Json
-$results += Assert-True -Condition ($governanceObj.status -in @("lite_exists", "lite_missing", "advisory_only")) -Message "[governance script] lite profile handling status"
-$results += Assert-True -Condition ($governanceObj.selected_pack -eq "orchestration-core") -Message "[governance script] selected pack preserved"
+    $governance = & $governanceScript `
+        -Prompt "small module implementation plan without architecture change" `
+        -Grade "M" `
+        -TaskType "planning" `
+        -NoAutoCreateLite
+    $governanceObj = $governance | ConvertFrom-Json
+    $results += Assert-True -Condition ($governanceObj.status -in @("full_ready", "full_missing")) -Message "[governance script] full profile handling status"
+    $results += Assert-True -Condition ($governanceObj.selected_pack -eq "orchestration-core") -Message "[governance script] selected pack preserved"
+
+    $strictTaskId = "governance-gate-{0}" -f ([guid]::NewGuid().ToString("N").Substring(0, 12))
+    $strictGovernance = & $governanceScript `
+        -Prompt "plan governance-first changes with architecture constraints" `
+        -Grade "M" `
+        -TaskType "planning" `
+        -TaskId $strictTaskId `
+        -NoAutoCreateLite
+    $strictObj = $strictGovernance | ConvertFrom-Json
+
+    $results += Assert-True -Condition ($strictObj.status -eq "full_missing") -Message "[strict missing] full skeleton missing status"
+    $results += Assert-True -Condition ($strictObj.enforcement -eq "required") -Message "[strict missing] enforcement is required"
+    $results += Assert-True -Condition ($strictObj.enforced -eq $true) -Message "[strict missing] governance blocks execution"
+    $results += Assert-True -Condition ($strictObj.required_action -eq "rerun_with_WriteArtifacts_to_create_full_spec_change") -Message "[strict missing] required action is rerun_with_WriteArtifacts_to_create_full_spec_change"
+} finally {
+    Set-Content -LiteralPath $policyPath -Encoding UTF8 -Value $policyRawBackup
+}
 
 $passCount = ($results | Where-Object { $_ }).Count
 $failCount = ($results | Where-Object { -not $_ }).Count
