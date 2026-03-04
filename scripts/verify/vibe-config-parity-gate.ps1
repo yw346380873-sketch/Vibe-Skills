@@ -183,6 +183,7 @@ $pairs = @(
     [pscustomobject]@{ id = "openspec-policy"; main = "config/openspec-policy.json"; bundled = "bundled/skills/vibe/config/openspec-policy.json" },
     [pscustomobject]@{ id = "gsd-overlay"; main = "config/gsd-overlay.json"; bundled = "bundled/skills/vibe/config/gsd-overlay.json" },
     [pscustomobject]@{ id = "prompt-overlay"; main = "config/prompt-overlay.json"; bundled = "bundled/skills/vibe/config/prompt-overlay.json" },
+    [pscustomobject]@{ id = "prompt-asset-boost"; main = "config/prompt-asset-boost.json"; bundled = "bundled/skills/vibe/config/prompt-asset-boost.json" },
     [pscustomobject]@{ id = "memory-governance"; main = "config/memory-governance.json"; bundled = "bundled/skills/vibe/config/memory-governance.json" },
     [pscustomobject]@{ id = "data-scale-overlay"; main = "config/data-scale-overlay.json"; bundled = "bundled/skills/vibe/config/data-scale-overlay.json" },
     [pscustomobject]@{ id = "quality-debt-overlay"; main = "config/quality-debt-overlay.json"; bundled = "bundled/skills/vibe/config/quality-debt-overlay.json" },

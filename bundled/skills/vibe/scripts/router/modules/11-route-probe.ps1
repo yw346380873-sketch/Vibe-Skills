@@ -228,6 +228,7 @@ function Get-RouteRuntimeStatePrompt {
         @{ Name = "openspec"; Advice = $Result.openspec_advice },
         @{ Name = "gsd"; Advice = $Result.gsd_overlay_advice },
         @{ Name = "prompt"; Advice = $Result.prompt_overlay_advice },
+        @{ Name = "prompt_asset_boost"; Advice = $Result.prompt_asset_boost_advice },
         @{ Name = "memory"; Advice = $Result.memory_governance_advice },
         @{ Name = "ai_rerank"; Advice = $Result.ai_rerank_advice },
         @{ Name = "data_scale"; Advice = $Result.data_scale_advice },

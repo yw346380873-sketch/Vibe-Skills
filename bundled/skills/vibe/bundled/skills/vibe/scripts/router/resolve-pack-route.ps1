@@ -45,7 +45,8 @@ $routerModules = @(
     "45-daily-dialectic-guard.ps1",
     "46-confirm-ui.ps1",
     "47-closure-overlay.ps1",
-    "48-llm-acceleration-overlay.ps1"
+    "48-llm-acceleration-overlay.ps1",
+    "49-prompt-asset-boost.ps1"
 )
 
 foreach ($routerModule in $routerModules) {
@@ -66,6 +67,7 @@ $routingRulesPath = Join-Path $configRoot "skill-routing-rules.json"
 $openSpecPolicyPath = Join-Path $configRoot "openspec-policy.json"
 $gsdOverlayPolicyPath = Join-Path $configRoot "gsd-overlay.json"
 $promptOverlayPolicyPath = Join-Path $configRoot "prompt-overlay.json"
+$promptAssetBoostPolicyPath = Join-Path $configRoot "prompt-asset-boost.json"
 $memoryGovernancePolicyPath = Join-Path $configRoot "memory-governance.json"
 $dataScaleOverlayPolicyPath = Join-Path $configRoot "data-scale-overlay.json"
 $qualityDebtOverlayPolicyPath = Join-Path $configRoot "quality-debt-overlay.json"
@@ -118,6 +120,11 @@ $gsdOverlayPolicy = if (Test-Path -LiteralPath $gsdOverlayPolicyPath) {
 }
 $promptOverlayPolicy = if (Test-Path -LiteralPath $promptOverlayPolicyPath) {
     Get-Content -LiteralPath $promptOverlayPolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
+} else {
+    $null
+}
+$promptAssetBoostPolicy = if (Test-Path -LiteralPath $promptAssetBoostPolicyPath) {
+    Get-Content -LiteralPath $promptAssetBoostPolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
 } else {
     $null
 }
@@ -387,6 +394,7 @@ Add-RouteProbeEvent -Context $probeContext -Stage "router.config" -Note "core ro
         dialectic_team_mode = if ($dialecticTeamPolicy -and $dialecticTeamPolicy.mode) { [string]$dialecticTeamPolicy.mode } else { "off" }
         daily_dialectic_mode = if ($dailyDialecticPolicy -and $dailyDialecticPolicy.mode) { [string]$dailyDialecticPolicy.mode } else { "off" }
         llm_acceleration_mode = if ($llmAccelerationPolicy -and $llmAccelerationPolicy.mode) { [string]$llmAccelerationPolicy.mode } else { "off" }
+        prompt_asset_boost_mode = if ($promptAssetBoostPolicy -and $promptAssetBoostPolicy.mode) { [string]$promptAssetBoostPolicy.mode } else { "off" }
     }
 }
 $null = Add-HeartbeatPulse -Context $heartbeatContext -Stage "router.config" -Phase "router.config" -Note "router config and policy load completed"
@@ -981,11 +989,39 @@ $null = Add-HeartbeatPulse -Context $heartbeatContext -Stage "overlay.retrieval"
     profile_id = if ($retrievalAdvice -and $retrievalAdvice.profile_id) { [string]$retrievalAdvice.profile_id } else { "none" }
 }
 
+$promptAssetBoostAdvice = Get-PromptAssetBoostAdvice `
+    -PromptText $Prompt `
+    -PromptNormalization $promptNormalization `
+    -PromptLower $promptLower `
+    -Grade $Grade `
+    -TaskType $TaskType `
+    -RouteMode $routeMode `
+    -SelectedPackId $(if ($effectiveTop) { [string]$effectiveTop.pack_id } else { $null }) `
+    -SelectedSkill $effectiveSelectedSkill `
+    -PromptOverlayAdvice $promptOverlayAdvice `
+    -PromptAssetBoostPolicy $promptAssetBoostPolicy `
+    -RepoRoot ([string]$repoRoot)
+
+Add-RouteProbeEvent -Context $probeContext -Stage "overlay.prompt_asset_boost" -Note "prompt asset boost overlay evaluated" -Data @{
+    advice = Get-RouteProbeAdviceSummary -Advice $promptAssetBoostAdvice
+    selected_pack = if ($effectiveTop) { [string]$effectiveTop.pack_id } else { $null }
+    selected_skill = $effectiveSelectedSkill
+    route_mode_after = $routeMode
+    route_reason_after = $routeReason
+}
+$null = Add-HeartbeatPulse -Context $heartbeatContext -Stage "overlay.prompt_asset_boost" -Phase "overlay" -Note "prompt asset boost overlay evaluated" -Data @{
+    enabled = if ($promptAssetBoostAdvice) { [bool]$promptAssetBoostAdvice.enabled } else { $false }
+    scope_applicable = if ($promptAssetBoostAdvice) { [bool]$promptAssetBoostAdvice.scope_applicable } else { $false }
+    confirm_required = if ($promptAssetBoostAdvice) { [bool]$promptAssetBoostAdvice.confirm_required } else { $false }
+    recommended_skill = if ($promptAssetBoostAdvice -and $promptAssetBoostAdvice.recommended_skill) { [string]$promptAssetBoostAdvice.recommended_skill } else { "none" }
+}
+
 Add-RouteProbeEvent -Context $probeContext -Stage "overlay.bundle" -Note "post-route advisory overlays evaluated" -Data @{
     dialectic_team = Get-RouteProbeAdviceSummary -Advice $dialecticTeamAdvice
     daily_dialectic = Get-RouteProbeAdviceSummary -Advice $dailyDialecticAdvice
     exploration = Get-RouteProbeAdviceSummary -Advice $explorationAdvice
     closure = Get-RouteProbeAdviceSummary -Advice $closureAdvice
+    prompt_asset_boost = Get-RouteProbeAdviceSummary -Advice $promptAssetBoostAdvice
     quality_debt = Get-RouteProbeAdviceSummary -Advice $qualityDebtAdvice
     framework_interop = Get-RouteProbeAdviceSummary -Advice $frameworkInteropAdvice
     ml_lifecycle = Get-RouteProbeAdviceSummary -Advice $mlLifecycleAdvice
@@ -1071,6 +1107,7 @@ $result = [pscustomobject]@{
     openspec_advice = $openSpecAdvice
     gsd_overlay_advice = $gsdOverlayAdvice
     prompt_overlay_advice = $promptOverlayAdvice
+    prompt_asset_boost_advice = $promptAssetBoostAdvice
     memory_governance_advice = $memoryGovernanceAdvice
     deep_discovery_advice = $deepDiscoveryAdvice
     intent_contract = $intentContract

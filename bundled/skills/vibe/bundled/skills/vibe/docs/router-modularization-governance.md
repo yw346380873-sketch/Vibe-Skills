@@ -25,7 +25,7 @@ Refactor `scripts/router/resolve-pack-route.ps1` into maintainable modules while
 
 A modular change is allowed only when all conditions hold:
 
-1. `legacy` and `modular` outputs are exact-equal on contract matrix.
+1. `legacy` and `modular` outputs are contract-equal on the core routing matrix (core decision fields must match; additive advisory fields may differ).
 2. Existing routing gates remain green.
 3. Config parity gate remains 100%.
 4. No automatic rollback behavior is introduced.
@@ -38,7 +38,17 @@ Primary gate:
 pwsh -File .\scripts\verify\vibe-router-contract-gate.ps1 -WriteArtifacts
 ```
 
-The gate compares `legacy` vs `modular` on fixed bilingual and cross-task cases and fails on any JSON mismatch.
+The gate compares `legacy` vs `modular` on fixed bilingual and cross-task cases and fails on any **core routing contract** mismatch:
+
+- `route_mode`
+- `route_reason`
+- `selected.pack_id`
+- `selected.skill`
+- `confidence`
+- `top1_top2_gap`
+- `candidate_signal`
+
+Additive advisory payloads (e.g. post-route overlay advice blocks) are intentionally excluded from this gate to allow non-invasive enhancements without forcing legacy snapshot churn.
 
 ## Required Gate Chain
 

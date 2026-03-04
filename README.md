@@ -75,6 +75,19 @@ prompts.chat 仅作为 Prompt 资产层接入，不引入第二路由器：
 - 配置文件：`config/prompt-overlay.json`
 - 设计说明：`docs/prompt-overlay-integration.md`
 
+### 6.1 Prompt Asset Boost（GPT‑5.2 × prompts.chat 协作增强）
+
+在显式 `$vibe` / `/vibe` 场景中，VCO 会额外输出 **prompts.chat 的搜索策略 + 可注入的 prompt overlay 候选**，用于加速执行（advice-only，不改路由）：
+
+- 覆盖范围：默认 `planning/coding/review/debug/research`（可配置）
+- 触发条件：`prompt_overlay_advice` 命中 prompt 信号（或显式 prompt intent facet）
+- 接入方式：`resolve-pack-route.ps1` 输出 `prompt_asset_boost_advice`
+- 输出内容：
+  - `search_plan.queries[]`：用于 `prompt-lookup` 的 `search_prompts.query`
+  - `overlay_candidates[]`：你确认后注入（`role=system|user`）
+- 配置文件：`config/prompt-asset-boost.json`
+- 设计说明：`docs/prompt-asset-boost-integration.md`
+
 ### 7. Memory Governance 增强层（零冲突接入）
 
 Memory governance 以“后置建议层”接入，不改变现有 Pack 路由决策：

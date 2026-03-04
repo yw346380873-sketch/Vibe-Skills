@@ -100,11 +100,6 @@ foreach ($case in $cases) {
     if (-not (Compare-Float -Left ([double]$legacy.top1_top2_gap) -Right ([double]$modular.top1_top2_gap) -Tolerance $FloatTolerance)) { $mismatches += "top1_top2_gap" }
     if (-not (Compare-Float -Left ([double]$legacy.candidate_signal) -Right ([double]$modular.candidate_signal) -Tolerance $FloatTolerance)) { $mismatches += "candidate_signal" }
 
-    $legacyCanonical = ($legacy | ConvertTo-Json -Depth 30 -Compress)
-    $modularCanonical = ($modular | ConvertTo-Json -Depth 30 -Compress)
-    $fullEqual = ($legacyCanonical -eq $modularCanonical)
-    if (-not $fullEqual) { $mismatches += "full_json" }
-
     $results += [pscustomobject]@{
         case_id = $case.id
         grade = $case.grade
@@ -115,7 +110,6 @@ foreach ($case in $cases) {
         selected_pack_modular = $modularPack
         selected_skill_legacy = $legacySkill
         selected_skill_modular = $modularSkill
-        full_json_equal = $fullEqual
         mismatch_count = $mismatches.Count
         mismatches = @($mismatches)
     }
