@@ -471,15 +471,74 @@ function Get-VcoEmbeddingsForTextsWithCache {
 
     if ($missingTexts.Count -gt 0) {
         $timeoutMs = 2500
+        $embeddingProvider = $null
+        $embeddingProviderType = "openai"
+        $embeddingProviderBaseUrl = ""
+        $embeddingProviderEndpointPath = ""
+        $embeddingProviderApiKeyEnv = ""
         try {
-            $timeoutMs = [Math]::Max(1000, [int][Math]::Min(8000, [int]$PolicyResolved.provider.timeout_ms))
+            if ($vectorCfg -and $vectorCfg.embedding_provider) { $embeddingProvider = $vectorCfg.embedding_provider }
+        } catch { }
+        try {
+            if ($embeddingProvider -and $embeddingProvider.type) { $embeddingProviderType = [string]$embeddingProvider.type }
+        } catch { }
+        try {
+            if ($embeddingProvider -and $embeddingProvider.base_url) { $embeddingProviderBaseUrl = [string]$embeddingProvider.base_url }
+        } catch { }
+        if (-not $embeddingProviderBaseUrl) {
+            try { $embeddingProviderBaseUrl = [string]$PolicyResolved.provider.base_url } catch { }
+        }
+        try {
+            if ($embeddingProvider -and $embeddingProvider.endpoint_path) { $embeddingProviderEndpointPath = [string]$embeddingProvider.endpoint_path }
+        } catch { }
+        try {
+            if ($embeddingProvider -and $embeddingProvider.api_key_env) { $embeddingProviderApiKeyEnv = [string]$embeddingProvider.api_key_env }
         } catch { }
 
-        $result = Invoke-OpenAiEmbeddingsCreate `
-            -Model $EmbeddingModel `
-            -Input @($missingTexts) `
-            -TimeoutMs $timeoutMs `
-            -BaseUrl ([string]$PolicyResolved.provider.base_url)
+        $timeoutHint = $null
+        try {
+            if ($embeddingProvider -and $embeddingProvider.timeout_ms -ne $null) { $timeoutHint = [int]$embeddingProvider.timeout_ms }
+        } catch { }
+        if ($timeoutHint -ne $null) {
+            $timeoutMs = [Math]::Max(1000, [int][Math]::Min(15000, $timeoutHint))
+        } else {
+            try {
+                $timeoutMs = [Math]::Max(1000, [int][Math]::Min(8000, [int]$PolicyResolved.provider.timeout_ms))
+            } catch { }
+        }
+
+        $result = $null
+        try {
+            switch ($embeddingProviderType) {
+                "openai" {
+                    $result = Invoke-OpenAiEmbeddingsCreate `
+                        -Model $EmbeddingModel `
+                        -Input @($missingTexts) `
+                        -TimeoutMs $timeoutMs `
+                        -BaseUrl $embeddingProviderBaseUrl
+                }
+                "volc_ark" {
+                    $endpointPath = if ($embeddingProviderEndpointPath) { $embeddingProviderEndpointPath } else { "/embeddings/multimodal" }
+                    $apiKeyEnv = if ($embeddingProviderApiKeyEnv) { $embeddingProviderApiKeyEnv } else { "ARK_API_KEY" }
+                    $items = foreach ($t in $missingTexts) {
+                        [ordered]@{ type = "text"; text = [string]$t }
+                    }
+
+                    $result = Invoke-VolcArkEmbeddingsCreate `
+                        -Model $EmbeddingModel `
+                        -Input @($items) `
+                        -TimeoutMs $timeoutMs `
+                        -BaseUrl $embeddingProviderBaseUrl `
+                        -EndpointPath $endpointPath `
+                        -ApiKeyEnv $apiKeyEnv
+                }
+                default {
+                    return [pscustomobject]@{ ok = $false; abstained = $true; reason = "unknown_embedding_provider"; vectors = @() }
+                }
+            }
+        } catch {
+            return [pscustomobject]@{ ok = $false; abstained = $true; reason = "embeddings_invoke_error"; vectors = @() }
+        }
 
         if (-not [bool]$result.ok -or [bool]$result.abstained) {
             return [pscustomobject]@{ ok = $false; abstained = $true; reason = [string]$result.reason; vectors = @() }
@@ -643,16 +702,49 @@ function Get-VcoGitContextSnippet {
             $vectorEnabled = [bool]($vectorCfg -and $vectorCfg.enabled)
             $minChars = if ($vectorCfg -and $vectorCfg.min_diff_chars_for_vector -ne $null) { [int]$vectorCfg.min_diff_chars_for_vector } else { 0 }
 
-            if ($vectorEnabled -and $raw -and $raw.Length -ge $minChars -and $QueryText -and ([string]$PolicyResolved.provider.type -eq "openai") -and (Get-OpenAiApiKey)) {
-                $vec = Select-VcoVectorDiffSnippets -PolicyResolved $PolicyResolved -VcoRepoRoot $VcoRepoRoot -QueryText $QueryText -DiffText $raw
-                if ([bool]$vec.ok -and (-not [bool]$vec.abstained) -and $vec.diff) {
-                    $diffText = [string]$vec.diff
-                    $diffTruncated = [bool]$vec.diff_truncated
-                    $diffMode = "vector_selected"
-                    $diffSelectedChunks = [int]$vec.selected_chunks
-                    $diffVectorReason = "ok"
+            if ($vectorEnabled -and $raw -and $raw.Length -ge $minChars -and $QueryText) {
+                $embProv = $null
+                $embProvType = "openai"
+                try {
+                    if ($vectorCfg -and $vectorCfg.embedding_provider) { $embProv = $vectorCfg.embedding_provider }
+                } catch { }
+                try {
+                    if ($embProv -and $embProv.type) { $embProvType = [string]$embProv.type }
+                } catch { }
+
+                $keyOk = $false
+                $keyReason = $null
+
+                switch ($embProvType) {
+                    "openai" {
+                        if (Get-OpenAiApiKey) { $keyOk = $true } else { $keyReason = "missing_openai_api_key" }
+                    }
+                    "volc_ark" {
+                        $keyEnv = "ARK_API_KEY"
+                        try {
+                            if ($embProv -and $embProv.api_key_env) { $keyEnv = [string]$embProv.api_key_env }
+                        } catch { }
+
+                        if (Get-VolcArkApiKey -EnvName $keyEnv) { $keyOk = $true } else { $keyReason = "missing_ark_api_key" }
+                    }
+                    default {
+                        $keyReason = "unknown_embedding_provider"
+                    }
+                }
+
+                if ($keyOk) {
+                    $vec = Select-VcoVectorDiffSnippets -PolicyResolved $PolicyResolved -VcoRepoRoot $VcoRepoRoot -QueryText $QueryText -DiffText $raw
+                    if ([bool]$vec.ok -and (-not [bool]$vec.abstained) -and $vec.diff) {
+                        $diffText = [string]$vec.diff
+                        $diffTruncated = [bool]$vec.diff_truncated
+                        $diffMode = "vector_selected"
+                        $diffSelectedChunks = [int]$vec.selected_chunks
+                        $diffVectorReason = "ok"
+                    } else {
+                        $diffVectorReason = if ($vec -and $vec.reason) { [string]$vec.reason } else { "vector_abstained" }
+                    }
                 } else {
-                    $diffVectorReason = if ($vec -and $vec.reason) { [string]$vec.reason } else { "vector_abstained" }
+                    $diffVectorReason = $keyReason
                 }
             }
 

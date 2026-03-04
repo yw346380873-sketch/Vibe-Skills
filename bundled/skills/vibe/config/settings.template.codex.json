@@ -2,6 +2,8 @@
   "env": {
     "OPENAI_API_KEY": "<REQUIRED>",
     "OPENAI_BASE_URL": "<OPTIONAL e.g. https://right.codes/codex/v1>",
+    "ARK_API_KEY": "<OPTIONAL (TurboMax vector_diff embeddings)>",
+    "ARK_BASE_URL": "<OPTIONAL e.g. https://ark.cn-beijing.volces.com/api/v3>",
     "VCO_PROFILE": "full",
     "VCO_CODEX_MODE": "true"
   },

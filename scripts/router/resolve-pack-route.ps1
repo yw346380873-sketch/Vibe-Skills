@@ -19,6 +19,7 @@ $routerModuleRoot = Join-Path $PSScriptRoot "modules"
 $routerModules = @(
     "00-core-utils.ps1",
     "01-openai-responses.ps1",
+    "02-volc-ark.ps1",
     "10-observability.ps1",
     "11-route-probe.ps1",
     "12-heartbeat.ps1",

@@ -36,7 +36,7 @@
 当需要 diff 证据时：
 
 - 先拿到完整 diff（仅本地 git），再按文件/块切分成 chunks；
-- 使用 embeddings 计算 prompt 与 chunks 的相似度；
+- 使用 embeddings 计算 prompt 与 chunks 的相似度（provider 可配置，默认使用火山 Ark multimodal embeddings 的 **text-only input**）；
 - 仅注入 Top‑K chunks（例如 2–3 个），并在 `max_diff_chars` 内截断；
 - 若 embeddings 不可用：退化为传统截断（head truncate）或仅 git status。
 
@@ -49,6 +49,9 @@
 - `provider.temperature`: `0.2 → 0.15`
 - `context.max_diff_chars`: `9000 → 6000`（更节制）
 - 新增 `context.vector_diff`：启用 embeddings 选择 diff chunks（大 diff 时生效）
+  - embeddings provider：
+    - `type=volc_ark`（默认）：`base_url=https://ark.cn-beijing.volces.com/api/v3` + `endpoint_path=/embeddings/multimodal`，env：`ARK_API_KEY`
+    - `type=openai`（可选）：env：`OPENAI_API_KEY`
 - 继续保持：
   - `activation.explicit_vibe_only=true`
   - `trigger.always_on_explicit_vibe=true`
@@ -75,4 +78,3 @@
 - **速度 vs 质量**：启用向量选择会增加 embedding 调用，但减少“上下文噪声→误判→返工”的总耗时。
 - **上下文腐烂**：通过 `max_diff_chars` + Top‑K chunk 注入 + 可选缓存上限，降低污染。
 - **路由冲突**：保持 `allow_route_override=false`，只允许“确认升级/建议”，不强行换 pack。
-
