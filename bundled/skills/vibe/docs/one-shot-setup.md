@@ -33,6 +33,12 @@ Linux / macOS without `pwsh` still gets the full shipped content and the active 
 4. 运行 `check.ps1 -Deep`
 5. 生成 doctor artifacts 到 `outputs/verify/`
 
+## Operator Notes
+
+- When external CLI installation is enabled, the slowest step is usually the `npm` install for `claude-flow`; several minutes is expected on some machines.
+- `npm` deprecation warnings during that step are advisory unless the install command exits non-zero.
+- If the target `settings.json` already contains `OPENAI_API_KEY` or `ARK_API_KEY`, the bootstrap reuses those values and reports that explicitly instead of warning that the provider key is missing.
+
 ## What It Can Finish Automatically
 
 - vendored / bundled skills

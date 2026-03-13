@@ -1,5 +1,14 @@
 # VCO Changelog
 
+## v2.3.33 (2026-03-13)
+
+- Fixed one-shot bootstrap provider seeding so existing `settings.json` keys are reused instead of triggering misleading `OPENAI_API_KEY not provided` warnings.
+- Added operator-facing bootstrap messaging that sets realistic expectations for slow `npm` installs and advisory deprecated warnings during external CLI provisioning.
+- Aligned `check.ps1` with `nested_bundled` governance so optional nested mirrors no longer create false bundled-config warnings during deep doctor runs.
+- Resynced canonical and bundled mirrors, regenerated `config/skills-lock.json`, and re-cut the governed release surface to `v2.3.33`.
+- Detailed release notes: `docs/releases/v2.3.33.md`.
+
+
 ## v2.3.32 (2026-03-13)
 
 - Added dual-platform full-setup onboarding so README now documents a governed "full-featured" install path for both Windows and Linux / macOS.

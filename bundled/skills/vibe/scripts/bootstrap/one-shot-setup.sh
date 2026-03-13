@@ -56,6 +56,40 @@ pick_python() {
   return 1
 }
 
+read_existing_settings_env_value() {
+  local codex_root="$1"
+  local name="$2"
+  local python_bin
+
+  if ! python_bin="$(pick_python)"; then
+    return 1
+  fi
+
+  "${python_bin}" - "${codex_root}" "${name}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+codex_root, name = sys.argv[1:3]
+settings_path = Path(codex_root) / "settings.json"
+if not settings_path.exists():
+    raise SystemExit(1)
+
+try:
+    with settings_path.open("r", encoding="utf-8-sig") as fh:
+        settings = json.load(fh)
+except Exception:
+    raise SystemExit(1)
+
+env = settings.get("env", {})
+value = env.get(name)
+if isinstance(value, str) and value.strip():
+    print(value)
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
 seed_settings_env_with_python() {
   local codex_root="$1"
   local provider="$2"
@@ -175,9 +209,11 @@ PY
 
 require_cmd bash "Linux/macOS bootstrap requires bash"
 require_cmd git "required by the repository install flow"
-require_cmd node "required for npm-managed runtimes"
-require_cmd npm "required for claude-flow / external CLI provisioning"
 require_cmd "$(pick_python || echo python3)" "required for shell-native settings and MCP materialization fallback"
+if [[ "${SKIP_EXTERNAL_INSTALL}" != "true" ]]; then
+  require_cmd node "required for npm-managed runtimes"
+  require_cmd npm "required for claude-flow / external CLI provisioning"
+fi
 
 echo "=== VCO One-Shot Setup (shell) ==="
 echo "Repo root             : ${REPO_ROOT}"
@@ -185,6 +221,9 @@ echo "Target root           : ${TARGET_ROOT}"
 echo "Profile               : ${PROFILE}"
 echo "StrictOffline         : ${STRICT_OFFLINE}"
 echo "SkipExternalInstall   : ${SKIP_EXTERNAL_INSTALL}"
+if [[ "${SKIP_EXTERNAL_INSTALL}" != "true" ]]; then
+  echo "External CLI install  : enabled (npm-based steps such as claude-flow may take several minutes; deprecated warnings are advisory unless the command exits non-zero)"
+fi
 
 install_args=(--profile "${PROFILE}" --target-root "${TARGET_ROOT}")
 if [[ "${SKIP_EXTERNAL_INSTALL}" != "true" ]]; then
@@ -199,6 +238,12 @@ echo "[1/5] Installing governed runtime payload..."
 bash "${INSTALL_SH}" "${install_args[@]}"
 
 resolved_openai_api_key="${OPENAI_API_KEY_INPUT:-${OPENAI_API_KEY:-}}"
+existing_openai_key=""
+if existing_openai_key="$(read_existing_settings_env_value "${TARGET_ROOT}" "OPENAI_API_KEY" 2>/dev/null)"; then
+  :
+else
+  existing_openai_key=""
+fi
 if [[ -n "${resolved_openai_api_key}" ]]; then
   echo "[2/5] Seeding OPENAI settings into target settings.json..."
   if command -v pwsh >/dev/null 2>&1; then
@@ -206,11 +251,19 @@ if [[ -n "${resolved_openai_api_key}" ]]; then
   else
     seed_settings_env_with_python "${TARGET_ROOT}" "openai" "${OPENAI_BASE_URL}" "${resolved_openai_api_key}"
   fi
+elif [[ -n "${existing_openai_key}" ]]; then
+  echo "[2/5] OPENAI settings already exist in target settings.json; keeping current value."
 else
   echo "[WARN] OPENAI_API_KEY not provided and not present in the current environment. Full online readiness will remain pending."
 fi
 
 resolved_ark_api_key="${ARK_API_KEY_INPUT:-${ARK_API_KEY:-}}"
+existing_ark_key=""
+if existing_ark_key="$(read_existing_settings_env_value "${TARGET_ROOT}" "ARK_API_KEY" 2>/dev/null)"; then
+  :
+else
+  existing_ark_key=""
+fi
 if [[ -n "${resolved_ark_api_key}" ]]; then
   echo "[3/5] Seeding ARK settings into target settings.json..."
   if command -v pwsh >/dev/null 2>&1; then
@@ -218,6 +271,8 @@ if [[ -n "${resolved_ark_api_key}" ]]; then
   else
     seed_settings_env_with_python "${TARGET_ROOT}" "ark" "${ARK_BASE_URL}" "${resolved_ark_api_key}"
   fi
+elif [[ -n "${existing_ark_key}" ]]; then
+  echo "[3/5] ARK settings already exist in target settings.json; keeping current value."
 else
   echo "[3/5] ARK settings not provided; skipping optional ARK seeding."
 fi

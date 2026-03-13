@@ -115,6 +115,12 @@ VibeSkills 的目标不是把这些组件堆在一起。
 
 如果 Linux / macOS 没有 `pwsh`，依然可以安装完整仓库内容并物化 MCP active profile，但 PowerShell 侧的权威 doctor gates 会退化为 shell warning。
 
+#### Operator Notes
+
+- 鍚敤澶栭儴 CLI 瀹夎鏃讹紝鏈€鎱㈢殑姝ラ閫氬父鏄?`claude-flow` 鐨?`npm` 瀹夎锛涜窇鍑犲垎閽熷睘浜庢甯搁鏈熴€?
+- `npm` 鍦ㄨ繖涓樁娈电殑 deprecated warnings 灞炰簬 advisory signal锛屽彧鏈夊綋鍛戒护闈?exit non-zero 鏃舵墠绠楀畨瑁呭け璐ャ€?
+- 濡傛灉鐩爣 `settings.json` 宸茬粡鍐欏叆 `OPENAI_API_KEY` 鎴?`ARK_API_KEY`锛宐ootstrap 浼氬鐢ㄧ幇鏈夊€硷紝鑰屼笉鍐嶈鎶?鈥渘ot provided鈥?銆?
+
 #### Windows
 
 ```powershell

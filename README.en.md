@@ -111,6 +111,12 @@ It means all shipped skills and governance assets are installed locally, the act
 
 Without `pwsh`, Linux/macOS still gets the full shipped content and the MCP active profile, but the authoritative PowerShell doctor gates are downgraded to shell-safe warnings.
 
+Operator notes:
+
+- The one-shot bootstrap can be slow when external CLI installation is enabled, especially during `npm` installation of `claude-flow`. Several minutes is normal.
+- `npm` deprecation warnings during external CLI installation are advisory unless the command exits non-zero.
+- If the target `settings.json` already contains `OPENAI_API_KEY` or `ARK_API_KEY`, the bootstrap now keeps those values and reports that they were reused instead of emitting a misleading "not provided" warning.
+
 #### Windows
 
 ```powershell

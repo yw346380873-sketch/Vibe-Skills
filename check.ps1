@@ -359,6 +359,26 @@ if ([string]::IsNullOrWhiteSpace($startupRuntimeTargetRel)) {
 
 $runtimeSkillRoot = Join-Path $TargetRoot $startupRuntimeTargetRel
 $runtimeNestedSkillRoot = Join-Path $runtimeSkillRoot 'bundled\skills\vibe'
+$runtimeNestedSkillRootExists = Test-Path -LiteralPath $runtimeNestedSkillRoot
+$nestedBundledPresencePolicy = 'optional'
+$nestedBundledRequired = $false
+if ($startupRuntimeConfig.PSObject.Properties.Name -contains 'require_nested_bundled_root') {
+  $nestedBundledRequired = [bool]$startupRuntimeConfig.require_nested_bundled_root
+}
+if ($null -ne $startupGovernance -and $startupGovernance.PSObject.Properties.Name -contains 'mirror_topology' -and $null -ne $startupGovernance.mirror_topology) {
+  $topology = $startupGovernance.mirror_topology
+  if ($topology.PSObject.Properties.Name -contains 'targets' -and $null -ne $topology.targets) {
+    $nestedBundledTarget = @($topology.targets | Where-Object { [string]$_.id -eq 'nested_bundled' } | Select-Object -First 1)[0]
+    if ($null -ne $nestedBundledTarget) {
+      if ($nestedBundledTarget.PSObject.Properties.Name -contains 'presence_policy' -and -not [string]::IsNullOrWhiteSpace([string]$nestedBundledTarget.presence_policy)) {
+        $nestedBundledPresencePolicy = [string]$nestedBundledTarget.presence_policy
+      }
+      if (($nestedBundledTarget.PSObject.Properties.Name -contains 'required' -and [bool]$nestedBundledTarget.required) -or $nestedBundledPresencePolicy -eq 'required') {
+        $nestedBundledRequired = $true
+      }
+    }
+  }
+}
 
 Check-Path -Label "vibe version governance config" -Path (Join-Path $TargetRoot (Join-Path $startupRuntimeTargetRel 'config\version-governance.json'))
 Check-Path -Label "vibe release ledger" -Path (Join-Path $runtimeSkillRoot 'references\release-ledger.jsonl')
@@ -388,13 +408,18 @@ Check-Path -Label "vibe retrieval rerank weights config" -Path (Join-Path $runti
 Check-Path -Label "vibe exploration policy config" -Path (Join-Path $runtimeSkillRoot 'config\exploration-policy.json')
 Check-Path -Label "vibe exploration intent profiles config" -Path (Join-Path $runtimeSkillRoot 'config\exploration-intent-profiles.json')
 Check-Path -Label "vibe exploration domain map config" -Path (Join-Path $runtimeSkillRoot 'config\exploration-domain-map.json')
-Check-Path -Label "vibe bundled retrieval intent profiles config" -Path (Join-Path $runtimeNestedSkillRoot 'config\retrieval-intent-profiles.json')
-Check-Path -Label "vibe bundled retrieval source registry config" -Path (Join-Path $runtimeNestedSkillRoot 'config\retrieval-source-registry.json')
-Check-Path -Label "vibe bundled retrieval rerank weights config" -Path (Join-Path $runtimeNestedSkillRoot 'config\retrieval-rerank-weights.json')
-Check-Path -Label "vibe bundled exploration policy config" -Path (Join-Path $runtimeNestedSkillRoot 'config\exploration-policy.json')
-Check-Path -Label "vibe bundled exploration intent profiles config" -Path (Join-Path $runtimeNestedSkillRoot 'config\exploration-intent-profiles.json')
-Check-Path -Label "vibe bundled exploration domain map config" -Path (Join-Path $runtimeNestedSkillRoot 'config\exploration-domain-map.json')
-Check-Path -Label "vibe bundled llm acceleration policy config" -Path (Join-Path $runtimeNestedSkillRoot 'config\llm-acceleration-policy.json')
+if ($nestedBundledRequired) {
+  Check-Path -Label "vibe bundled retrieval intent profiles config" -Path (Join-Path $runtimeNestedSkillRoot 'config\retrieval-intent-profiles.json') -Required:$nestedBundledRequired
+  Check-Path -Label "vibe bundled retrieval source registry config" -Path (Join-Path $runtimeNestedSkillRoot 'config\retrieval-source-registry.json') -Required:$nestedBundledRequired
+  Check-Path -Label "vibe bundled retrieval rerank weights config" -Path (Join-Path $runtimeNestedSkillRoot 'config\retrieval-rerank-weights.json') -Required:$nestedBundledRequired
+  Check-Path -Label "vibe bundled exploration policy config" -Path (Join-Path $runtimeNestedSkillRoot 'config\exploration-policy.json') -Required:$nestedBundledRequired
+  Check-Path -Label "vibe bundled exploration intent profiles config" -Path (Join-Path $runtimeNestedSkillRoot 'config\exploration-intent-profiles.json') -Required:$nestedBundledRequired
+  Check-Path -Label "vibe bundled exploration domain map config" -Path (Join-Path $runtimeNestedSkillRoot 'config\exploration-domain-map.json') -Required:$nestedBundledRequired
+  Check-Path -Label "vibe bundled llm acceleration policy config" -Path (Join-Path $runtimeNestedSkillRoot 'config\llm-acceleration-policy.json') -Required:$nestedBundledRequired
+} else {
+  Write-Host ("[OK] vibe nested bundled config checks skipped (target absent; policy={0})" -f $nestedBundledPresencePolicy)
+  $script:pass++
+}
 
 foreach ($name in $requiredWorkflow) {
   Check-Path -Label "workflow skill/$name" -Path (Join-Path $TargetRoot "skills\$name\SKILL.md")
