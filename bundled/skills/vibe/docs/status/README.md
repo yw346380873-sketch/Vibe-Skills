@@ -1,41 +1,47 @@
 # VCO Status
 
-`docs/status/` 是 `docs/` 层的 runtime-entry surface。这里回答三件事：
+`docs/status/` is the runtime-entry surface inside `docs/`.
 
-1. 现在仓库的真实状态是什么；
-2. 当前收口批次在推进什么；
-3. 哪些能力在 closure 期间绝不能退化。
+It answers three questions:
+
+1. what is true about the repository right now
+2. what closure batch or migration wave is currently active
+3. which capabilities are not allowed to regress during convergence
 
 ## Start Here
 
 ### Runtime Summary
 
-- [`current-state.md`](current-state.md): 唯一 live 状态入口；只保留 artifact-backed 摘要、阻塞项和下一跳 operator handoff
-- [`roadmap.md`](roadmap.md): 当前批次顺序、exit conditions 和后续 batch 编排
+- [`current-state.md`](current-state.md): the single live status entry; keep only artifact-backed summary, blockers, and operator handoff
+- [`roadmap.md`](roadmap.md): current batch order, exit conditions, and next-wave sequencing
 
 ### Batch Receipts
 
-- [`operator-dry-run.md`](operator-dry-run.md): 最近一次阶段收尾 wrapper 的 operator 回执
-- [`closure-audit.md`](closure-audit.md): 当前 closure batch 的完成面、未完成面与禁止误判项
+- [`operator-dry-run.md`](operator-dry-run.md): latest operator replay for the active wrapper or closure batch
+- [`closure-audit.md`](closure-audit.md): current closure-batch completion surface, remaining gaps, and no-overclaim notes
 
 ### Guardrails / Proof / Transitional Baselines
 
-- [`protected-capability-baseline.md`](protected-capability-baseline.md): closure 阶段的“禁止退化”护栏矩阵；定义哪些 surface 在清理期间必须先证明、再改动
-- [`non-regression-proof-bundle.md`](non-regression-proof-bundle.md): 当前 cleanup 的最小 proof contract
-- [`path-dependency-census.md`](path-dependency-census.md): 过渡期 blocker map；只说明当前还不能盲删或盲搬的依赖簇
-- [`repo-cleanliness-baseline.md`](repo-cleanliness-baseline.md): dated inventory baseline；用于衡量改善 delta，不是 live dashboard
+- [`protected-capability-baseline.md`](protected-capability-baseline.md): defines which surfaces must be proven before they are changed during closure work
+- [`non-regression-proof-bundle.md`](non-regression-proof-bundle.md): current cleanup and no-regression proof contract
+- [`platform-promotion-baseline-2026-03-13.md`](platform-promotion-baseline-2026-03-13.md): current platform-promotion truth snapshot
+- [`linux-pwsh-fresh-machine-evidence-ledger-2026-03-13.md`](linux-pwsh-fresh-machine-evidence-ledger-2026-03-13.md): Linux fresh-machine evidence ledger for the promoted `Linux + pwsh` authoritative lane
+- [`path-dependency-census.md`](path-dependency-census.md): transitional blocker map for dependencies that still cannot be removed or relocated blindly
+- [`repo-cleanliness-baseline.md`](repo-cleanliness-baseline.md): dated inventory baseline for delta measurement, not a live dashboard
 
 ## Cross-Layer Handoff
 
-- [`../README.md`](../README.md): docs 三段式总入口
-- [`../plans/README.md`](../plans/README.md): 当前执行计划与历史背景材料
+- [`../README.md`](../README.md): top-level docs entry
+- [`../plans/README.md`](../plans/README.md): execution plans and historical batch context
 - [`../../scripts/README.md`](../../scripts/README.md): operator script surface
-- [`../../scripts/verify/gate-family-index.md`](../../scripts/verify/gate-family-index.md): verify family navigation and typical run order
+- [`../../scripts/verify/gate-family-index.md`](../../scripts/verify/gate-family-index.md): verify-family navigation and canonical run order
+- [`../universalization/platform-promotion-criteria.md`](../universalization/platform-promotion-criteria.md): canonical promotion criteria
+- [`../universalization/linux-full-authoritative-contract.md`](../universalization/linux-full-authoritative-contract.md): Linux promotion contract and stop rules
 
 ## Rules
 
-- `current-state.md` 是 status 面的唯一摘要页；其数字与 PASS / FAIL 结论必须回指 `outputs/verify/**` 或运行态回执，而不是人工重复抄写
-- `operator-dry-run.md` 与 `closure-audit.md` 是批次收据，只保留最近、可信、可复查的一份
-- supporting baselines 只允许承担三种角色：guardrail、proof contract、transitional blocker map；凡是演化成长期稳定合同的内容，都应迁回 root `docs/` 或 `references/`
-- `repo-cleanliness-baseline.md` 这类 dated baseline 必须显式区分“冻结快照”和“当前现况”；当前现况只以最新 gate receipt 为准
-- 历史 closure report / batch report 继续保留在 [`../plans/README.md`](../plans/README.md)，不在这里累积流水
+- `current-state.md` is the only live summary page in `docs/status/`; any PASS / FAIL or numeric claim must point back to `outputs/verify/**` or an operator receipt
+- `operator-dry-run.md` and `closure-audit.md` are batch receipts; keep only the latest trustworthy, reviewable version
+- supporting baselines may act only as guardrails, proof contracts, or transitional blocker maps; when content becomes a stable long-term contract, move it back to root `docs/` or `references/`
+- dated baselines such as `repo-cleanliness-baseline.md` must be clearly distinguished from current state; the latest gate receipt remains authoritative
+- historical closure reports and batch reports stay under [`../plans/README.md`](../plans/README.md), not here

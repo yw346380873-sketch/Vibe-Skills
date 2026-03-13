@@ -24,8 +24,8 @@ if ($failures.Count -eq 0) {
     if ($win.status -ne 'full-authoritative') {
         $failures += "codex windows must remain full-authoritative"
     }
-    if ($linux.status -notin @('supported-with-constraints', 'degraded-but-supported')) {
-        $failures += "codex linux must remain explicitly constrained, not silently promoted"
+    if ($linux.status -notin @('full-authoritative', 'supported-with-constraints', 'degraded-but-supported')) {
+        $failures += "codex linux must remain inside the governed platform status vocabulary"
     }
     if ($mac.status -eq 'full-authoritative') {
         $failures += "codex macos cannot be marked full-authoritative before proof"

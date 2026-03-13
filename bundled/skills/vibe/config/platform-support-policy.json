@@ -31,7 +31,7 @@
   "current_baseline": {
     "official-runtime": {
       "windows": "full-authoritative",
-      "linux": "supported-with-constraints",
+      "linux": "full-authoritative",
       "macos": "not-yet-proven"
     }
   },
@@ -49,6 +49,9 @@
     "platform support matrix exists",
     "doctor parity gaps are recorded",
     "authoritative gate ownership is explicit",
-    "support wording matches measured state"
+    "support wording matches measured state",
+    "fresh-machine platform evidence is frozen before promotion",
+    "replay fixture is synchronized with any promoted status",
+    "platform promotion bundle gate passes"
   ]
 }

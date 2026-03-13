@@ -21,7 +21,7 @@ This document only maps that truth into the install entrypoints.
 | Platform | Primary Install | Primary Check | Support Rating (Truth) | Notes |
 | --- | --- | --- | --- | --- |
 | Windows | `install.ps1` | `check.ps1` | `full-authoritative` | current reference closure lane |
-| Linux + `pwsh` | `install.sh` | `check.sh` (+ PowerShell follow-up) | `supported-with-constraints` | can be strong, but parity must be proved |
+| Linux + `pwsh` | `install.sh` | `check.sh` (+ PowerShell follow-up) | `full-authoritative` | proof is frozen and promotion sync is complete |
 | Linux without `pwsh` | `install.sh` | `check.sh` (degraded) | `degraded-but-supported` | must not be marketed as full |
 | macOS + `pwsh` | shell path inferred | partial | `not-yet-proven` | must be measured and recorded |
 | macOS without `pwsh` | shell path inferred | partial | `not-yet-proven` | must be measured and recorded |
@@ -30,4 +30,3 @@ This document only maps that truth into the install entrypoints.
 
 - `official-runtime` and `host-codex` inherit this platform matrix.
 - `core`, `host-claude-code`, and `host-opencode` do not claim a governed install closure lane yet.
-

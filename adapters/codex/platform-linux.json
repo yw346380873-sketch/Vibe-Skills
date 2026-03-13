@@ -1,7 +1,7 @@
 {
   "adapter_id": "codex",
   "platform": "linux",
-  "status": "supported-with-constraints",
+  "status": "full-authoritative",
   "install_surface": [
     "install.sh",
     "scripts/bootstrap/one-shot-setup.sh"
@@ -11,13 +11,28 @@
   ],
   "doctor_surface": [
     "check.sh",
+    "scripts/verify/runtime_neutral/bootstrap_doctor.py",
     "PowerShell gates when pwsh is available"
   ],
   "degrade_cases": {
     "without_pwsh": "degraded-but-supported"
   },
+  "promotion_target": "full-authoritative",
+  "proof_bundle": {
+    "manifest": "references/proof-bundles/linux-full-authoritative-candidate/manifest.json",
+    "gate": "scripts/verify/vibe-linux-pwsh-proof-gate.ps1",
+    "bundle_gate": "scripts/verify/vibe-platform-promotion-bundle.ps1",
+    "current_evidence_state": "complete"
+  },
+  "promotion_requirements": [
+    "two independent fresh-machine Linux runs",
+    "replay fixture synchronized with any promotion",
+    "promotion bundle gate passes after status change",
+    "linux without pwsh remains degraded-but-supported"
+  ],
   "notes": [
-    "Linux can approach official closure when pwsh is installed.",
-    "Without pwsh, authoritative freshness/coherence gates may be skipped with warnings."
+    "Linux has a runtime-neutral authoritative-core migration in progress.",
+    "Linux now has two frozen fresh-machine proof bundles when pwsh is available, and the promotion sync is complete.",
+    "Without pwsh, the lane remains degraded-but-supported and must not be marketed as full-authoritative."
   ]
 }

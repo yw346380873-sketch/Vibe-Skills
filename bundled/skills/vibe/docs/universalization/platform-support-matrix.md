@@ -30,16 +30,24 @@ This document does **not** claim that all hosts and all platforms already have i
 As of the current repository baseline:
 
 - Windows is the clearest official runtime path because the repo's primary governance, doctor, freshness, and coherence gates are PowerShell-first.
-- Linux can reach a strong path when `pwsh` is available, but parity is not yet formally frozen as a contract.
+- Linux is now a promoted official runtime path when `pwsh` is available, backed by a frozen fresh-machine proof bundle and synchronized replay/docs state.
 - Linux without `pwsh` is an honest degraded path, not a false "full support" path.
 - macOS is logically close to the Linux shell path, but it is not yet separately frozen as a formal proof lane.
+
+Linux promotion is governed by:
+
+- `docs/universalization/linux-full-authoritative-contract.md`
+- `docs/universalization/platform-promotion-criteria.md`
+- `docs/status/linux-pwsh-fresh-machine-evidence-ledger-2026-03-13.md`
+
+Those layers are now satisfied together for `codex/linux` when `pwsh` is present.
 
 ## Platform Matrix
 
 | Platform | Install Surface | Check Surface | Governance / Doctor Surface | Current Rating | Notes |
 | --- | --- | --- | --- | --- | --- |
 | Windows | `install.ps1`, `one-shot-setup.ps1` | `check.ps1` | strongest current path for PowerShell-first gates | `full-authoritative` | this is the current reference closure lane |
-| Linux + `pwsh` | `install.sh`, `one-shot-setup.sh` | `check.sh` plus PowerShell-capable follow-up | can approach authoritative path if `pwsh` is provisioned | `supported-with-constraints` | needs explicit parity proof, not assumption |
+| Linux + `pwsh` | `install.sh`, `one-shot-setup.sh` | `check.sh` plus PowerShell-capable follow-up | promoted authoritative lane when `pwsh` is provisioned | `full-authoritative` | fresh-machine proof is frozen and replay/status/doc sync is complete |
 | Linux without `pwsh` | `install.sh`, `one-shot-setup.sh` | `check.sh` | PowerShell authority gates may be skipped with warnings | `degraded-but-supported` | usable, but not equal to official Windows closure |
 | macOS + `pwsh` | shell path inferred from bash tooling | partial | likely similar to Linux + `pwsh`, but not frozen | `not-yet-proven` | must not be marketed as full until proved |
 | macOS without `pwsh` | shell path inferred from bash tooling | partial | likely degraded like Linux without `pwsh` | `not-yet-proven` | must first be measured and recorded |

@@ -15,7 +15,7 @@ A platform only earns a stronger support label when the repository can show:
 ## Current Rules
 
 - Windows remains the authoritative official-runtime reference lane.
-- Linux may be strong, but only when `pwsh` is provisioned and relevant PowerShell gates can run.
+- Linux is now a promoted full-authoritative lane when `pwsh` is provisioned and relevant PowerShell gates can run.
 - Linux without `pwsh` is degraded, not secretly full.
 - macOS remains `not-yet-proven` until a separate evidence lane exists.
 
@@ -40,3 +40,19 @@ to:
 - `full-authoritative`
 
 without corresponding gate and replay evidence.
+
+## Linux Proof Linkage
+
+For Linux, promotion evidence is a bundled contract rather than a generic "measured once" claim.
+
+Linux promotion must simultaneously satisfy:
+
+- contract truth
+- replay synchronization
+- fresh-machine evidence
+- public wording synchronization
+
+The canonical references are:
+
+- `docs/universalization/platform-promotion-criteria.md`
+- `docs/universalization/linux-full-authoritative-contract.md`
