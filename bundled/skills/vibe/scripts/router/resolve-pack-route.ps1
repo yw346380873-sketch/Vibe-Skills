@@ -338,6 +338,7 @@ $weightSkillSignal = if ($weights.skill_keyword_signal -ne $null) { [double]$wei
 $candidateSelectionConfig = if ($thresholds.candidate_selection) { $thresholds.candidate_selection } else { $null }
 $minTopGap = if ($th.min_top1_top2_gap -ne $null) { [double]$th.min_top1_top2_gap } else { 0.0 }
 $minCandidateSignalForConfirmOverride = if ($th.min_candidate_signal_for_confirm_override -ne $null) { [double]$th.min_candidate_signal_for_confirm_override } else { 0.0 }
+$minCandidateSignalForAutoRoute = if ($th.min_candidate_signal_for_auto_route -ne $null) { [double]$th.min_candidate_signal_for_auto_route } else { [double]$th.auto_route }
 $enforceConfirmOnLegacyFallback = if ($rules.enforce_confirm_on_legacy_fallback -ne $null) { [bool]$rules.enforce_confirm_on_legacy_fallback } else { $false }
 
 $probeContext = New-RouteProbeContext `
@@ -478,6 +479,35 @@ Add-RouteProbeEvent -Context $probeContext -Stage "deep_discovery.contract" -Not
 }
 $null = Add-HeartbeatPulse -Context $heartbeatContext -Stage "deep_discovery.contract" -Phase "deep_discovery" -Note "intent contract synthesized"
 
+$deepDiscoveryConfirmRelaxed = $false
+if ($deepDiscoveryAdvice -and [bool]$deepDiscoveryAdvice.confirm_required) {
+    $intentCompleteness = if ($intentContract -and $intentContract.completeness -ne $null) { [double]$intentContract.completeness } else { 0.0 }
+    $minCompletenessForConfirmRequired = if ($deepDiscoveryAdvice.min_completeness_for_confirm_required -ne $null) {
+        [double]$deepDiscoveryAdvice.min_completeness_for_confirm_required
+    } else {
+        1.0
+    }
+    $singleCapabilityHit = ((@($deepDiscoveryAdvice.recommended_capabilities)).Count -le 1)
+
+    if ($singleCapabilityHit -and ($intentCompleteness -ge $minCompletenessForConfirmRequired)) {
+        $deepDiscoveryAdvice.enforcement = "advisory"
+        $deepDiscoveryAdvice.reason = "intent_contract_sufficient_single_capability"
+        $deepDiscoveryAdvice.confirm_required = $false
+        $deepDiscoveryAdvice.interview_required = $false
+        $deepDiscoveryConfirmRelaxed = $true
+    }
+}
+
+Add-RouteProbeEvent -Context $probeContext -Stage "deep_discovery.contract_normalization" -Note "deep discovery confirm posture normalized against intent completeness" -Data @{
+    confirm_relaxed = [bool]$deepDiscoveryConfirmRelaxed
+    completeness = if ($intentContract) { [double]$intentContract.completeness } else { 0.0 }
+    min_completeness_for_confirm_required = if ($deepDiscoveryAdvice -and $deepDiscoveryAdvice.min_completeness_for_confirm_required -ne $null) { [double]$deepDiscoveryAdvice.min_completeness_for_confirm_required } else { $null }
+    capability_hit_count = if ($deepDiscoveryAdvice -and $deepDiscoveryAdvice.recommended_capabilities) { @($deepDiscoveryAdvice.recommended_capabilities).Count } else { 0 }
+    enforcement = if ($deepDiscoveryAdvice) { [string]$deepDiscoveryAdvice.enforcement } else { $null }
+    confirm_required = if ($deepDiscoveryAdvice) { [bool]$deepDiscoveryAdvice.confirm_required } else { $false }
+    reason = if ($deepDiscoveryAdvice) { [string]$deepDiscoveryAdvice.reason } else { $null }
+}
+
 $deepDiscoveryFilter = Get-DeepDiscoveryCandidateFilter `
     -Packs @($packManifest.packs) `
     -IntentContract $intentContract `
@@ -564,12 +594,20 @@ $canOverrideLegacyFallback = $false
 if ($top -and ($top.candidate_selection_reason -in @("keyword_ranked", "requested_skill")) -and ($candidateSignal -ge $minCandidateSignalForConfirmOverride)) {
     $canOverrideLegacyFallback = $true
 }
+$canAutoRouteFromCandidateSignal = $false
+if ($top -and ($top.candidate_selection_reason -in @("keyword_ranked", "requested_skill")) -and ($candidateSignal -ge $minCandidateSignalForAutoRoute) -and ($topGap -ge $minTopGap)) {
+    $canAutoRouteFromCandidateSignal = $true
+}
 $routeReason = ""
 if (-not $top) {
     $routeMode = "legacy_fallback"
     $routeReason = "no_eligible_pack"
 } elseif ($confidence -lt [double]$th.fallback_to_legacy_below) {
-    if ($canOverrideLegacyFallback) {
+    if ($canAutoRouteFromCandidateSignal) {
+        $routeMode = "pack_overlay"
+        $routeReason = "candidate_signal_auto_route"
+        $confidence = [Math]::Max($confidence, [double]$th.auto_route)
+    } elseif ($canOverrideLegacyFallback) {
         $routeMode = "confirm_required"
         $routeReason = "candidate_signal_override"
         $confidence = [Math]::Max($confidence, [double]$th.confirm_required)
@@ -581,8 +619,14 @@ if (-not $top) {
     $routeMode = "confirm_required"
     $routeReason = "top_candidates_too_close"
 } elseif ($confidence -lt [double]$th.auto_route) {
-    $routeMode = "confirm_required"
-    $routeReason = "confidence_requires_confirmation"
+    if ($canAutoRouteFromCandidateSignal) {
+        $routeMode = "pack_overlay"
+        $routeReason = "candidate_signal_auto_route"
+        $confidence = [Math]::Max($confidence, [double]$th.auto_route)
+    } else {
+        $routeMode = "confirm_required"
+        $routeReason = "confidence_requires_confirmation"
+    }
 } else {
     $routeMode = "pack_overlay"
     $routeReason = "auto_route"
@@ -1101,6 +1145,7 @@ $result = [pscustomobject]@{
         fallback_to_legacy_below = [double]$th.fallback_to_legacy_below
         min_top1_top2_gap = [double]$minTopGap
         min_candidate_signal_for_confirm_override = [double]$minCandidateSignalForConfirmOverride
+        min_candidate_signal_for_auto_route = [double]$minCandidateSignalForAutoRoute
         enforce_confirm_on_legacy_fallback = [bool]$enforceConfirmOnLegacyFallback
     }
     alias = $aliasResult

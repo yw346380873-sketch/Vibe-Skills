@@ -1,5 +1,22 @@
 # VCO Changelog
 
+## v2.3.45 (2026-03-15)
+
+- Hardened `invoke-vibe-runtime.ps1` so the governed runtime waits for critical execution artifacts to become durable before returning summary output.
+- Added artifact-root-relative path fields to the runtime summary, making `benchmark_autonomous` bridge consumers robust under Windows PowerShell path encoding/codepage differences.
+- Fixed `tests/runtime_neutral/test_governed_runtime_bridge.py` to reconstruct artifact paths from the temp artifact root when absolute stdout paths are lossy on Windows.
+- Revalidated benchmark closure with real execution and proof gates after mirror/version sync.
+- Detailed release notes: `docs/releases/v2.3.45.md`.
+
+
+## v2.3.44 (2026-03-15)
+
+- Upgraded `benchmark_autonomous` from a receipt-only `plan_execute` placeholder into a bounded local XL executor that writes real execution manifests, per-unit receipts, command logs, and a benchmark proof bundle.
+- Added `config/benchmark-execution-policy.json` as the canonical scheduler contract for repo-safe benchmark execution, including wave/unit topology and proof thresholds.
+- Strengthened `tests/runtime_neutral/test_governed_runtime_bridge.py` and `scripts/verify/vibe-governed-runtime-contract-gate.ps1` so benchmark mode must now prove real unit execution instead of only artifact existence.
+- Added `scripts/verify/vibe-benchmark-autonomous-proof-gate.ps1` to verify that benchmark runtime closure includes actual command execution, zero failed units, and a tracked proof manifest.
+- Detailed release notes: `docs/releases/v2.3.44.md`.
+
 ## v2.3.43 (2026-03-15)
 
 - Landed the governed runtime contract as the canonical `vibe` entry: one user-facing path, six fixed stages, and `interactive_governed` / `benchmark_autonomous` runtime modes with internal grades only.

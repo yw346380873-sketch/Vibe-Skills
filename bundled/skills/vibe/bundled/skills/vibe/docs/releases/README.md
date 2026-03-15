@@ -10,7 +10,7 @@ This directory stores governed VCO release notes and the minimum runtime-facing 
 
 ### Current Release Surface
 
-- [`v2.3.43.md`](v2.3.43.md): governed runtime contract landing, six-stage `vibe` entry closure, runtime bridge tests, and release-surface alignment
+- [`v2.3.45.md`](v2.3.45.md): benchmark_autonomous bridge durability hardening, artifact-root-relative runtime summary paths, and restored end-to-end Python bridge proof
 
 ### Release Runtime / Proof Handoff
 
@@ -21,6 +21,8 @@ This directory stores governed VCO release notes and the minimum runtime-facing 
 
 ## Recent Governed Releases
 
+- [`v2.3.45.md`](v2.3.45.md) - 2026-03-15 - benchmark_autonomous bridge durability / relative runtime summary paths / restored Python bridge proof
+- [`v2.3.44.md`](v2.3.44.md) - 2026-03-15 - real bounded benchmark_autonomous executor / execution manifests / benchmark proof gate
 - [`v2.3.43.md`](v2.3.43.md) - 2026-03-15 - governed runtime contract / six-stage vibe entry / runtime bridge tests / release-surface alignment
 - [`v2.3.42.md`](v2.3.42.md) - 2026-03-14 - tracked Linux proof artifacts / manifest tracked-file gate / clean-clone release-truth closure
 - [`v2.3.41.md`](v2.3.41.md) - 2026-03-14 - Linux target-root portability hardening / proof-gate execution-context lock / governed manifest alignment

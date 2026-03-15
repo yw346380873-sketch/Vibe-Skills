@@ -106,8 +106,13 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
             self.assertEqual("outputs", session_root.parent.parent.parent.name)
 
             summary = payload["summary"]
+            summary_path_relative = summary.get("session_root_relative")
             if summary_path.exists():
                 summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            elif summary_path_relative:
+                reconstructed_summary_path = artifact_root / summary_path_relative / "runtime-summary.json"
+                if reconstructed_summary_path.exists():
+                    summary = json.loads(reconstructed_summary_path.read_text(encoding="utf-8"))
             self.assertEqual("benchmark_autonomous", summary["mode"])
             self.assertEqual(
                 EXPECTED_STAGE_IDS,
@@ -115,6 +120,14 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
             )
 
             artifacts = summary["artifacts"]
+            relative_artifacts = summary.get("artifacts_relative", {})
+
+            def resolve_artifact_path(key: str) -> Path:
+                relative = relative_artifacts.get(key)
+                if relative:
+                    return artifact_root / Path(relative)
+                return Path(artifacts[key])
+
             for key in (
                 "skeleton_receipt",
                 "intent_contract",
@@ -123,16 +136,46 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
                 "execution_plan",
                 "execution_plan_receipt",
                 "execute_receipt",
+                "execution_manifest",
+                "benchmark_proof_manifest",
                 "cleanup_receipt",
             ):
                 self.assertFalse(str(Path(artifacts[key])).lower().startswith(repo_root_text), key)
+                if key in relative_artifacts:
+                    self.assertFalse(Path(relative_artifacts[key]).is_absolute(), key)
 
-            if Path(artifacts["requirement_doc"]).exists():
-                requirement_doc = Path(artifacts["requirement_doc"]).read_text(encoding="utf-8")
+            requirement_doc_path = resolve_artifact_path("requirement_doc")
+            execution_plan_path = resolve_artifact_path("execution_plan")
+            execute_receipt_path = resolve_artifact_path("execute_receipt")
+            execution_manifest_path = resolve_artifact_path("execution_manifest")
+            benchmark_proof_path = resolve_artifact_path("benchmark_proof_manifest")
+
+            if requirement_doc_path.exists():
+                requirement_doc = requirement_doc_path.read_text(encoding="utf-8")
                 self.assertIn("## Acceptance Criteria", requirement_doc)
                 self.assertIn("## Assumptions", requirement_doc)
-            self.assertEqual("requirements", Path(artifacts["requirement_doc"]).parent.name)
-            self.assertEqual("plans", Path(artifacts["execution_plan"]).parent.name)
+            self.assertEqual("requirements", requirement_doc_path.parent.name)
+            self.assertEqual("plans", execution_plan_path.parent.name)
+
+            execute_receipt = json.loads(execute_receipt_path.read_text(encoding="utf-8"))
+            execution_manifest = json.loads(execution_manifest_path.read_text(encoding="utf-8"))
+            benchmark_proof = json.loads(benchmark_proof_path.read_text(encoding="utf-8"))
+
+            self.assertNotEqual("execution-contract-prepared", execute_receipt["status"])
+            self.assertGreaterEqual(execute_receipt["executed_unit_count"], 2)
+            self.assertEqual(execute_receipt["executed_unit_count"], execution_manifest["executed_unit_count"])
+            self.assertEqual("completed", execution_manifest["status"])
+            self.assertGreaterEqual(execution_manifest["successful_unit_count"], 2)
+            self.assertEqual(0, execution_manifest["failed_unit_count"])
+            self.assertTrue(benchmark_proof["proof_passed"])
+            self.assertGreaterEqual(benchmark_proof["executed_unit_count"], 2)
+
+            for result_path in benchmark_proof["result_paths"]:
+                result = json.loads(Path(result_path).read_text(encoding="utf-8"))
+                self.assertEqual("completed", result["status"])
+                self.assertEqual(0, result["exit_code"])
+                self.assertTrue(Path(result["stdout_path"]).exists())
+                self.assertTrue(Path(result["stderr_path"]).exists())
 
 
 if __name__ == "__main__":
