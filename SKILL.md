@@ -178,6 +178,13 @@ Read these protocols on demand:
 - `protocols/team.md`: XL multi-agent orchestration
 - `protocols/retro.md`: retrospective and learning capture
 
+## Learn And Retro Surface
+
+For LEARN / retrospective work, use the `Context Retro Advisor` vocabulary from `protocols/retro.md`.
+
+- retro outputs should preserve `CER format` artifacts when that protocol is invoked
+- completion-language corrections remain governed and evidence-backed
+
 ## Memory Rules
 
 Memory remains runtime-neutral:
