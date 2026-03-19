@@ -6,6 +6,9 @@
 
 `VibeSkills` is the public-facing name of the project. `VCO` is the governed runtime behind it. This is not a single-purpose utility repo, and it is not just a bundle of prompts that happens to know how to write code. It is an already-integrated capability system: `340` directly callable skills and capability modules, `19` absorbed upstream projects and practice sources, and `129` config-backed policies, contracts, and rules that keep skills, MCP, plugins, workflows, verification, and cleanup inside one governable execution surface.The core vision of Vibe-Skills is to eliminate the cognitive overload and steep learning curves associated with emerging technologies. Whether you have a strong programming background or not, we provide an ultra-low barrier to entry. Our goal is to empower you to seamlessly access and utilize today's cutting-edge AI technology stacks, allowing everyone to experience the massive productivity leap brought by AI.
 
+<div align="center">
+  <img src="./logo.png" width="300px" alt="Description">
+</div>
 <p align="center">
   <sub>🧠 Planning · 🛠️ Engineering · 🤖 AI · 🔬 Research · 🧬 Life Sciences · 🎨 Visualization · 🎬 Media</sub>
 </p>
