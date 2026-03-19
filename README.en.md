@@ -163,19 +163,24 @@ If you want AI to become steadier, easier to manage, and more useful over time, 
 
 ## 🚀 Start Here
 
-One important point first: this is not a traditional standalone app repository. It is a **skills-format project**, so the normal way to use it is to invoke the skill through the host environment instead of treating it like a regular CLI program.
+One important point first: To ensure the project's universal proxy compatibility，this is not a traditional standalone app repository. It is a **skills-format project**, so the normal way to use it is to invoke the skill through the host environment instead of treating it like a regular CLI program.
 
 - In Claude Code, use `/vibe`
 - In Codex, use `$vibe`
+
+
+
+If you are ready to install after that, use the one-step AI-assisted path:
+
+- [`docs/install/one-click-install-release-copy.en.md`](./docs/install/one-click-install-release-copy.en.md)
+
+
 
 If you want the shortest path to understanding the system before you install it:
 
 - [`docs/quick-start.en.md`](./docs/quick-start.en.md)
 - [`docs/manifesto.en.md`](./docs/manifesto.en.md)
 
-If you are ready to install after that, use the one-step AI-assisted path:
-
-- [`docs/install/one-click-install-release-copy.en.md`](./docs/install/one-click-install-release-copy.en.md)
 
 If you are already a heavier user and want fuller installation detail:
 
