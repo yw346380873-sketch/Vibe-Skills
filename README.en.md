@@ -2,23 +2,27 @@
 
 # VibeSkills
 
-> Not another skills repository. An AI agent system that integrates calling, governance, verification, and traceability into one working surface.
+> The core principle is standardization. Only with standardization can human intent be described clearly enough, AI work stay stable enough, and long-term maintenance and technical debt remain under control.
 
 `VibeSkills` is the public-facing name. `VCO` is the governed runtime behind it.
 
-Right now, people feel the same pressure everywhere: too many AI tools, too many workflows, too many fast-moving resources, and no clear answer for how to choose, combine, learn, and keep up without falling behind.
+This project is not about piling on more tools. It is about building a standardized way for humans and AI to work together: standardizing how humans describe needs, and standardizing how AI clarifies, plans, builds, verifies, and records the work so projects can be maintained with lower long-term technical debt.
 
-`VibeSkills` is built for that reality.
-It pulls together a frontier-grade toolset and manages those strong tools and resources through a complete, stable, and strict governance model, so what you face is not a pile of conflicting fragments, but a system that is easier to call, steadier to run, and much easier to maintain over time.
+<p align="center">
+  <img src="./docs/assets/Gemini_Generated_Image_75f8n575f8n575f8.svg" alt="Original Gemini SVG provided by the author" width="100%" />
+</p>
 
 ## Capability Snapshot
 
-| Scale                          | Runtime              | Governance                                 |
-| ------------------------------ | -------------------- | ------------------------------------------ |
-| `340` bundled skills           | `dual-layer routing` | `129` config-backed policies and contracts |
-| `19` governed upstream sources | `governed runtime`   | `verification and cleanup`                 |
+| What We Integrated | How It Works In The System | What It Means For Users |
+| --- | --- | --- |
+| `340` directly callable skills and capability modules | Organized by `dual-layer routing`, bringing skills, MCP, plugins, and workflow entry points into one runtime | You do not have to keep jumping between disconnected tools |
+| `19` upstream projects and high-value practice sources absorbed into the system | Unified by the `governed runtime` so strong ideas from different projects work inside one flow | You get a governed system experience, not a loose bundle |
+| `129` config-backed policies, contracts, and rules | Covering `verification and cleanup`, planning, traceability, boundaries, and rollback | Results are more stable, easier to maintain, and less likely to accumulate technical debt |
 
-`VibeSkills` is not presenting a static directory of capabilities. It is presenting an AI system where scale, execution discipline, and governance density are already part of the same surface.
+`VibeSkills` is not presenting a static directory of capabilities. It is presenting an AI system where capability integration, execution discipline, and governance density already live on the same surface.
+
+This project integrates strengths from excellent upstream work such as `superpower`, `claude-scientific-skills`, `get-shit-done`, `aios-core`, `OpenSpec`, `ralph-claude-code`, and `SuperClaude_Framework`. The goal is not to make users memorize more commands. The goal is to let users focus on expressing needs to AI, while the later stages from requirement discovery and task planning to plan-driven implementation, verification, and maintenance can keep landing through a standardized workflow.
 
 ## Why It Feels Different Immediately
 

@@ -2,23 +2,27 @@
 
 # VibeSkills
 
-> 不是另一个 skills 仓库。它是一个把调用、治理、验证与留痕整合在一起的 AI agent system。
+> 核心要义便是规范化。只有在规范化下，人类对 AI 的描述才能足够清晰，AI 工作才会足够稳定，后续维护与整体技术债务才会维持在较低水平。
 
 `VibeSkills` 是你看到的公开名字，`VCO` 是它背后的 governed runtime。
 
-现在每个人都能感受到同一种压力：AI 工具越来越多，工作流越来越多，优秀资源层出不穷，但真正困难的从来不是“有没有工具”，而是怎么选择、怎么融合、怎么学习、怎么持续积累，以及怎么在这个变化过快的时代里不被抛下。
+这个项目不是在堆更多工具，而是在建立一套规范化的人机协作方式：规范人类如何描述需求，规范 AI 如何在需求之下完成澄清、计划、编写、验证与留痕，最后把项目以更低技术债的方式持续维护下去。
 
-`VibeSkills` 就是为这种现实而生的。
-它整合的是最前沿的工具集合，同时用一套完整、稳定、严苛的治理制度去管理这些优秀工具和资源，让你面对的不是一堆彼此冲突的能力碎片，而是一套更容易调用、更稳定执行、也更适合长期维护的系统。
+<p align="center">
+  <img src="./docs/assets/Gemini_Generated_Image_75f8n575f8n575f8.svg" alt="作者提供的 Gemini 原始 SVG" width="100%" />
+</p>
 
 ## Capability Snapshot
 
-| Scale                          | Runtime              | Governance                                 |
-| ------------------------------ | -------------------- | ------------------------------------------ |
-| `340` bundled skills           | `dual-layer routing` | `129` config-backed policies and contracts |
-| `19` governed upstream sources | `governed runtime`   | `verification and cleanup`                 |
+| 我们整合了什么 | 它在系统里怎么工作 | 它对用户意味着什么 |
+| --- | --- | --- |
+| `340` 个可直接调用的 skills 与能力模块 | 统一纳入 `dual-layer routing`，把 skills、MCP、插件和工作流入口组织进一个运行时 | 你不需要自己在零散工具之间反复切换 |
+| `19` 个吸收和借鉴的上游优秀项目与实践来源 | 通过 `governed runtime` 把不同项目的长处整合到同一套工作流里 | 你得到的不是拼盘，而是统一治理后的系统体验 |
+| `129` 条基于配置的策略、契约与规则 | 覆盖 `verification and cleanup`、计划、留痕、边界与回退 | 结果更稳定，维护更容易，长期技术债更低 |
 
-`VibeSkills` 展示的不是静态目录，而是一套已经把能力规模、执行约束和治理密度压进同一平面的 AI system。
+`VibeSkills` 展示的不是静态目录，而是一套已经把能力整合、执行约束和治理密度压进同一平面的 AI system。
+
+这个项目整合了如 `superpower`、`claude-scientific-skills`、`get-shit-done`、`aios-core`、`OpenSpec`、`ralph-claude-code`、`SuperClaude_Framework` 等优秀项目，把它们的长处和优势点吸收到同一套系统中进行智能治理。目标不是让用户学会更多命令，而是让用户主要与 AI 交流需求，后续从需求挖掘、任务计划设计，到基于计划的自动化编写、验证与维护，都能在规范化流程里持续落地。
 
 ## 为什么它会让人立刻感到不一样
 

@@ -24,6 +24,7 @@ Those surfaces live under [`../status/README.md`](../status/README.md).
 
 ### Current Entry
 
+- [`2026-03-19-public-readme-philosophy-and-source-image-plan.md`](./2026-03-19-public-readme-philosophy-and-source-image-plan.md): README 规范化哲学与原始 Gemini SVG 执行计划；聚焦直接展示作者原图、白话能力快照与上游整合说明。
 - [`2026-03-19-public-readme-anxiety-positioning-refresh-plan.md`](./2026-03-19-public-readme-anxiety-positioning-refresh-plan.md): README 首页焦虑定位刷新执行计划；聚焦双段切入叙事与章鱼识别区移除。
 - [`2026-03-19-public-readme-octopus-identity-zone-plan.md`](./2026-03-19-public-readme-octopus-identity-zone-plan.md): README 章鱼识别区执行计划；聚焦小章鱼中枢的 Markdown 品牌识别层。
 - [`2026-03-19-public-readme-capability-snapshot-plan.md`](./2026-03-19-public-readme-capability-snapshot-plan.md): README 能力快照展示执行计划；聚焦纯 Markdown 能力战报面板与更强首屏辨识度。
