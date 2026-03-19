@@ -1,8 +1,48 @@
 [English](./README.en.md)
 
-# VibeSkills
+<p align="center">
+  <img src="./docs/assets/readme-poster-hero-cn.svg" alt="VibeSkills 横版海报主视觉" width="100%" />
+</p>
 
-> 不是另一个 skills 仓库。它是一个把调用、治理、验证与留痕整合在一起的 AI agent system。
+<p align="center">
+  <img src="./docs/assets/vibeskills-octopus-mark.svg" alt="VibeSkills 小章鱼 logo" width="96" />
+</p>
+
+<h1 align="center">VibeSkills</h1>
+
+<p align="center">
+  <strong>不是另一个 skills 仓库。</strong><br />
+  它是一个把调用、治理、验证与留痕整合在一起的 AI agent system。
+</p>
+
+<p align="center">
+  <sub>
+    <code>VibeSkills</code> 是公开名字，<code>VCO</code> 是它背后的 governed runtime。<br />
+    小章鱼负责记忆点，受管运行时负责秩序感。
+  </sub>
+</p>
+
+<table>
+  <tr>
+    <td width="33%" align="center" valign="top">
+      <strong>340</strong><br />
+      <sub>bundled skills</sub><br />
+      不是散乱罗列，而是可被系统调用的能力面。
+    </td>
+    <td width="33%" align="center" valign="top">
+      <strong>19</strong><br />
+      <sub>governed upstream sources</sub><br />
+      整合最前沿资源，但不让来源冲突直接暴露给用户。
+    </td>
+    <td width="33%" align="center" valign="top">
+      <strong>129</strong><br />
+      <sub>config-backed policies and contracts</sub><br />
+      把治理密度直接做成系统表面，而不是事后补救。
+    </td>
+  </tr>
+</table>
+
+> `VibeSkills` 展示的不是静态目录，而是一套已经把能力规模、执行约束和治理密度压进同一平面的 AI system。
 
 `VibeSkills` 是你看到的公开名字，`VCO` 是它背后的 governed runtime。
 
@@ -10,15 +50,6 @@
 
 `VibeSkills` 就是为这种现实而生的。
 它整合的是最前沿的工具集合，同时用一套完整、稳定、严苛的治理制度去管理这些优秀工具和资源，让你面对的不是一堆彼此冲突的能力碎片，而是一套更容易调用、更稳定执行、也更适合长期维护的系统。
-
-## Capability Snapshot
-
-| Scale                          | Runtime              | Governance                                 |
-| ------------------------------ | -------------------- | ------------------------------------------ |
-| `340` bundled skills           | `dual-layer routing` | `129` config-backed policies and contracts |
-| `19` governed upstream sources | `governed runtime`   | `verification and cleanup`                 |
-
-`VibeSkills` 展示的不是静态目录，而是一套已经把能力规模、执行约束和治理密度压进同一平面的 AI system。
 
 ## 为什么它会让人立刻感到不一样
 
@@ -34,6 +65,25 @@
 它不是把能力堆得更多。
 它是在把“调用、治理、验证、回看”整合成一个真正能工作的系统。
 
+## 系统表面
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <strong>智能路由</strong><br />
+      逻辑路由与 AI 智能路由协同工作，尽量把正确能力放进正确上下文，而不是要求用户手动背完整个技能表。
+    </td>
+    <td width="33%" valign="top">
+      <strong>受管工作流</strong><br />
+      需求澄清、确认、执行、验证、回顾、留痕被收进统一流程，让系统速度和系统可靠性同时存在。
+    </td>
+    <td width="33%" valign="top">
+      <strong>整合能力</strong><br />
+      这里不只有 skills，还包括插件、项目、工作流设计、AI 规范、安全边界，以及长期维护经验。
+    </td>
+  </tr>
+</table>
+
 ## 它真正解决的痛点
 
 如果你已经在重度使用 AI，大概率已经遇到过这些问题：
@@ -47,30 +97,6 @@
 `VibeSkills` 不是假装这些问题不存在。
 它的价值就在于正面处理这些问题。
 
-## 它是怎么工作的
-
-你可以把它理解成三层：
-
-### 1. 智能路由
-
-在合适的场景下，AI 不需要你显式记住“这次该调用哪个 skill”。
-
-`VibeSkills` 会把逻辑路由和 AI 智能路由结合起来，尽量把合适的能力放到合适的场景里，让调用更自然，而不是靠你手动背技能表。
-
-### 2. 受管工作流
-
-它不只是在“调工具”。
-它更关心工作怎么做才稳定。
-
-所以这套系统会尽量把需求澄清、确认、执行、验证、回顾、留痕这些步骤收进统一流程里，避免 AI 一上来就黑盒式开跑。
-
-### 3. 整合能力
-
-这里不只有 skills。
-
-还有插件、项目、工作流设计、AI 规范、安全边界、长期维护经验，以及我自己在实践里踩过的坑。
-`VCO` 负责把这些能力组织成一个更统一的运行时，而不是让它们继续散落在不同角落里。
-
 ## 它适合谁
 
 `VibeSkills` 主要适合这几类人：
@@ -83,21 +109,29 @@
 如果你只是想找一个单点工具，这个仓库可能不是最轻的选择。
 如果你想把 AI 用得更稳、更顺、更长期，它会更有意义。
 
-## 开始了解它
+## 快速入口
 
-如果你想先快速理解这套系统，再决定走哪条路径：
-
-- [`docs/quick-start.md`](./docs/quick-start.md)
-- [`docs/manifesto.md`](./docs/manifesto.md)
-
-如果你已经准备开始安装，再进入一步式安装入口：
-
-- [`docs/install/one-click-install-release-copy.md`](./docs/install/one-click-install-release-copy.md)
-
-如果你已经是重度用户，想进一步看更完整的安装与路径说明：
-
-- [`docs/install/recommended-full-path.md`](./docs/install/recommended-full-path.md)
-- [`docs/cold-start-install-paths.md`](./docs/cold-start-install-paths.md)
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <strong>先理解系统</strong><br />
+      从概览和理念开始，先判断这是不是你需要的工作方式。<br /><br />
+      <a href="./docs/quick-start.md">Quick Start</a><br />
+      <a href="./docs/manifesto.md">Manifesto</a>
+    </td>
+    <td width="33%" valign="top">
+      <strong>一步式进入</strong><br />
+      如果你已经准备安装，直接进入公开安装入口。<br /><br />
+      <a href="./docs/install/one-click-install-release-copy.md">One-Click Install</a>
+    </td>
+    <td width="33%" valign="top">
+      <strong>重度用户路径</strong><br />
+      想看更完整的安装方式、冷启动路径与上下游说明。<br /><br />
+      <a href="./docs/install/recommended-full-path.md">Recommended Full Path</a><br />
+      <a href="./docs/cold-start-install-paths.md">Cold Start Paths</a>
+    </td>
+  </tr>
+</table>
 
 ## 一句话收尾
 
