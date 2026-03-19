@@ -24,6 +24,10 @@ Those surfaces live under [`../status/README.md`](../status/README.md).
 
 ### Current Entry
 
+- [`2026-03-20-readme-emoji-layout-polish-plan.md`](./2026-03-20-readme-emoji-layout-polish-plan.md): README 中文视觉润色执行计划；聚焦少量 emoji 点缀、区块节奏优化与 GitHub-safe 的版式打磨。
+- [`2026-03-20-readme-differentiated-science-ai-strengths-plan.md`](./2026-03-20-readme-differentiated-science-ai-strengths-plan.md): README 中文差异化强化执行计划；聚焦把生命科学、科研、AI 工程三块写得更有辨识度。
+- [`2026-03-20-readme-capability-subdomain-expansion-plan.md`](./2026-03-20-readme-capability-subdomain-expansion-plan.md): README 中文能力矩阵第二轮细化执行计划；聚焦在总表后补充更细的子领域展开说明。
+- [`2026-03-20-readme-detailed-capability-matrix-plan.md`](./2026-03-20-readme-detailed-capability-matrix-plan.md): README 顶部详细能力矩阵执行计划；聚焦用更完整的领域化表格替换泛泛的能力列表。
 - [`2026-03-19-commit-and-rename-repo-to-vibe-skills-plan.md`](./2026-03-19-commit-and-rename-repo-to-vibe-skills-plan.md): “先提交再改名”执行计划；聚焦隔离 worktree 提交、远端发布、GitHub rename 与本地 remote 更新。
 - [`2026-03-19-repo-rename-to-vibe-skills-plan.md`](./2026-03-19-repo-rename-to-vibe-skills-plan.md): 仓库更名为 `Vibe-Skills` 的执行规划；聚焦 GitHub rename 风险分层、阶段顺序与更名后的链接/路径清理。
 - [`2026-03-19-public-readme-skill-activation-pain-point-plan.md`](./2026-03-19-public-readme-skill-activation-pain-point-plan.md): README skills 激活率低痛点执行计划；聚焦补充 `VCO` 生态提高能力激活率的表达并发布当前版本。

@@ -15,14 +15,27 @@
 | `19` absorbed upstream projects and high-value practice sources | Pull mature methods, structures, and working habits into one governed system | You get a unified operating experience, not a loose bundle of ideas |
 | `129` config-backed policies, contracts, and rules | Cover clarification, planning, verification, traceability, boundaries, cleanup, and rollback | Results are more stable, easier to maintain, and less likely to accumulate technical debt |
 
-## What Work It Can Cover
+## What This Repository Can Actually Do
 
-- requirement discovery, PRDs, task breakdown, and planning orchestration
-- coding, debugging, testing, refactoring, and project generation
-- docs, specs, reports, knowledge capture, and delivery artifacts
-- data analysis, machine learning, research, and experiment workflows
-- GitHub operations, deployment, CI/CD, release management, and quality gates
-- MCP integrations, browser automation, and file, spreadsheet, and document handling
+| Capability Area | Representative Skills / Systems | What It Can Cover | Typical Outputs |
+| --- | --- | --- | --- |
+| Requirement discovery and planning | `brainstorming`, `create-plan`, `writing-plans`, `aios-pm`, `aios-po`, `aios-sm`, `OpenSpec`-style flows | Turn vague requests into requirements, plans, acceptance criteria, and implementation breakdowns | PRDs, specs, plans, task lists, clarified requirements |
+| Software engineering and implementation | `aios-dev`, `autonomous-builder`, `architecture-patterns`, `error-resolver`, `debugging-strategies`, `deslop`, `tdd-guide` | Feature work, bug fixing, refactoring, architecture work, implementation scaffolding, code cleanup | Working code, patches, refactors, project scaffolds |
+| Code quality and testing | `code-review`, `code-reviewer`, `reviewing-code`, `aios-qa`, `verification-before-completion`, `property-based-testing`, `hypothesis-testing` | Code review, test design, regression checks, quality gates, acceptance verification | Review findings, test plans, verification evidence, quality decisions |
+| GitHub, release, and DevOps | `aios-devops`, `github_*`, `gh-fix-ci`, `gh-address-comments`, `vercel-deploy`, `netlify-deploy`, `workflow_*` | Repository operations, PR / issue workflows, CI checks, deployments, release maintenance | PRs, issues, release records, deployment results, CI fixes |
+| Routing, agents, and governed workflows | `vibe`, `superclaude-framework-compat`, `local-vco-roles`, `hive-mind-advanced`, `swarm_*`, `task_*`, `agent_*` | Capability routing, task orchestration, multi-agent collaboration, governed execution, traceability | Runtime receipts, task states, agent coordination records, cleanup artifacts |
+| MCP, browser, and automation | `mcp-integration`, `playwright`, `browser_*`, `scrapling`, `figma`, `figma-implement-design` | External service integration, browser automation, web extraction, design-to-code, interactive operations | MCP configs, browser flows, extraction results, implemented UI |
+| Documentation and knowledge work | `docs-write`, `docs-review`, `writing-docs`, `markdown-mermaid-writing`, `knowledge-steward`, `scientific-reporting` | README work, technical docs, process docs, knowledge capture, report writing | READMEs, docs, diagrams, reports, knowledge entries |
+| Files, spreadsheets, and office workflows | `docx`, `pdf`, `xlsx`, `spreadsheet`, `excel-analysis`, `markitdown`, `file-organizer` | Office document handling, spreadsheet analysis, document conversion, file organization | Edited docs, spreadsheet outputs, markdown conversions, organization results |
+| Data analysis and statistical modeling | `data-exploration-visualization`, `statistical-analysis`, `statsmodels`, `scikit-learn`, `polars`, `dask`, `xan` | EDA, statistical analysis, regression, feature analysis, cleaning, large-table processing | Analysis reports, statistical outputs, modeling baselines, data pipelines |
+| Machine learning and AI workflows | `senior-ml-engineer`, `training-machine-learning-models`, `evaluating-machine-learning-models`, `shap`, `embedding-strategies`, `similarity-search-patterns`, `weights-and-biases` | Training, evaluation, explainability, vector retrieval, RAG, experiment tracking | Model plans, metrics, explanations, retrieval systems, experiment logs |
+| Visualization and presentation materials | `plotly`, `matplotlib`, `seaborn`, `datavis`, `creating-data-visualizations`, `scientific-slides`, `paper-2-web` | Data visualization, scientific figures, presentations, interactive displays, explorable web outputs | Charts, dashboards, slides, visual documents, web presentations |
+| Research and academic writing | `research-lookup`, `literature-review`, `citation-management`, `scholarly-publishing`, `scientific-writing`, `peer-review` | Literature search, evidence synthesis, citations, papers, submission materials, review support | Literature reviews, citations, paper drafts, submission assets |
+| Life sciences and biomedicine | `biopython`, `scanpy`, `scvi-tools`, `uniprot-database`, `alphafold-database`, `clinicaltrials-database`, `drugbank-database`, `benchling-integration` | Protein, genomics, single-cell, clinical data, bio databases, drug discovery, lab integrations | Bioinformatics workflows, database results, experiment support, scientific outputs |
+| Mathematics, optimization, and scientific computing | `math-tools`, `sympy`, `pymc-bayesian-modeling`, `pymoo`, `fluidsim`, `qiskit`, `cirq`, `qutip` | Symbolic math, Bayesian models, optimization, simulation, quantum computing, technical derivations | Derivations, modeling code, optimization plans, simulation results |
+| Media and content production | `generate-image`, `imagegen`, `infographics`, `speech`, `transcribe`, `video-studio` | Image generation, infographics, text-to-speech, transcription, video production | Images, audio, subtitles, finished videos, media assets |
+
+This matrix is meant to show the real operating surface of the repo without dumping all 340 skills line by line. In practice, the repository is not just for coding. It spans requirement discovery, planning, implementation, verification, documentation, data work, research, automation, life science workflows, media generation, and governed execution.
 
 This capability surface did not appear out of nowhere. The project continuously integrates and governs strengths from `superpower`, `claude-scientific-skills`, `get-shit-done`, `aios-core`, `OpenSpec`, `ralph-claude-code`, and `SuperClaude_Framework`, pulling prompt organization, skill accumulation, plan-driven execution, governed workflows, and engineering discipline into one system.
 

@@ -19,6 +19,10 @@ Primary policy:
 
 ## Current Entry
 
+- [`2026-03-20-readme-emoji-layout-polish.md`](./2026-03-20-readme-emoji-layout-polish.md): 冻结 README 中文视觉润色；聚焦用少量 emoji 和版式节奏优化，让首页更精致、更有设计感但仍保持克制。
+- [`2026-03-20-readme-differentiated-science-ai-strengths.md`](./2026-03-20-readme-differentiated-science-ai-strengths.md): 冻结 README 中文差异化强化；聚焦把生命科学、科研、AI 工程三块写得更有冲击力，更能体现仓库强势能力区。
+- [`2026-03-20-readme-capability-subdomain-expansion.md`](./2026-03-20-readme-capability-subdomain-expansion.md): 冻结 README 中文能力矩阵第二轮细化；聚焦把 20 个能力域继续拆成更细的子领域说明，提升公开介绍的完整度与可读性。
+- [`2026-03-20-readme-detailed-capability-matrix.md`](./2026-03-20-readme-detailed-capability-matrix.md): 冻结 README 顶部详细能力矩阵重写；聚焦把泛泛能力列表改成更完整、更自然的领域化总览表。
 - [`2026-03-19-commit-and-rename-repo-to-vibe-skills.md`](./2026-03-19-commit-and-rename-repo-to-vibe-skills.md): 冻结“先提交当前改动、再把仓库改名为 `Vibe-Skills`”的执行需求；聚焦隔离 worktree 发布、GitHub rename 与 remote 更新验证。
 - [`2026-03-19-repo-rename-to-vibe-skills.md`](./2026-03-19-repo-rename-to-vibe-skills.md): 冻结仓库更名为 `Vibe-Skills` 的规划需求；聚焦 GitHub rename 风险、路径影响评估与安全执行顺序。
 - [`2026-03-19-public-readme-skill-activation-pain-point.md`](./2026-03-19-public-readme-skill-activation-pain-point.md): 冻结 README 的 skills 激活率低痛点补充；聚焦说明 `VCO` 生态如何通过路由与工作流治理提高能力激活率，并发布当前版本。
