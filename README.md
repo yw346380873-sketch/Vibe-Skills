@@ -1,43 +1,46 @@
 [English](./README.en.md)
 
-<p align="center">
-  <img src="./docs/assets/readme-poster-hero-cn.svg" alt="VibeSkills 横版海报主视觉" width="100%" />
-</p>
-
-<p align="center">
-  <img src="./docs/assets/vibeskills-octopus-mark.svg" alt="VibeSkills 小章鱼 logo" width="96" />
-</p>
-
-<h1 align="center">VibeSkills</h1>
-
-<p align="center">
-  <strong>不是另一个 skills 仓库。</strong><br />
-  它是一个把调用、治理、验证与留痕整合在一起的 AI agent system。
-</p>
-
-<p align="center">
-  <sub>
-    <code>VibeSkills</code> 是公开名字，<code>VCO</code> 是它背后的 governed runtime。<br />
-    小章鱼负责记忆点，受管运行时负责秩序感。
-  </sub>
-</p>
-
 <table>
   <tr>
-    <td width="33%" align="center" valign="top">
-      <strong>340</strong><br />
-      <sub>bundled skills</sub><br />
-      不是散乱罗列，而是可被系统调用的能力面。
+    <td width="54%" valign="top">
+      <p>
+        <img src="./docs/assets/vibeskills-gemini-mark.svg" alt="VibeSkills Gemini 风格识别 mark" width="88" />
+      </p>
+      <h1>VibeSkills</h1>
+      <p>
+        <strong>不是另一个 skills 仓库。</strong><br />
+        它是一个把调用、治理、验证与留痕整合在一起的 AI agent system。
+      </p>
+      <p>
+        <sub>
+          <code>VibeSkills</code> 是公开名字，<code>VCO</code> 是它背后的 governed runtime。<br />
+          这次主视觉风格基于作者自己的 Gemini SVG，而不是通用产品插图。
+        </sub>
+      </p>
+      <table>
+        <tr>
+          <td width="33%" valign="top">
+            <strong>340</strong><br />
+            <sub>skills</sub>
+          </td>
+          <td width="33%" valign="top">
+            <strong>19</strong><br />
+            <sub>upstreams</sub>
+          </td>
+          <td width="33%" valign="top">
+            <strong>129</strong><br />
+            <sub>policies</sub>
+          </td>
+        </tr>
+      </table>
+      <p>
+        <sub>更像一本编辑化的系统首页，而不是一张纯参数面板。</sub>
+      </p>
     </td>
-    <td width="33%" align="center" valign="top">
-      <strong>19</strong><br />
-      <sub>governed upstream sources</sub><br />
-      整合最前沿资源，但不让来源冲突直接暴露给用户。
-    </td>
-    <td width="33%" align="center" valign="top">
-      <strong>129</strong><br />
-      <sub>config-backed policies and contracts</sub><br />
-      把治理密度直接做成系统表面，而不是事后补救。
+    <td width="46%" valign="top" align="center">
+      <img src="./docs/assets/vibeskills-gemini-editorial-panel.svg" alt="基于作者 Gemini 原图裁切的编辑风艺术窗格" width="100%" />
+      <br />
+      <sub>作者原图的主体区域被重新组织成首屏右栏艺术窗格。</sub>
     </td>
   </tr>
 </table>

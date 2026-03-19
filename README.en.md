@@ -1,43 +1,46 @@
 [中文](./README.md)
 
-<p align="center">
-  <img src="./docs/assets/readme-poster-hero-en.svg" alt="VibeSkills poster hero" width="100%" />
-</p>
-
-<p align="center">
-  <img src="./docs/assets/vibeskills-octopus-mark.svg" alt="VibeSkills octopus logo" width="96" />
-</p>
-
-<h1 align="center">VibeSkills</h1>
-
-<p align="center">
-  <strong>Not another skills repository.</strong><br />
-  An AI agent system that integrates calling, governance, verification, and traceability into one working surface.
-</p>
-
-<p align="center">
-  <sub>
-    <code>VibeSkills</code> is the public-facing name. <code>VCO</code> is the governed runtime behind it.<br />
-    The octopus carries the identity layer. The runtime carries the discipline.
-  </sub>
-</p>
-
 <table>
   <tr>
-    <td width="33%" align="center" valign="top">
-      <strong>340</strong><br />
-      <sub>bundled skills</sub><br />
-      Not a loose catalog, but a callable capability surface.
+    <td width="54%" valign="top">
+      <p>
+        <img src="./docs/assets/vibeskills-gemini-mark.svg" alt="VibeSkills Gemini-style mark" width="88" />
+      </p>
+      <h1>VibeSkills</h1>
+      <p>
+        <strong>Not another skills repository.</strong><br />
+        An AI agent system that integrates calling, governance, verification, and traceability into one working surface.
+      </p>
+      <p>
+        <sub>
+          <code>VibeSkills</code> is the public-facing name. <code>VCO</code> is the governed runtime behind it.<br />
+          This visual direction is now derived from the author’s Gemini-generated SVG instead of a generic product-style mascot.
+        </sub>
+      </p>
+      <table>
+        <tr>
+          <td width="33%" valign="top">
+            <strong>340</strong><br />
+            <sub>skills</sub>
+          </td>
+          <td width="33%" valign="top">
+            <strong>19</strong><br />
+            <sub>upstreams</sub>
+          </td>
+          <td width="33%" valign="top">
+            <strong>129</strong><br />
+            <sub>policies</sub>
+          </td>
+        </tr>
+      </table>
+      <p>
+        <sub>Closer to an editorial system cover than a plain repository parameter sheet.</sub>
+      </p>
     </td>
-    <td width="33%" align="center" valign="top">
-      <strong>19</strong><br />
-      <sub>governed upstream sources</sub><br />
-      Frontier resources, integrated without dumping their conflicts on the user.
-    </td>
-    <td width="33%" align="center" valign="top">
-      <strong>129</strong><br />
-      <sub>config-backed policies and contracts</sub><br />
-      Governance density made visible instead of patched in later.
+    <td width="46%" valign="top" align="center">
+      <img src="./docs/assets/vibeskills-gemini-editorial-panel.svg" alt="Editorial art panel cropped from the author Gemini source image" width="100%" />
+      <br />
+      <sub>The right-side art panel is a cropped and reorganized region from the author-provided Gemini SVG.</sub>
     </td>
   </tr>
 </table>
