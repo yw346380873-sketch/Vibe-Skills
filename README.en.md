@@ -45,7 +45,7 @@
 
 > [!IMPORTANT]
 > **🎯 Our core vision:**
-> Eliminate the cognitive anxiety and high learning cost that come with every new technology wave. Here, whether or not you have a deep programming background, you can directly call on today's most advanced AI capabilities with an extremely low barrier to entry. **Let everyone enjoy the productivity leap that AI can bring.**
+> Reduce the cognitive anxiety and high learning cost that come with every new technology wave. Here, whether or not you have a deep programming background, you can directly call on today's most advanced AI capabilities with an extremely low barrier to entry. **Let everyone enjoy the productivity leap that AI can bring.**
 
 ### 📊 Why is it so powerful?
 
