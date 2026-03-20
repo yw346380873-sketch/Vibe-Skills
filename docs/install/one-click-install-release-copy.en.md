@@ -8,7 +8,7 @@ If you do not want to study the install details yourself, the simplest path is t
 
 ```text
 You are now my VibeSkills installation assistant.
-
+project link：https://github.com/foryourhealth111-pixel/Vibe-Skills
 Please install this repository in the current workspace and explain the outcome in plain English.
 
 Requirements:
