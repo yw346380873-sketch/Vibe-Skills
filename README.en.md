@@ -53,7 +53,7 @@
 
 | 🧩 Skill Modules | 🌍 Ecosystem Integration | ⚖️ Governance Rules |
 | :---: | :---: | :---: |
-| <h2 align="center">340+</h2><div align="center">Directly callable Skills, covering the full chain from requirement planning to life sciences</div> | <h2 align="center">19+</h2><div align="center">High-value upstream open-source projects and best-practice sources absorbed and adapted</div> | <h2 align="center">129</h2><div align="center">Configuration-based policies and contracts to keep execution stable, traceable, and resistant to drift</div> |
+| <h2 align="center">340+</h2><div align="center">Directly callable Skills, covering the full chain from requirement planning to Execution. </div> | <h2 align="center">19+</h2><div align="center">High-value upstream open-source projects and best-practice sources absorbed and adapted</div> | <h2 align="center">129</h2><div align="center">Configuration-based policies and contracts to keep execution stable, traceable, and resistant to drift</div> |
 ---
 
 ## ✨ Why is it different?
@@ -193,15 +193,15 @@ We reject black-box execution. Vibe-Skills strictly follows a `clarify ➔ plan 
 
 ```mermaid
 graph LR
-    A[Natural language intent] --> B(VCO intelligent routing)
-    B --> C{129-rule validation}
-    C -- Pass --> D[speckit clarify requirements]
-    C -- Block --> X[Raise error and request intervention]
-    D --> E[aios architecture planning]
-    E --> F[Execution layer: 340+ skills]
-    F --> G[QA automated verification]
-    G --> H((High-quality delivery))
-
+    A[Natural Language Intent] --> B(VCO Intelligent Routing)
+    B --> C{129-Rule Validation}
+    C -- Pass --> D[speckit - Requirement Clarification]
+    C -- Blocked --> X[Error Alert & Request Intervention]
+    D --> E[aios - Architecture Planning]
+    E --> F[Execution Layer: 340+ Skills]
+    F --> G[Automated QA Validation]
+    G --> H((High-Quality Delivery))
+    
     style B fill:#2196F3,stroke:#fff,stroke-width:2px,color:#fff
     style C fill:#FF9800,stroke:#fff,stroke-width:2px,color:#fff
     style X fill:#F44336,stroke:#fff,stroke-width:2px,color:#fff
