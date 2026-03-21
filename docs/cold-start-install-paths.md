@@ -12,7 +12,7 @@
 其中：
 
 - `codex`：正式推荐路径
-- `claude-code`：预览路径
+- `claude-code`：预览指导路径
 
 如果你要装到其他代理，当前版本应视为不支持，而不是改走隐藏 lane。
 
@@ -39,6 +39,10 @@ bash ./check.sh --host codex --profile full --deep
 - MCP active profile 物化
 - deep health check
 
+你不会得到：
+
+- hook 安装
+
 ## 路径二：Claude Code
 
 Windows:
@@ -58,12 +62,12 @@ bash ./check.sh --host claude-code --profile full --deep
 你会得到：
 
 - runtime payload
-- `settings.vibe.preview.json` 示例 scaffold
-- preview health check
+- preview guidance health check
 
 你不会得到：
 
 - 自动覆盖真实 `settings.json`
+- hook 安装
 - 自动插件 provision
 - 自动 MCP 宿主注册
 - 自动 provider secret 写入
@@ -74,11 +78,12 @@ bash ./check.sh --host claude-code --profile full --deep
 - 只在 `env` 下补你需要的字段
 - 常见是 `VCO_AI_PROVIDER_URL`、`VCO_AI_PROVIDER_API_KEY`、`VCO_AI_PROVIDER_MODEL`
 - 如宿主连接需要，再补 `ANTHROPIC_BASE_URL`、`ANTHROPIC_AUTH_TOKEN`
-- 参考 `~/.claude/settings.vibe.preview.json`，但不要整文件覆盖
+- 当前版本不会再生成 `settings.vibe.preview.json`
 - 不要把密钥贴到聊天里
 
 ## 冷启动阶段最重要的边界
 
 - `HostId` / `--host` 决定宿主语义，不是路径名决定
 - 当前没有其他宿主的公开安装入口
+- hook 当前因兼容性问题被冻结，不在支持宿主的安装面里
 - 如果本地还没配好 `url` / `apikey` / `model`，不能描述成“已完成 online readiness”

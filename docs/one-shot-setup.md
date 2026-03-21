@@ -1,6 +1,6 @@
 # One-Shot Setup
 
-`vco-skills-codex` 现在提供一个面向 Codex 运行时的单命令 bootstrap 入口，用来把 **仓库可自动化的部分** 一次性落地，并在最后给出一份深度 readiness 报告。
+`vco-skills-codex` 现在提供一个面向支持宿主的单命令 bootstrap 入口，用来把 **仓库可自动化的部分** 一次性落地，并在最后给出一份深度 readiness 报告。
 
 如果你还不知道自己应该走哪种安装方式，先看：
 
@@ -60,6 +60,12 @@ Linux / macOS without `pwsh` still gets the full shipped content and the active 
 4. 运行 `check.ps1 -Deep`
 5. 生成 doctor artifacts 到 `outputs/verify/`
 
+当前额外边界：
+
+- hook 由于兼容性问题已冻结
+- `codex` / `claude-code` 当前都不会由 one-shot 安装 hook
+- `claude-code` 当前也不再写 `settings.vibe.preview.json`
+
 ## Operator Notes
 
 - When external CLI installation is enabled, the slowest step is usually the `npm` install for `claude-flow`; several minutes is expected on some machines.
@@ -69,7 +75,7 @@ Linux / macOS without `pwsh` still gets the full shipped content and the active 
 ## What It Can Finish Automatically
 
 - vendored / bundled skills
-- rules / hooks / agent templates
+- rules / agent templates
 - shipped MCP templates and selected MCP active profile
 - runtime freshness / coherence verification
 - 可脚本安装的部分外部 CLI，例如 `claude-flow`
@@ -138,7 +144,7 @@ bash ./check.sh --profile full --deep
 5. `Composio / Activepieces` 仅在你确实需要外部操作能力时再做 setup，并保持 confirm-gated
 
 1. 如果 `OPENAI_API_KEY` 仍是 `placeholder` 或 `missing`，先在本地配置 key，不要在聊天里粘贴。
-2. 如果是 Claude Code，打开 `~/.claude/settings.json`，只补充缺失的 `env` 字段；如需参考，查看 `~/.claude/settings.vibe.preview.json`。
+2. 如果是 Claude Code，打开 `~/.claude/settings.json`，只补充缺失的 `env` 字段；当前版本不会再生成 `settings.vibe.preview.json`。
 3. 如果 `manual_action_required` 的 MCP server 是 `stdio` 模式，先安装对应命令行依赖，再在 host 中注册。
 
 当前 `full` profile 最重要的人工补齐项是：
@@ -146,7 +152,7 @@ bash ./check.sh --profile full --deep
 - plugin-backed MCP surfaces: `github`、`context7`、`serena`
 - 你实际要在线使用的 provider secrets，尤其是 `OPENAI_API_KEY`
 
-但默认策略不是“让用户自己折腾未经官方证明的 Codex hook/plugin 面”。
+但默认策略不是“让用户自己折腾 hook 面”。当前 hook 由于兼容性问题被冻结，不在安装支持范围内。
 
 推荐：
 

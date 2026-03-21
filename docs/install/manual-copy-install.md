@@ -22,9 +22,10 @@
 但你不会自动得到：
 
 - 宿主插件 provision
+- hook 安装
 - MCP 注册
 - provider 凭据写入
-- Claude Code 真实 `settings.json` 的自动合并
+- Claude Code 真实 `settings.json` 的自动补充
 
 ## 手动复制步骤
 
@@ -75,12 +76,13 @@ cp ./config/skills-lock.json <TARGET_ROOT>/config/skills-lock.json
   - `VCO_AI_PROVIDER_API_KEY`
   - `VCO_AI_PROVIDER_MODEL`
 - 如宿主连接需要，再补 `ANTHROPIC_BASE_URL`、`ANTHROPIC_AUTH_TOKEN`
-- 可以参考 `~/.claude/settings.vibe.preview.json`，但不能整文件覆盖
+- 当前版本不会再生成 `settings.vibe.preview.json`
 - 不要把密钥贴到聊天里
 
 ## 最重要的边界
 
 - 这条路不会自动帮你写好 online provider 配置
+- 这条路也不会为 `codex` 或 `claude-code` 安装 hook；hook 目前因兼容性问题被冻结
 - 如果 `url` / `apikey` / `model` 没有在本地配置好，就不能把环境描述成“已完成 online readiness”
 - 当前版本不把其他代理视为正式支持面
 

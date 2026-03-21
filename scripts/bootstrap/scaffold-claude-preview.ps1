@@ -16,17 +16,11 @@ function Copy-DirContent {
     Copy-Item -Path (Join-Path $Source '*') -Destination $Destination -Recurse -Force
 }
 
-$settingsTemplate = Join-Path $RepoRoot 'config\settings.template.claude.json'
-$previewSettingsTarget = Join-Path $TargetRoot 'settings.vibe.preview.json'
-if ($Force -or -not (Test-Path -LiteralPath $previewSettingsTarget)) {
-    Copy-Item -LiteralPath $settingsTemplate -Destination $previewSettingsTarget -Force
-}
-Copy-DirContent -Source (Join-Path $RepoRoot 'hooks') -Destination (Join-Path $TargetRoot 'hooks')
-
 [pscustomobject]@{
     result = 'PASS'
     host_id = 'claude-code'
     target_root = [System.IO.Path]::GetFullPath($TargetRoot)
-    preview_settings_path = [System.IO.Path]::GetFullPath($previewSettingsTarget)
-    hooks_root = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'hooks'))
+    preview_settings_path = $null
+    hooks_root = $null
+    message = 'Hook and preview-settings installation are temporarily frozen because of compatibility issues.'
 } | ConvertTo-Json -Depth 10

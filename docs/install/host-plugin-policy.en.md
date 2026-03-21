@@ -69,6 +69,7 @@ Keep guidance limited to these supportable surfaces:
 - local `~/.codex/settings.json`
 - officially supportable MCP registration
 - optional CLI dependencies
+- no hook installation
 
 ### Historical claims that should not remain in the public path
 
@@ -103,16 +104,16 @@ For `claude-code`, the boundary needs to be even more explicit.
 
 `claude-code` is currently:
 
-- preview scaffold support
+- preview guidance
 - not full closure
-- a host path where the installer writes only reference material, not the real host configuration
+- a host path where hook installation is frozen because of compatibility issues
+- a host path where the installer no longer writes preview settings material
 
 ### What the repository does
 
 Right now the repository only does the following:
 
 - installs the runtime payload
-- generates `settings.vibe.preview.json` as a reference scaffold
 - runs the matching preview checks
 
 ### What the repository does not do
@@ -131,7 +132,6 @@ The correct host-side flow is:
 - open `~/.claude/settings.json`
 - add only the fields needed under `env`
 - preserve the host's existing settings
-- use `settings.vibe.preview.json` only as a reference, never as a wholesale replacement
 
 Common fields that may need to be configured locally include:
 
@@ -153,7 +153,7 @@ If they are not configured locally yet, the environment must not be described as
 For the current version, the public policy should hold these lines clearly:
 
 1. `codex` has no extra default host-plugin prerequisite.
-2. `claude-code` is not integrated by "adding a pile of host plugins". It is a preview scaffold path plus local host configuration.
+2. `claude-code` is not integrated by "adding a pile of host plugins". It is a preview guidance path plus local host configuration.
 3. Historical plugin names are not a reason to keep recommending them in current community docs.
 4. If a capability is not stably, publicly, and verifiably integrated by the repo, it should not be written as a standard install requirement.
 
@@ -163,7 +163,8 @@ If you need to reference this policy in issues, README text, discussions, or ins
 
 - the current version supports only `codex` and `claude-code`
 - `codex` follows a conservative path centered on local settings, MCP, and optional CLI enhancements
-- `claude-code` follows a preview scaffold path and does not overwrite the real `settings.json`
+- the current version does not install hooks for `codex` or `claude-code` because compatibility issues remain unresolved
+- `claude-code` follows a preview guidance path and does not overwrite the real `settings.json`
 - provider `url` / `apikey` / `model` values are configured locally by the user, not pasted into chat
 - other agents are outside the current public support surface
 

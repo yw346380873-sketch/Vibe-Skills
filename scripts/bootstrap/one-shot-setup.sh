@@ -398,22 +398,12 @@ if [[ "${ADAPTER_BOOTSTRAP_MODE}" == "governed" ]]; then
 
   echo "[5/5] Running deep health check..."
   bash "${CHECK_SH}" --profile "${PROFILE}" --host "${HOST_ID}" --target-root "${TARGET_ROOT}" --deep
-elif [[ "${ADAPTER_BOOTSTRAP_MODE}" == "preview-scaffold" ]]; then
-  echo "[2/5] Writing Claude preview scaffold..."
-  scaffold_payload="$(bash "${CLAUDE_SCAFFOLD_SH}" --repo-root "${REPO_ROOT}" --target-root "${TARGET_ROOT}" --force)"
-  python_bin="$(pick_python || true)"
-  if [[ -n "${python_bin}" ]]; then
-    preview_settings_path="$(printf '%s' "${scaffold_payload}" | "${python_bin}" -c 'import json,sys; print(json.load(sys.stdin)["preview_settings_path"])' 2>/dev/null || true)"
-  else
-    preview_settings_path=""
-  fi
-  if [[ -n "${preview_settings_path}" ]]; then
-    echo "[3/5] Claude preview wrote example settings to ${preview_settings_path} and did not modify the real settings.json."
-  else
-    echo "[3/5] Claude preview wrote a separate example settings file and did not modify the real settings.json."
-  fi
-  echo "[4/5] Claude preview keeps provider settings host-managed. Open ${TARGET_ROOT}/settings.json and add only the missing env fields there. Use ${TARGET_ROOT}/settings.vibe.preview.json as reference, keep your existing settings, and do not paste API keys into chat."
-  echo "[5/5] Running preview health check..."
+elif [[ "${ADAPTER_BOOTSTRAP_MODE}" == "preview-guidance" ]]; then
+  echo "[2/5] Hook installation is frozen for Claude Code because of compatibility issues."
+  bash "${CLAUDE_SCAFFOLD_SH}" --repo-root "${REPO_ROOT}" --target-root "${TARGET_ROOT}" --force >/dev/null
+  echo "[3/5] No hook files or preview settings were installed into the target root."
+  echo "[4/5] Claude provider settings remain host-managed. Open ${TARGET_ROOT}/settings.json and add only the missing env fields there. Do not paste API keys into chat."
+  echo "[5/5] Running preview guidance health check..."
   bash "${CHECK_SH}" --profile "${PROFILE}" --host "${HOST_ID}" --target-root "${TARGET_ROOT}" --deep
 else
   echo "[2/5] Runtime-core lane does not materialize host settings."

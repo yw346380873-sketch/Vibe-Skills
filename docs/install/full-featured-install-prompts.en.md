@@ -54,15 +54,15 @@ Repository address: https://github.com/foryourhealth111-pixel/Vibe-Skills
    - not auto-enabled
    - still confirm-gated when enabled
 9. If the result is `manual_actions_pending`, list the remaining manual actions instead of calling it a failure.
-10. If follow-up is needed, only recommend officially supportable surfaces for the host; do not recommend unproven Codex hook/plugin layers.
+10. If follow-up is needed, only recommend officially supportable surfaces for the host, and explicitly state that hooks are temporarily not installed because of compatibility issues.
 11. For Claude Code:
    - do not ask me to paste secrets into chat
    - tell me to open `~/.claude/settings.json`
    - only add missing `env` fields such as `VCO_AI_PROVIDER_URL`, `VCO_AI_PROVIDER_API_KEY`, and `VCO_AI_PROVIDER_MODEL`
    - add `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` only when they are actually needed for the host connection
-   - use `~/.claude/settings.vibe.preview.json` only as a reference, never as a full-file replacement
+   - the current version no longer writes `settings.vibe.preview.json`
 12. For Codex:
-   - do not recommend `hookify`, `everything-claude-code`, `claude-code-settings`, or `ralph-loop`
+   - explicitly tell me that hooks are temporarily not installed because of compatibility issues
    - keep guidance limited to local `~/.codex` settings, official MCP registration, and optional CLI dependencies
    - if online model access is needed, tell me to configure values such as `OPENAI_API_KEY` and `OPENAI_BASE_URL` in `~/.codex/settings.json` under `env` or in local environment variables
 13. Do not modify runtime logic during this flow; only install, check, and summarize.
@@ -95,7 +95,7 @@ Requirements:
    - which host-managed surfaces still need manual provisioning
 4. Do not pretend host plugins, provider secrets, or plugin-backed MCP surfaces were completed automatically.
 5. If the result is `manual_actions_pending`, list the remaining actions clearly.
-6. Keep Codex guidance limited to local settings, official MCP, and optional CLI dependencies; do not recommend unproven hook/plugin installs such as `hookify`.
+6. Keep Codex guidance limited to local settings, official MCP, and optional CLI dependencies, and explicitly say that hooks are temporarily not installed because of compatibility issues.
 7. If AI governance layer values are needed, tell me where to configure them locally instead of asking me to paste `url`, `apikey`, or `model` into chat.
 ```
 
@@ -126,7 +126,7 @@ Requirements:
    - whether host-managed surfaces are still missing
    - whether I should add `pwsh`
    - whether I should add official MCP or local configuration next
-6. Do not recommend unproven Codex hook/plugin installs such as `hookify`.
+6. Explicitly state that hooks are temporarily not installed because of compatibility issues.
 7. If the result is `manual_actions_pending`, list the remaining manual actions instead of calling the install failed.
 > Reminder: AI governance layer values must be filled in by the user in local files or local environment variables. Do not ask the user to paste `url`, `apikey`, or `model` into chat.
 ```

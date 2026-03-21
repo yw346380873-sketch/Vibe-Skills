@@ -69,6 +69,7 @@
 - 本地 `~/.codex/settings.json`
 - 官方支持的 MCP 注册
 - 可选 CLI 依赖
+- 不包含 hook 安装
 
 ### 不再作为默认要求的历史说法
 
@@ -103,16 +104,16 @@
 
 `claude-code` 现在是：
 
-- preview scaffold
+- preview guidance
 - 不是 full closure
-- 安装器只生成参考文件，不覆盖真实宿主配置
+- hook 当前因兼容性问题被冻结
+- 安装器不再生成参考 settings scaffold
 
 ### 仓库会做什么
 
 当前仓库只会做这些事：
 
 - 安装 runtime payload
-- 生成 `settings.vibe.preview.json` 作为参考 scaffold
 - 运行对应的 preview 检查
 
 ### 仓库不会做什么
@@ -131,7 +132,6 @@
 - 打开 `~/.claude/settings.json`
 - 只在 `env` 下补充你需要的字段
 - 保留你原有的宿主设置
-- 把 `settings.vibe.preview.json` 仅作为参考，不要整文件覆盖
 
 常见需要本地填写的字段包括：
 
@@ -153,7 +153,7 @@
 如果只看当前版本，公开文档应该坚持下面这组结论：
 
 1. `codex` 没有额外的默认宿主插件前置要求。
-2. `claude-code` 也不是靠“补一堆宿主插件”来完成接入，而是靠 preview scaffold + 用户本地配置补全。
+2. `claude-code` 也不是靠“补一堆宿主插件”来完成接入，而是靠 preview guidance + 用户本地配置补全。
 3. 历史上出现过的某些插件名，不等于当前社区文档还应该继续推荐它们。
 4. 只要某个能力没有被仓库稳定、公开、可验证地接入，就不该写成默认安装要求。
 
@@ -163,7 +163,8 @@
 
 - 当前版本只支持 `codex` 和 `claude-code`
 - `codex` 走本地 settings + MCP + 可选 CLI 的保守增强路线
-- `claude-code` 走 preview scaffold 路线，不覆盖真实 `settings.json`
+- `codex` / `claude-code` 当前都不安装 hook，因为兼容性问题尚未解决
+- `claude-code` 走 preview guidance 路线，不覆盖真实 `settings.json`
 - provider 的 `url` / `apikey` / `model` 由用户在本地配置，不在聊天里提供
 - 其他代理目前不在公开支持面内
 

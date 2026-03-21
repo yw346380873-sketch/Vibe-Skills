@@ -12,7 +12,7 @@ At the moment, only two hosts are supported:
 Within that scope:
 
 - `codex`: recommended path
-- `claude-code`: preview path
+- `claude-code`: preview guidance path
 
 If you want another agent, the current version should be treated as unsupported rather than silently routed into a hidden lane.
 
@@ -39,6 +39,10 @@ What you get:
 - MCP active profile materialization
 - deep health check
 
+What you do not get:
+
+- hook installation
+
 ## Path 2: Claude Code
 
 Windows:
@@ -58,12 +62,12 @@ bash ./check.sh --host claude-code --profile full --deep
 What you get:
 
 - runtime payload
-- `settings.vibe.preview.json` example scaffold
-- preview health check
+- preview guidance health check
 
 What you do not get:
 
 - automatic overwrite of the real `settings.json`
+- hook installation
 - automatic plugin provisioning
 - automatic host MCP registration
 - automatic provider secret wiring
@@ -74,11 +78,12 @@ What you do not get:
 - add only the fields you need under `env`
 - common fields are `VCO_AI_PROVIDER_URL`, `VCO_AI_PROVIDER_API_KEY`, and `VCO_AI_PROVIDER_MODEL`
 - add `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` only when needed for the host connection
-- use `~/.claude/settings.vibe.preview.json` as a reference, not as a full-file replacement
+- the current version no longer generates `settings.vibe.preview.json`
 - do not paste secrets into chat
 
 ## Most Important Cold-Start Boundary
 
 - `HostId` / `--host` decides host semantics, not the folder name alone
 - there is no public install entry for any other host in the current version
+- hooks are currently frozen because of compatibility issues and are outside the supported install surface
 - if `url` / `apikey` / `model` are not configured locally yet, the environment must not be described as online-ready

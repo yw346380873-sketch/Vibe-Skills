@@ -16,7 +16,7 @@ At the moment, only two hosts are supported:
 Within that scope:
 
 - `codex`: recommended path
-- `claude-code`: preview scaffold path
+- `claude-code`: preview guidance path
 
 `TargetRoot` is only the install path.
 `HostId` / `--host` is what decides host semantics.
@@ -53,14 +53,15 @@ bash ./check.sh --host claude-code --profile full --deep
 
 - this is the strongest repo-governed path today
 - guidance should stay limited to local `~/.codex` settings, official MCP registration, and optional CLI dependencies
-- do not treat unproven hook/plugin surfaces as standard install requirements
+- hooks are currently frozen because of compatibility issues and are not part of the standard install path
 - if online model access is needed, point users to `~/.codex/settings.json` under `env` or local environment variables
 - do not ask users to paste secrets into chat
 
 ### Claude Code
 
-- this is preview scaffold support, not full closure
-- the installer writes `settings.vibe.preview.json` only as a reference and does not overwrite the real `settings.json`
+- this is preview guidance, not full closure
+- hooks are currently frozen because of compatibility issues
+- the installer no longer writes `settings.vibe.preview.json`
 - users should open `~/.claude/settings.json` and add only the required fields under `env`
 - common fields are:
   - `VCO_AI_PROVIDER_URL`

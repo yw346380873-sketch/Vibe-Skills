@@ -38,7 +38,8 @@ bash ./check.sh --host claude-code --profile full --deep
 ## Truth Boundaries
 
 - `codex` 是当前最完整的 repo-governed 路径
-- `claude-code` 是 preview scaffold，不是 full closure
-- `claude-code` 只写 `settings.vibe.preview.json` 作为参考，不覆盖真实 `settings.json`
+- `claude-code` 是 preview guidance，不是 full closure
+- hook 当前因兼容性问题被冻结，`codex` / `claude-code` 都不提供 hook 安装
+- `claude-code` 不再写 `settings.vibe.preview.json`
 - provider 的 `url` / `apikey` / `model` 仍然是本地用户侧配置
 - 安装提示必须告诉用户去本地 settings 或本地环境变量里配置，不要让用户把密钥贴到聊天里

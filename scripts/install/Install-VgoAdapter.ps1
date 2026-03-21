@@ -186,7 +186,6 @@ function Install-RuntimeCorePayload {
 
 function Install-GovernedCodexPayload {
     Copy-DirContent -Source (Join-Path $RepoRoot 'rules') -Destination (Join-Path $TargetRoot 'rules')
-    Copy-DirContent -Source (Join-Path $RepoRoot 'hooks') -Destination (Join-Path $TargetRoot 'hooks')
     Copy-DirContent -Source (Join-Path $RepoRoot 'agents\templates') -Destination (Join-Path $TargetRoot 'agents\templates')
     Copy-DirContent -Source (Join-Path $RepoRoot 'mcp') -Destination (Join-Path $TargetRoot 'mcp')
     New-Item -ItemType Directory -Force -Path (Join-Path $TargetRoot 'config') | Out-Null
@@ -198,17 +197,15 @@ function Install-GovernedCodexPayload {
     }
 }
 
-function Install-ClaudePreviewPayload {
-    Copy-DirContent -Source (Join-Path $RepoRoot 'hooks') -Destination (Join-Path $TargetRoot 'hooks')
-    $previewSettingsPath = Join-Path $TargetRoot 'settings.vibe.preview.json'
-    Copy-Item -LiteralPath (Join-Path $RepoRoot 'config\settings.template.claude.json') -Destination $previewSettingsPath -Force
+function Install-ClaudeGuidancePayload {
+    return
 }
 
 $adapter = Resolve-VgoAdapterDescriptor -RepoRoot $RepoRoot -HostId $HostId
 $result = Install-RuntimeCorePayload -Adapter $adapter
 switch ([string]$adapter.install_mode) {
     'governed' { Install-GovernedCodexPayload }
-    'preview-scaffold' { Install-ClaudePreviewPayload }
+    'preview-guidance' { Install-ClaudeGuidancePayload }
     'runtime-core' { }
     default { throw "Unsupported adapter install mode: $($adapter.install_mode)" }
 }

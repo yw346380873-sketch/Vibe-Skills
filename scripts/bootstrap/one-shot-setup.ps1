@@ -173,17 +173,12 @@ switch ([string]$Adapter.bootstrap_mode) {
         & $materializePath -TargetRoot $TargetRoot -Force | Out-Null
         & $checkPath -Profile $Profile -HostId $HostId -TargetRoot $TargetRoot -Deep
     }
-    'preview-scaffold' {
-        Write-Host '[2/5] Writing Claude preview scaffold...' -ForegroundColor Yellow
-        $scaffoldPayload = & $claudeScaffoldPath -RepoRoot $repoRoot -TargetRoot $TargetRoot -Force | ConvertFrom-Json
-        $previewSettingsPath = if ($null -ne $scaffoldPayload -and $scaffoldPayload.PSObject.Properties.Name -contains 'preview_settings_path') { [string]$scaffoldPayload.preview_settings_path } else { '' }
-        if (-not [string]::IsNullOrWhiteSpace($previewSettingsPath)) {
-            Write-Host ("[3/5] Claude preview wrote example settings to {0} and did not modify the real settings.json." -f $previewSettingsPath) -ForegroundColor DarkGray
-        } else {
-            Write-Host '[3/5] Claude preview wrote a separate example settings file and did not modify the real settings.json.' -ForegroundColor DarkGray
-        }
-        Write-Host ("[4/5] Claude preview keeps provider settings host-managed. Open {0} and add only the missing env fields there. Use {1} as reference, keep your existing settings, and do not paste API keys into chat." -f (Join-Path $TargetRoot 'settings.json'), (Join-Path $TargetRoot 'settings.vibe.preview.json')) -ForegroundColor DarkGray
-        Write-Host '[5/5] Running preview health check...' -ForegroundColor Yellow
+    'preview-guidance' {
+        Write-Host '[2/5] Hook installation is frozen for Claude Code because of compatibility issues.' -ForegroundColor Yellow
+        & $claudeScaffoldPath -RepoRoot $repoRoot -TargetRoot $TargetRoot -Force | Out-Null
+        Write-Host '[3/5] No hook files or preview settings were installed into the target root.' -ForegroundColor DarkGray
+        Write-Host ("[4/5] Claude provider settings remain host-managed. Open {0} and add only the missing env fields there. Do not paste API keys into chat." -f (Join-Path $TargetRoot 'settings.json')) -ForegroundColor DarkGray
+        Write-Host '[5/5] Running preview guidance health check...' -ForegroundColor Yellow
         & $checkPath -Profile $Profile -HostId $HostId -TargetRoot $TargetRoot -Deep
     }
     'runtime-core' {

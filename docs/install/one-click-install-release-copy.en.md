@@ -24,18 +24,17 @@ Rules:
    - on Linux / macOS, run `bash ./scripts/bootstrap/one-shot-setup.sh --host codex`
    - then run `bash ./check.sh --host codex --profile full --deep`
    - on Windows, use the equivalent `pwsh` commands.
-   - do not tell me to install `hookify`, `everything-claude-code`, `claude-code-settings`, or `ralph-loop` for Codex.
+   - explicitly tell me that the current version does not install any hook surface for Codex because of compatibility issues.
    - keep Codex guidance limited to officially supportable local settings, MCP, and optional CLI dependencies.
    - if online model access is needed, tell me to configure `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and related values in `~/.codex/settings.json` under `env` or in local environment variables, not in chat.
 5. If I choose `claude-code`:
    - on Linux / macOS, run `bash ./scripts/bootstrap/one-shot-setup.sh --host claude-code`
    - then run `bash ./check.sh --host claude-code --profile full --deep`
    - on Windows, use the equivalent `pwsh` commands.
-   - explicitly tell me this is preview scaffold support, not full closure.
-   - explicitly tell me the installer only writes `settings.vibe.preview.json` as an example and does not overwrite the real `settings.json`.
+   - explicitly tell me this is preview guidance, not full closure.
+   - explicitly tell me that because of compatibility issues, the current version does not install hooks for Claude Code and no longer writes `settings.vibe.preview.json`.
    - do not ask me to paste API keys into chat.
    - tell me to open `~/.claude/settings.json` and add only the required `env` fields while preserving my existing settings.
-   - use `~/.claude/settings.vibe.preview.json` only as a reference, never as a full-file replacement.
    - if AI-governance online capability is needed, remind me to configure these fields locally:
      - `VCO_AI_PROVIDER_URL`
      - `VCO_AI_PROVIDER_API_KEY`
@@ -68,8 +67,9 @@ These may still remain host-side or user-side tasks:
 
 - local host configuration
 - MCP registration and authorization
+- waiting for hook compatibility work to resume
 - local `url` / `apikey` / `model` configuration
-- manual merge into Claude Code's real `settings.json`
+- manual updates to Claude Code's real `settings.json`
 
 ## Second Main Install Path
 

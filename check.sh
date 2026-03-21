@@ -533,8 +533,8 @@ runtime_nested_skill_root="${runtime_skill_root}/bundled/skills/vibe"
 if [[ "${ADAPTER_CHECK_MODE}" == "governed" ]]; then
   check_path "settings.json" "${TARGET_ROOT}/settings.json"
 fi
-if [[ "${ADAPTER_CHECK_MODE}" == "preview-scaffold" ]]; then
-  check_path "settings.vibe.preview.json" "${TARGET_ROOT}/settings.vibe.preview.json"
+if [[ "${ADAPTER_CHECK_MODE}" == "preview-guidance" ]]; then
+  warn_note "claude preview hook/settings scaffold is intentionally disabled because of current compatibility issues"
 fi
 if [[ "${ADAPTER_CHECK_MODE}" == "governed" ]]; then
   check_path "plugins manifest" "${TARGET_ROOT}/config/plugins-manifest.codex.json"
@@ -588,10 +588,7 @@ if [[ "${PROFILE}" == "full" ]]; then
 fi
 if [[ "${ADAPTER_CHECK_MODE}" == "governed" ]]; then
   check_path "rules/common" "${TARGET_ROOT}/rules/common/agents.md"
-  check_path "hooks/write-guard" "${TARGET_ROOT}/hooks/write-guard.js"
   check_path "mcp template" "${TARGET_ROOT}/mcp/servers.template.json"
-elif [[ "${ADAPTER_CHECK_MODE}" == "preview-scaffold" ]]; then
-  check_path "hooks/write-guard" "${TARGET_ROOT}/hooks/write-guard.js"
 fi
 
 show_installed_runtime_upgrade_hint

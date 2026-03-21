@@ -16,7 +16,7 @@
 其中：
 
 - `codex`：正式推荐路径
-- `claude-code`：preview scaffold 路径
+- `claude-code`：preview guidance 路径
 
 `TargetRoot` 只是安装路径。
 `HostId` / `--host` 才决定宿主语义。
@@ -53,14 +53,15 @@ bash ./check.sh --host claude-code --profile full --deep
 
 - 当前是最完整的 repo-governed 路径
 - 建议范围只包括本地 `~/.codex` 设置、官方 MCP 注册和可选 CLI 依赖
-- 不要把未经官方证明的 hook/plugin 面当成标准安装要求
+- hook 当前因兼容性问题被冻结，不属于标准安装内容
 - 如果需要在线模型能力，去 `~/.codex/settings.json` 的 `env` 或本地环境变量里配置 provider 字段
 - 不要要求用户把密钥贴到聊天里
 
 ### Claude Code
 
-- 这是 preview scaffold，不是 full closure
-- 安装器只写 `settings.vibe.preview.json` 作为参考，不覆盖真实 `settings.json`
+- 这是 preview guidance，不是 full closure
+- hook 当前因兼容性问题被冻结
+- 安装器不再写 `settings.vibe.preview.json`
 - 用户应自己打开 `~/.claude/settings.json`，只在 `env` 下补所需字段
 - 常见字段：
   - `VCO_AI_PROVIDER_URL`

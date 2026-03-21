@@ -24,9 +24,9 @@
     {
       "id": "claude-code",
       "status": "preview",
-      "install_mode": "preview-scaffold",
-      "check_mode": "preview-scaffold",
-      "bootstrap_mode": "preview-scaffold",
+      "install_mode": "preview-guidance",
+      "check_mode": "preview-guidance",
+      "bootstrap_mode": "preview-guidance",
       "default_target_root": {
         "env": "CLAUDE_HOME",
         "rel": ".claude",

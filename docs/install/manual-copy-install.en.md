@@ -22,9 +22,10 @@ That means you get:
 It does not automatically give you:
 
 - host plugin provisioning
+- hook installation
 - MCP registration
 - provider credential wiring
-- automatic merge into Claude Code's real `settings.json`
+- automatic updates to Claude Code's real `settings.json`
 
 ## Manual Copy Steps
 
@@ -75,12 +76,13 @@ If `skills-lock.json` is not present, skip it.
   - `VCO_AI_PROVIDER_API_KEY`
   - `VCO_AI_PROVIDER_MODEL`
 - add `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` only when needed for the host connection
-- you may use `~/.claude/settings.vibe.preview.json` as a reference, but never overwrite the real file wholesale
+- the current version no longer generates `settings.vibe.preview.json`
 - do not paste secrets into chat
 
 ## Most Important Boundary
 
 - this path does not automatically finish online provider configuration
+- this path also does not install hooks for `codex` or `claude-code`; hook installation is frozen because of compatibility issues
 - if `url` / `apikey` / `model` are not configured locally, the environment must not be described as online-ready
 - other agents are not part of the supported surface in the current version
 

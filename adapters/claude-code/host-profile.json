@@ -12,12 +12,11 @@
   "settings_surface": {
     "path": "~/.claude/settings.json",
     "managed_by_repo": false,
-    "preview_scaffold_path": "~/.claude/settings.vibe.preview.json",
-    "notes": "The repository ships a truthful preview scaffold and preview health check, but it does not modify the real Claude settings.json or claim full Claude Code closure."
+    "notes": "The repository currently provides preview guidance only. Hook installation and preview-settings scaffold are frozen because of compatibility issues, and the real Claude settings.json stays host-managed."
   },
   "host_managed_surfaces": [
     "plugin enablement",
-    "hook execution environment",
+    "hook installation",
     "MCP registration",
     "provider credentials"
   ],
@@ -26,12 +25,12 @@
     "fs.write": "expected",
     "shell.exec": "expected",
     "mcp.client": "supported-with-constraints",
-    "settings.materialize": "preview-scaffold",
+    "settings.materialize": "preview-guidance",
     "plugin.provision": "manual-host-managed",
     "agent.spawn": "expected",
     "route.provider_call": "supported-with-constraints",
     "route.offline_fallback": "expected",
-    "release.verify": "preview-scaffold"
+    "release.verify": "preview-guidance"
   },
   "degrade_contract": {
     "missing_plugins": "degraded-but-supported",

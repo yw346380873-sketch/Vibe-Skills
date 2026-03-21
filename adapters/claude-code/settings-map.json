@@ -6,11 +6,10 @@
     "env.ANTHROPIC_AUTH_TOKEN": "primary provider credential",
     "env.ANTHROPIC_BASE_URL": "provider endpoint binding",
     "env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "host runtime behavior toggle",
-    "env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "host runtime team capability flag",
-    "hooks.PreToolUse": "host hook integration surface"
+    "env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "host runtime team capability flag"
   },
   "notes": [
-    "This mapping is template-derived and currently preview-only.",
-    "The preview installer writes settings.vibe.preview.json as a separate example file and never overwrites this target automatically."
+    "This mapping is template-derived and currently guidance-only.",
+    "Hook installation and preview-settings scaffold are temporarily frozen because of compatibility issues. Configure the real host settings.json manually."
   ]
 }

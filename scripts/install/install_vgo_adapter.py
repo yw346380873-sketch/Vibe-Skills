@@ -178,7 +178,6 @@ def install_runtime_core(repo_root: Path, target_root: Path, profile: str, allow
 
 def install_codex_payload(repo_root: Path, target_root: Path):
     copy_tree(repo_root / "rules", target_root / "rules")
-    copy_tree(repo_root / "hooks", target_root / "hooks")
     copy_tree(repo_root / "agents" / "templates", target_root / "agents" / "templates")
     copy_tree(repo_root / "mcp", target_root / "mcp")
     (target_root / "config").mkdir(parents=True, exist_ok=True)
@@ -188,10 +187,10 @@ def install_codex_payload(repo_root: Path, target_root: Path):
         copy_file(repo_root / "config" / "settings.template.codex.json", settings_path)
 
 
-def install_claude_preview(repo_root: Path, target_root: Path):
-    copy_tree(repo_root / "hooks", target_root / "hooks")
-    preview_settings_path = target_root / "settings.vibe.preview.json"
-    copy_file(repo_root / "config" / "settings.template.claude.json", preview_settings_path)
+def install_claude_guidance_payload(repo_root: Path, target_root: Path):
+    # Hook and preview-settings installation are intentionally frozen until
+    # cross-host compatibility issues are resolved.
+    return
 
 
 def main():
@@ -211,8 +210,8 @@ def main():
     mode = adapter["install_mode"]
     if mode == "governed":
         install_codex_payload(repo_root, target_root)
-    elif mode == "preview-scaffold":
-        install_claude_preview(repo_root, target_root)
+    elif mode == "preview-guidance":
+        install_claude_guidance_payload(repo_root, target_root)
     elif mode != "runtime-core":
         raise SystemExit(f"Unsupported adapter install mode: {mode}")
 

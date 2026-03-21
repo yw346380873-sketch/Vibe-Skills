@@ -5,7 +5,6 @@
   "semantics": {
     "vco.skill_root": "~/.codex/skills",
     "vco.rules_root": "~/.codex/rules",
-    "vco.hooks_root": "~/.codex/hooks",
     "vco.mcp_profile": "profile selector for mcp/servers.active.json materialization",
     "env.OPENAI_API_KEY": "provider credential, required for provider-assisted routing/runtime features",
     "env.OPENAI_BASE_URL": "OpenAI-compatible endpoint binding, not canonical router truth",
@@ -14,6 +13,7 @@
   },
   "notes": [
     "This mapping is Codex-specific.",
-    "Template values are runtime bindings, not cross-host canonical truth."
+    "Template values are runtime bindings, not cross-host canonical truth.",
+    "Host hook installation is temporarily frozen because of compatibility issues."
   ]
 }

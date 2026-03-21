@@ -8,7 +8,6 @@
     "skills/**",
     "commands/**",
     "rules/**",
-    "hooks/**",
     "agents/templates/**",
     "mcp/**",
     "config/plugins-manifest.codex.json",
@@ -20,11 +19,11 @@
   "host_state_written": [
     "settings.json",
     "rules/**",
-    "hooks/**",
     "agents/templates/**",
     "mcp/**"
   ],
   "host_managed_boundaries": [
+    "hook installation",
     "plugin provisioning",
     "provider credentials",
     "external CLI availability"
