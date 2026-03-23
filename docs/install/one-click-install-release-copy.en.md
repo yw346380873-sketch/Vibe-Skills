@@ -27,6 +27,17 @@ Rules:
    - explicitly tell me that the current version does not install any hook surface for Codex because of compatibility issues.
    - keep Codex guidance limited to officially supportable local settings, MCP, and optional CLI dependencies.
    - if online model access is needed, tell me to configure `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and related values in `~/.codex/settings.json` under `env` or in local environment variables, not in chat.
+   - also explain clearly that `OPENAI_API_KEY` and `OPENAI_BASE_URL` only cover Codex base online provider access and do not mean the governance AI online layer is already configured.
+   - if the user wants the governance AI online layer under Codex too, remind me to configure these fields locally as well:
+     - `VCO_AI_PROVIDER_URL`
+     - `VCO_AI_PROVIDER_API_KEY`
+     - `VCO_AI_PROVIDER_MODEL`
+   - also explain clearly what those three fields do:
+     - `VCO_AI_PROVIDER_URL`: the provider endpoint or compatible API base URL used by the governance AI layer.
+     - `VCO_AI_PROVIDER_API_KEY`: the local credential used to authenticate governance AI calls to that provider.
+     - `VCO_AI_PROVIDER_MODEL`: the model name used when governance AI needs online analysis, governance enhancement, or related overlay capability.
+   - also explain why they matter: they are only needed when the user wants the governance AI online layer under Codex; if they are missing, the install can only be described as having Codex base online capability configured, not governance AI online readiness.
+   - also explain where to configure them: preferably in `~/.codex/settings.json` under `env`, or through local environment variables; never ask me to paste the URL, API key, or model into chat.
 5. If I choose `claude-code`:
    - on Linux / macOS, run `bash ./scripts/bootstrap/one-shot-setup.sh --host claude-code`
    - then run `bash ./check.sh --host claude-code --profile full --deep`
@@ -39,6 +50,12 @@ Rules:
      - `VCO_AI_PROVIDER_URL`
      - `VCO_AI_PROVIDER_API_KEY`
      - `VCO_AI_PROVIDER_MODEL`
+   - also explain clearly what those three fields do:
+     - `VCO_AI_PROVIDER_URL`: the provider endpoint or compatible API base URL used by the governance AI layer.
+     - `VCO_AI_PROVIDER_API_KEY`: the local credential used to authenticate governance AI calls to that provider.
+     - `VCO_AI_PROVIDER_MODEL`: the model name used when governance AI needs online analysis, governance enhancement, or related overlay capability.
+   - also explain why they matter: if the user wants AI-governance online capability rather than only local runtime / prompt / check flows, these three fields are required; if they are missing, the install can only be described as locally installed with governance AI online capability still not ready, not as full closure or online-ready.
+   - also explain where to configure them: preferably in `~/.claude/settings.json` under `env`, or through local environment variables; never ask me to paste the URL, API key, or model into chat.
 6. For both `codex` and `claude-code`, never ask me to paste secrets, URLs, or model values into chat. Only point me to local settings or local environment variables.
 7. If the required local provider fields are not configured yet, you must not describe the environment as online-ready.
 8. After installation, give me a concise English summary of:
@@ -60,6 +77,8 @@ Rules:
 - confirming the target host first
 - running the matching bootstrap + check flow
 - explaining what is still host-managed
+- for `codex`, explaining that `OPENAI_*` covers base online provider access, while `VCO_AI_PROVIDER_*` is only additionally needed for the governance AI online layer
+- for `claude-code`, explaining what `VCO_AI_PROVIDER_URL`, `VCO_AI_PROVIDER_API_KEY`, and `VCO_AI_PROVIDER_MODEL` do, why they are needed, and where they must be configured locally
 
 ## What It Does Not Pretend To Do
 

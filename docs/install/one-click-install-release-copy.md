@@ -27,6 +27,17 @@
    - 明确告诉我：由于兼容性问题，当前版本暂不为 Codex 安装任何 hook 面。
    - 只围绕 Codex 当前可公开证明的本地 settings、MCP 和 CLI 依赖给建议。
    - 如果需要在线模型能力，告诉我去 `~/.codex/settings.json` 的 `env` 或本地环境变量里配置 `OPENAI_API_KEY`、`OPENAI_BASE_URL` 等值，不要让我把密钥发到聊天里。
+   - 还要明确告诉我：`OPENAI_API_KEY`、`OPENAI_BASE_URL` 只代表 Codex 基础在线 provider，不等于治理 AI 在线层已经配置完成。
+   - 如果需要启用 Codex 下的治理 AI 在线层，还要提醒我自己在本地额外配置这些字段：
+     - `VCO_AI_PROVIDER_URL`
+     - `VCO_AI_PROVIDER_API_KEY`
+     - `VCO_AI_PROVIDER_MODEL`
+   - 还要明确解释这三个字段的作用：
+     - `VCO_AI_PROVIDER_URL`：治理 AI 要连接的 provider 地址或兼容 API Base URL。
+     - `VCO_AI_PROVIDER_API_KEY`：治理 AI 访问该 provider 时使用的本地认证密钥。
+     - `VCO_AI_PROVIDER_MODEL`：治理 AI 在线分析、治理增强或相关 overlay 要调用的模型名。
+   - 还要明确告诉我为什么要配置它们：只有你想启用 Codex 下的治理 AI 在线层时才需要；如果没配，就只能说 Codex 基础在线能力已配置，不能说治理 AI 在线层已就绪。
+   - 还要明确告诉我去哪里配置：优先去 `~/.codex/settings.json` 的 `env` 下本地填写，或使用本地环境变量；不要让我把 URL、API key、model 贴到聊天里。
 5. 如果我选择 `claude-code`：
    - Linux / macOS 使用 `bash ./scripts/bootstrap/one-shot-setup.sh --host claude-code`
    - 然后执行 `bash ./check.sh --host claude-code --profile full --deep`
@@ -39,6 +50,12 @@
      - `VCO_AI_PROVIDER_URL`
      - `VCO_AI_PROVIDER_API_KEY`
      - `VCO_AI_PROVIDER_MODEL`
+   - 还要明确解释这三个字段的作用：
+     - `VCO_AI_PROVIDER_URL`：治理 AI 要连接的 provider 地址或兼容 API Base URL。
+     - `VCO_AI_PROVIDER_API_KEY`：治理 AI 访问该 provider 时使用的本地认证密钥。
+     - `VCO_AI_PROVIDER_MODEL`：治理 AI 在线分析、治理增强或相关 overlay 要调用的模型名。
+   - 还要明确告诉我为什么要配置它们：如果你希望启用 AI 治理层的在线能力，而不是只跑本地 runtime / prompt / check 流程，就需要这三项；没配时只能说“本地安装完成，但治理 AI 在线能力未就绪”，不能伪装成 full closure 或 online readiness。
+   - 还要明确告诉我去哪里配置：优先去 `~/.claude/settings.json` 的 `env` 下本地填写，或使用本地环境变量；不要让我把 URL、API key、model 贴到聊天里。
 6. 对 `codex` 和 `claude-code`，都不要要求我把密钥、URL 或 model 直接粘贴到聊天里；只告诉我去本地 settings 或本地环境变量里配置。
 7. 如果这些本地 provider 字段没有配置好，不能把环境描述成“已完成 online readiness”。
 8. 安装完成后，请用简洁中文告诉我：
@@ -60,6 +77,8 @@
 - 先确认目标宿主，避免装错 lane
 - 运行对应的 bootstrap + check
 - 诚实告诉你哪些仍然是宿主侧工作
+- 对 `codex` 说明 `OPENAI_*` 只代表基础在线 provider，`VCO_AI_PROVIDER_*` 只在启用治理 AI 在线层时额外需要
+- 对 `claude-code` 说明 `VCO_AI_PROVIDER_URL`、`VCO_AI_PROVIDER_API_KEY`、`VCO_AI_PROVIDER_MODEL` 分别负责什么、为什么需要、以及应去哪里本地配置
 
 ## 它不会假装替你完成什么
 

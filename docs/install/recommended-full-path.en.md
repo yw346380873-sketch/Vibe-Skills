@@ -54,7 +54,12 @@ bash ./check.sh --host claude-code --profile full --deep
 - this is the strongest repo-governed path today
 - guidance should stay limited to local `~/.codex` settings, official MCP registration, and optional CLI dependencies
 - hooks are currently frozen because of compatibility issues and are not part of the standard install path
-- if online model access is needed, point users to `~/.codex/settings.json` under `env` or local environment variables
+- if Codex base online model access is needed, point users to `~/.codex/settings.json` under `env` or local environment variables for `OPENAI_API_KEY` and `OPENAI_BASE_URL`
+- if the user also wants the governance AI online layer under Codex, they must additionally configure:
+  - `VCO_AI_PROVIDER_URL`
+  - `VCO_AI_PROVIDER_API_KEY`
+  - `VCO_AI_PROVIDER_MODEL`
+- `OPENAI_*` is not the same as `VCO_AI_PROVIDER_*`; the former is Codex base online provider access, while the latter is the governance AI online layer
 - do not ask users to paste secrets into chat
 
 ### Claude Code
@@ -72,6 +77,8 @@ bash ./check.sh --host claude-code --profile full --deep
 
 ## AI Governance Reminder
 
-For `claude-code`, if `url`, `apikey`, and `model` are not configured locally yet, the environment must not be described as online-ready.
+For both `codex` and `claude-code`, if the governance AI `url`, `apikey`, and `model` are not configured locally yet, the environment must not be described as governance-AI-online-ready.
+
+For `codex`, that means you may describe the base online provider as ready, but you must not imply that the governance AI online layer is ready too.
 
 Those values must be filled by the user in local host settings or local environment variables.

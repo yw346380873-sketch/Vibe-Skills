@@ -48,7 +48,11 @@ Manual copy only places the repo files. It does not finish host-local configurat
 You still need to configure locally:
 
 - `~/.codex/settings.json`
-- commonly `OPENAI_API_KEY` and `OPENAI_BASE_URL` under `env`
+- if you only want Codex base online provider access, commonly `OPENAI_API_KEY` and `OPENAI_BASE_URL` under `env`
+- if you also want the governance AI online layer, additionally configure:
+  - `VCO_AI_PROVIDER_URL`
+  - `VCO_AI_PROVIDER_API_KEY`
+  - `VCO_AI_PROVIDER_MODEL`
 
 ### If you install into Claude Code
 
@@ -79,7 +83,9 @@ The important current boundary is:
 
 ## Final Boundary
 
-If `url` / `apikey` / `model` are not configured locally yet, the environment must not be described as online-ready.
+If the governance AI `url` / `apikey` / `model` are not configured locally yet, the environment must not be described as governance-AI-online-ready.
+
+For `codex`, that also means `OPENAI_*` being configured must not be presented as if the governance AI online layer were configured too.
 
 Those values should be filled by the user in local host settings or local environment variables, not pasted into chat.
 

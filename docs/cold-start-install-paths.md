@@ -43,6 +43,17 @@ bash ./check.sh --host codex --profile full --deep
 
 - hook 安装
 
+## Codex 的正确后续动作
+
+- 打开 `~/.codex/settings.json`
+- 如果只是基础在线 provider，先看 `env` 下的 `OPENAI_API_KEY`、`OPENAI_BASE_URL`
+- 如果还要启用治理 AI 在线层，再额外补：
+  - `VCO_AI_PROVIDER_URL`
+  - `VCO_AI_PROVIDER_API_KEY`
+  - `VCO_AI_PROVIDER_MODEL`
+- `OPENAI_*` 不等于 `VCO_AI_PROVIDER_*`
+- 不要把密钥贴到聊天里
+
 ## 路径二：Claude Code
 
 Windows:
@@ -86,4 +97,5 @@ bash ./check.sh --host claude-code --profile full --deep
 - `HostId` / `--host` 决定宿主语义，不是路径名决定
 - 当前没有其他宿主的公开安装入口
 - hook 当前因兼容性问题被冻结，不在支持宿主的安装面里
-- 如果本地还没配好 `url` / `apikey` / `model`，不能描述成“已完成 online readiness”
+- 如果本地还没配好治理 AI 的 `url` / `apikey` / `model`，不能描述成“已完成治理 AI online readiness”
+- 对 `codex`，`OPENAI_*` 已配置最多只能说明基础在线 provider 已就绪，不能顺带声称治理 AI 在线层也已就绪

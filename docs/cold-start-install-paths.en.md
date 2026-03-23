@@ -43,6 +43,17 @@ What you do not get:
 
 - hook installation
 
+## Correct Follow-Up For Codex
+
+- open `~/.codex/settings.json`
+- if you only want the base online provider, start with `OPENAI_API_KEY` and `OPENAI_BASE_URL` under `env`
+- if you also want the governance AI online layer, additionally configure:
+  - `VCO_AI_PROVIDER_URL`
+  - `VCO_AI_PROVIDER_API_KEY`
+  - `VCO_AI_PROVIDER_MODEL`
+- `OPENAI_*` is not the same as `VCO_AI_PROVIDER_*`
+- do not paste secrets into chat
+
 ## Path 2: Claude Code
 
 Windows:
@@ -86,4 +97,5 @@ What you do not get:
 - `HostId` / `--host` decides host semantics, not the folder name alone
 - there is no public install entry for any other host in the current version
 - hooks are currently frozen because of compatibility issues and are outside the supported install surface
-- if `url` / `apikey` / `model` are not configured locally yet, the environment must not be described as online-ready
+- if the governance AI `url` / `apikey` / `model` are not configured locally yet, the environment must not be described as governance-AI-online-ready
+- for `codex`, `OPENAI_*` being configured only proves the base online provider is ready, not the governance AI online layer

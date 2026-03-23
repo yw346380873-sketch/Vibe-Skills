@@ -59,6 +59,8 @@
    - 明确告诉我：当前 hook 因兼容性问题暂不提供安装
    - 只围绕 `~/.codex` 下的本地设置、官方 MCP 注册和可选 CLI 依赖给建议
    - 如果需要在线模型能力，告诉我去 `~/.codex/settings.json` 的 `env` 或本地环境变量里配置 `OPENAI_API_KEY`、`OPENAI_BASE_URL` 等值
+   - 同时明确告诉我：`OPENAI_*` 只代表 Codex 基础在线 provider，不等于治理 AI 在线层已经配置完成
+   - 如果还要启用治理 AI 在线层，提醒我在本地额外配置 `VCO_AI_PROVIDER_URL`、`VCO_AI_PROVIDER_API_KEY`、`VCO_AI_PROVIDER_MODEL`
 10. 在整个过程中，不要修改仓库运行时逻辑；只做安装、检查、结论整理。
 > 提醒：AI 智能治理层相关配置必须由用户在本地文件或本地环境变量中填写。不要要求用户在聊天里直接提供 `url`、`apikey`、`model`。
 ```
@@ -104,7 +106,7 @@
 
 ```text
 请你把当前仓库按 Linux 推荐满血路径安装好，并先判断当前 Linux 是否具备 `pwsh`。
-仓库地址：https://github.com/foryourhealth111-pixel/Vibe-Skills 
+仓库地址：https://github.com/foryourhealth111-pixel/Vibe-Skills
 要求：
 
 1. 先检查 `pwsh` 是否可用。

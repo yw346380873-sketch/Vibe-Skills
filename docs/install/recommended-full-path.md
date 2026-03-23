@@ -54,7 +54,12 @@ bash ./check.sh --host claude-code --profile full --deep
 - 当前是最完整的 repo-governed 路径
 - 建议范围只包括本地 `~/.codex` 设置、官方 MCP 注册和可选 CLI 依赖
 - hook 当前因兼容性问题被冻结，不属于标准安装内容
-- 如果需要在线模型能力，去 `~/.codex/settings.json` 的 `env` 或本地环境变量里配置 provider 字段
+- 如果需要 Codex 基础在线模型能力，去 `~/.codex/settings.json` 的 `env` 或本地环境变量里配置 `OPENAI_API_KEY`、`OPENAI_BASE_URL`
+- 如果需要启用 Codex 下的治理 AI 在线层，还要额外在本地配置：
+  - `VCO_AI_PROVIDER_URL`
+  - `VCO_AI_PROVIDER_API_KEY`
+  - `VCO_AI_PROVIDER_MODEL`
+- `OPENAI_*` 不等于 `VCO_AI_PROVIDER_*`；前者是 Codex 基础在线 provider，后者是治理 AI 在线层
 - 不要要求用户把密钥贴到聊天里
 
 ### Claude Code
@@ -72,6 +77,8 @@ bash ./check.sh --host claude-code --profile full --deep
 
 ## AI 治理层提示
 
-对 `claude-code`，如果本地还没配置好 `url`、`apikey`、`model`，就不能描述成“已完成 online readiness”。
+对 `codex` 和 `claude-code`，如果本地还没配置好治理 AI 所需的 `url`、`apikey`、`model`，就不能描述成“已完成治理 AI online readiness”。
+
+对 `codex`，这表示最多只能说基础在线 provider 已就绪，不能顺带宣称治理 AI 在线层也已就绪。
 
 这些值必须由用户自己填进本地宿主配置或本地环境变量。

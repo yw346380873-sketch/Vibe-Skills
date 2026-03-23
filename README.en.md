@@ -284,6 +284,7 @@ We know that building in isolation cannot keep up with the speed of the AI era. 
 **Installation and configuration guide**
 * Current public support surface: **Claude Code and Codex only**
 * ⚡️ [Prompt-based install (recommended default)](./docs/install/one-click-install-release-copy.en.md)
+  The prompt now explicitly distinguishes Codex base online provider settings (`OPENAI_*`) from the governance AI online layer (`VCO_AI_PROVIDER_*`), and requires the assistant to explain what those fields do, why they matter, and where they must be configured locally.
 * 📁 [Manual copy install (offline / no-admin)](./docs/install/manual-copy-install.en.md)
 
 **Advanced references**

@@ -65,6 +65,8 @@ Repository address: https://github.com/foryourhealth111-pixel/Vibe-Skills
    - explicitly tell me that hooks are temporarily not installed because of compatibility issues
    - keep guidance limited to local `~/.codex` settings, official MCP registration, and optional CLI dependencies
    - if online model access is needed, tell me to configure values such as `OPENAI_API_KEY` and `OPENAI_BASE_URL` in `~/.codex/settings.json` under `env` or in local environment variables
+   - also tell me clearly that `OPENAI_*` only covers Codex base online provider access and does not mean the governance AI online layer is configured
+   - if the governance AI online layer is needed too, remind me to configure `VCO_AI_PROVIDER_URL`, `VCO_AI_PROVIDER_API_KEY`, and `VCO_AI_PROVIDER_MODEL` locally
 13. Do not modify runtime logic during this flow; only install, check, and summarize.
 > Reminder: AI governance layer values must be filled in by the user in local files or local environment variables. Do not ask the user to paste `url`, `apikey`, or `model` into chat.
 ```

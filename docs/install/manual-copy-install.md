@@ -48,7 +48,11 @@
 你还需要自己去本地配置：
 
 - `~/.codex/settings.json`
-- 常见是 `env` 下的 `OPENAI_API_KEY`、`OPENAI_BASE_URL`
+- 如果只是 Codex 基础在线 provider，常见是 `env` 下的 `OPENAI_API_KEY`、`OPENAI_BASE_URL`
+- 如果还要启用治理 AI 在线层，还要额外配置：
+  - `VCO_AI_PROVIDER_URL`
+  - `VCO_AI_PROVIDER_API_KEY`
+  - `VCO_AI_PROVIDER_MODEL`
 
 ### 如果你装到 Claude Code
 
@@ -79,7 +83,9 @@
 
 ## 最后一个边界
 
-如果 `url` / `apikey` / `model` 还没有在本地配置好，就不能把环境描述成“已完成 online readiness”。
+如果治理 AI 的 `url` / `apikey` / `model` 还没有在本地配置好，就不能把环境描述成“已完成治理 AI online readiness”。
+
+对 `codex`，这也意味着不能把“`OPENAI_*` 已配置”偷换成“治理 AI 在线层已配置”。
 
 这些值应该由用户自己填进本地宿主配置或本地环境变量里，不要在聊天里直接提供。
 
