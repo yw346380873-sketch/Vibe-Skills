@@ -1,109 +1,175 @@
 # Prompt-Based Install (Recommended Default)
 
-This is the default installation path.
+This is the default recommended installation path.
 
-At the moment, only two target hosts are supported:
+## 🚀 Quick Navigation
+
+**If you want to use prompts directly, please choose**:
+
+- 📦 [Full Version Install Prompt](./prompts/full-version-install.en.md) - Ready to use with complete features
+- 🔧 [Framework Only Install Prompt](./prompts/framework-only-install.en.md) - Install governance framework only
+- 🔄 [Full Version Update Prompt](./prompts/full-version-update.en.md) - Update installed full version
+- 🔄 [Framework Only Update Prompt](./prompts/framework-only-update.en.md) - Update installed framework version
+
+**Reference Documentation**:
+- 📋 [Installation Rules](./installation-rules.en.md) - 13 core installation rules
+- ⚙️ [Configuration Guide](./configuration-guide.en.md) - VCO configuration details
+
+---
+
+Public versions are consolidated into two options:
+
+- `Full Version + Customizable Governance`
+- `Framework Only + Customizable Governance`
+
+Current script layer still uses lane implementation:
+
+- `Full Version + Customizable Governance` corresponds to `full`
+- `Framework Only + Customizable Governance` corresponds to `framework-only`
+
+`workflow` is retained as a compatibility/transition lane but is no longer the main recommended version for regular users.
+
+Currently only two target hosts are supported:
 
 - `codex`
 - `claude-code`
 
-## Prompt To Copy Into AI
+## Quick Conclusion
 
-```text
-You are now my VibeSkills installation assistant.
-Repository: https://github.com/foryourhealth111-pixel/Vibe-Skills
+If you don't want to study lane/profile/host details first, understand it this way:
 
-Before running any install command, you must ask me:
-"Which host do you want to install VibeSkills into? Currently supported: codex or claude-code."
+- Want ready-to-use with ability to add your own workflow/skill governance later: choose `Full Version + Customizable Governance`
+- Want only the governance framework and add workflow/skill governance yourself later: choose `Framework Only + Customizable Governance`
 
-Rules:
-1. Do not start installation until I explicitly answer which target host I want.
-2. If I answer with anything other than `codex` or `claude-code`, tell me clearly that this version does not support that host yet, and stop instead of pretending installation is complete.
-3. Detect whether the current system is Windows or Linux / macOS, and use the matching command format.
-4. If I choose `codex`:
-   - on Linux / macOS, run `bash ./scripts/bootstrap/one-shot-setup.sh --host codex`
-   - then run `bash ./check.sh --host codex --profile full --deep`
-   - on Windows, use the equivalent `pwsh` commands.
-   - explain in a recommendation tone that the current version does not open the Codex hook install surface yet because the author is still working through compatibility issues, and that this does not mean the install failed.
-   - keep Codex guidance limited to officially supportable local settings, MCP, and optional CLI dependencies, and treat anything still missing as optional enhancement work.
-   - if online model access is needed, tell me to configure `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and related values in `~/.codex/settings.json` under `env` or in local environment variables, not in chat.
-   - also explain clearly that `OPENAI_API_KEY` and `OPENAI_BASE_URL` only cover Codex base online provider access and do not mean the governance AI online layer is already configured.
-   - if the user wants the governance AI online layer under Codex too, recommend these fields as optional enhancement settings that I can ask you to add next:
-     - `VCO_AI_PROVIDER_URL`
-     - `VCO_AI_PROVIDER_API_KEY`
-     - `VCO_AI_PROVIDER_MODEL`
-   - also explain clearly what those three fields do:
-     - `VCO_AI_PROVIDER_URL`: the provider endpoint or compatible API base URL used by the governance AI layer.
-     - `VCO_AI_PROVIDER_API_KEY`: the local credential used to authenticate governance AI calls to that provider.
-     - `VCO_AI_PROVIDER_MODEL`: the model name used when governance AI needs online analysis, governance enhancement, or related overlay capability.
-   - also explain why they matter: they are only needed when the user wants the governance AI online layer under Codex; if they are missing, the install can only be described as having Codex base online capability configured, not governance AI online readiness.
-   - also explain where to configure them: preferably in `~/.codex/settings.json` under `env`, or through local environment variables; never ask me to paste the URL, API key, or model into chat.
-5. If I choose `claude-code`:
-   - on Linux / macOS, run `bash ./scripts/bootstrap/one-shot-setup.sh --host claude-code`
-   - then run `bash ./check.sh --host claude-code --profile full --deep`
-   - on Windows, use the equivalent `pwsh` commands.
-   - explicitly tell me this is preview guidance, not full closure.
-   - explain in a recommendation tone that the current version does not open the Claude Code hook install surface yet because the author is still working through compatibility issues; this does not mean the install failed, and the installer no longer writes `settings.vibe.preview.json`.
-   - do not ask me to paste API keys into chat.
-   - tell me to open `~/.claude/settings.json` and add only the required `env` fields while preserving my existing settings.
-   - if AI-governance online capability is needed, recommend these fields as optional enhancement settings that I can ask you to add next:
-     - `VCO_AI_PROVIDER_URL`
-     - `VCO_AI_PROVIDER_API_KEY`
-     - `VCO_AI_PROVIDER_MODEL`
-   - also explain clearly what those three fields do:
-     - `VCO_AI_PROVIDER_URL`: the provider endpoint or compatible API base URL used by the governance AI layer.
-     - `VCO_AI_PROVIDER_API_KEY`: the local credential used to authenticate governance AI calls to that provider.
-     - `VCO_AI_PROVIDER_MODEL`: the model name used when governance AI needs online analysis, governance enhancement, or related overlay capability.
-   - also explain why they matter: if the user wants AI-governance online capability rather than only local runtime / prompt / check flows, these three fields are required; if they are missing, the install can only be described as locally installed with governance AI online capability still not ready, not as full closure or online-ready.
-   - also explain where to configure them: preferably in `~/.claude/settings.json` under `env`, or through local environment variables; never ask me to paste the URL, API key, or model into chat.
-6. For both `codex` and `claude-code`, never ask me to paste secrets, URLs, or model values into chat. Only point me to local settings or local environment variables.
-7. If the required local provider fields are not configured yet, you must not describe the environment as online-ready.
-8. After installation, give me a concise English summary of:
-   - the target host
-   - the commands actually executed
-   - what is complete
-   - what I still need to do manually
-9. Do not pretend that host plugins, MCP registration, or provider credentials were completed automatically if they were not; describe anything still missing as optional enhancement work or recommended next steps first.
-```
+Publicly, we only present these two versions without requiring regular users to understand `workflow`/`full`/`framework-only` first.
 
-## Who This Path Is For
+## Quick Selection
 
-- users who want AI to choose between `codex` and `claude-code`
-- users who do not want to study the scripts first
-- users who want one truthful install pass plus a clear manual follow-up list
+| Public Version | Actual Profile | What You Get | What You Don't Get Directly | Who It's For |
+| --- | --- | --- | --- | --- |
+| `Full Version + Customizable Governance` | `full` | `vibe` runtime, canonical router, complete governance framework, default workflow core, extended bundled capabilities | Auto-completed hooks, auto-completed provider/MCP/online readiness | Users who want ready-to-use experience and plan to add custom workflows later |
+| `Framework Only + Customizable Governance` | `framework-only` | `vibe` runtime, canonical router, install/check/doctor, routing and overlay/policy governance skeleton | Default workflow core, extensive bundled workflow/domain skills | Users who only want the governance foundation and plan to gradually add workflow/skills themselves |
 
-## What This Path Helps With
+## What You Need to Do
 
-- confirming the target host first
-- running the matching bootstrap + check flow
-- explaining what is still host-managed
-- reframing any missing MCP, provider, or governance-AI-online setup as optional enhancement work rather than install warnings
-- for `codex`, explaining that `OPENAI_*` covers base online provider access, while `VCO_AI_PROVIDER_*` is only additionally needed for the governance AI online layer
-- for `claude-code`, explaining what `VCO_AI_PROVIDER_URL`, `VCO_AI_PROVIDER_API_KEY`, and `VCO_AI_PROVIDER_MODEL` do, why they are needed, and where they must be configured locally
+1. Choose host: `codex` or `claude-code`
+2. Choose public version: `Full Version + Customizable Governance` or `Framework Only + Customizable Governance`
+3. Copy the corresponding prompt below to AI and let AI execute the installation
 
-## What It Does Not Pretend To Do
+After installation, if you want to add your own workflow/skills, continue with:
 
-These may still remain host-side or user-side tasks:
+- [`custom-workflow-onboarding.en.md`](./custom-workflow-onboarding.en.md)
+- [`custom-skill-governance-rules.en.md`](./custom-skill-governance-rules.en.md)
 
-- local host configuration
-- MCP registration and authorization as optional enhancements
-- waiting for hook compatibility work to resume on the author side, not as a user install failure
-- local `url` / `apikey` / `model` configuration
-- manual updates to Claude Code's real `settings.json`
+## Version Description
 
-## How old-version users should upgrade
+### 1. Full Version + Customizable Governance
 
-If you already installed an older version, you usually do not need to uninstall first.
-For most users, the simplest path is to rerun this prompt-based install flow.
+You will get:
+
+- `vibe` runtime and canonical router
+- Complete governance framework
+- Default workflow core
+- Extended bundled capabilities
+- Entry point to continue integrating your own custom workflow/custom skill governance
+
+Suitable for:
+
+- Want ready-to-use experience
+- Plan to continue managing your own workflows later
+- Don't want to add too many basic workflow skills yourself first
+
+### 2. Framework Only + Customizable Governance
+
+You will get:
+
+- `vibe` runtime and canonical router
+- install/check/doctor and other governance surfaces
+- Routing, execution levels, overlay/policy governance skeleton
+- Foundation to continue integrating custom workflow/custom governance
+
+You will NOT get directly:
+
+- Ready-to-use experience of default workflow core
+- Extensive bundled workflow/domain skills
+
+Suitable for:
+
+- Only want to keep the governance framework
+- Want to decide which workflow/skills to integrate later
+- Can accept continuing to add custom workflow manifest and governance rules yourself
+
+## Prompts to Copy to AI
+
+For the detailed prompts, please refer to the individual prompt files:
+
+- [Full Version Install Prompt](./prompts/full-version-install.en.md)
+- [Framework Only Install Prompt](./prompts/framework-only-install.en.md)
+- [Full Version Update Prompt](./prompts/full-version-update.en.md)
+- [Framework Only Update Prompt](./prompts/framework-only-update.en.md)
+
+## What You'll See After Installation
+
+Regardless of which version you choose, after installation you should receive a concise result summary including at least:
+
+- Target host
+- Public version
+- Actual mapped profile
+- Commands actually executed
+- Completed parts
+- Parts still requiring manual handling
+
+Recommended understanding:
+
+- "Installation complete" ≠ "hooks installed"
+- "Basic online provider configured" ≠ "governance AI online layer ready"
+- "Core framework installed" ≠ "default workflow core complete"
+- "Skill directory exists" ≠ "custom workflow managed by router"
+
+## What It Won't Pretend to Complete for You
+
+The following may still be user-side or host-side actions:
+
+- Local host configuration
+- MCP registration and authorization (optional enhancements as needed)
+- Hook compatibility waiting (currently author-side compatibility boundary, not your installation failure)
+- Local `url`/`apikey`/`model` configuration
+- Manual updates to Claude Code's real `settings.json`
+- Custom workflow manifest declaration and governance rule completion
+
+## How to Continue Adding Custom Skills/Governance After Installation
+
+Follow the governed integration path:
+
+- First complete current public version installation
+- Then see [`custom-workflow-onboarding.en.md`](./custom-workflow-onboarding.en.md)
+- Then see [`custom-skill-governance-rules.en.md`](./custom-skill-governance-rules.en.md)
+
+Recommended understanding:
+
+- Full version: Get default workflow core and extended capabilities first, then integrate your own governance
+- Framework version: Get foundation first, then gradually integrate your own workflow/skill governance by manifest
+
+If your goal is "integrate your own workflows right after installation", recommended order:
+
+1. First install `Full Version + Customizable Governance`
+2. Then establish manifest per [`custom-workflow-onboarding.en.md`](./custom-workflow-onboarding.en.md)
+3. Then complete governance boundaries per [`custom-skill-governance-rules.en.md`](./custom-skill-governance-rules.en.md)
+4. Finally run `check`/doctor again for verification
+
+## How Old-Version Users Should Upgrade
+
+If you already installed an older version, you usually don't need to uninstall first.
+For most users, simply re-run this prompt-based install flow.
 
 In practice, that means asking AI to run one more install pass with this prompt.
-If that install completes normally, you usually do not need any extra manual commands.
+If that install completes normally, you usually don't need any extra manual commands.
 
 Only use the more detailed upgrade commands when:
 
 - AI cannot run the install for you
-- you need to debug a failed upgrade manually
-- you explicitly want to upgrade to a specific release or tag
+- You need to debug a failed upgrade manually
+- You explicitly want to upgrade to a specific release or tag
 
 Then see:
 
@@ -120,4 +186,6 @@ If you do not want AI to run installation, or the environment is offline or has 
 If you need the more detailed host boundaries, see:
 
 - [`recommended-full-path.en.md`](./recommended-full-path.en.md)
+- [`full-path.en.md`](./full-path.en.md)
+- [`framework-only-path.en.md`](./framework-only-path.en.md)
 - [`../cold-start-install-paths.en.md`](../cold-start-install-paths.en.md)
