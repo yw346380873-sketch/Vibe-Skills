@@ -45,7 +45,7 @@ Industrial-grade runtime framework integrating hundreds of Skills, MCP integrati
 
 <br/><br/>
 
-🧠 Planning · 🛠️ Engineering · 🤖 AI · 🔬 Research · 🧬 Life Sciences · 🎨 Visualization · 🎬 Multimedia
+🧠 Planning · 🛠️ Engineering · 🤖 AI · 🔬 Research · 🎨 Creation
 
 <br/>
 
