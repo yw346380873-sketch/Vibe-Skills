@@ -1,11 +1,18 @@
-# 安装入口（默认推荐）
+# 安装入口（唯一公开入口）
 
-这是当前默认推荐的公开安装入口。
+这是当前唯一公开安装入口。
+
+普通用户只需要使用这一页。
+这页会把你路由到保留的 4 份基础安装提示词文档。
 
 ## 先选两件事
 
 1. 先确认宿主：`codex`、`claude-code`、`cursor`、`windsurf`、`openclaw`、`opencode`
-2. 再确认版本：`全量版本 + 可自定义添加治理` 或 `仅核心框架 + 可自定义添加治理`
+2. 再确认动作与版本：
+   - 安装：`全量版本 + 可自定义添加治理`
+   - 安装：`仅核心框架 + 可自定义添加治理`
+   - 更新：`全量版本 + 可自定义添加治理`
+   - 更新：`仅核心框架 + 可自定义添加治理`
 
 公开版本映射到：
 
@@ -14,28 +21,31 @@
 
 ## 复制对应提示词
 
+这里保留 4 份基础提示词文档，覆盖安装 / 更新 与 full / minimal 四种场景。
+除这 4 份外，其他页面都不再作为公开安装提示词入口。
+
 - [`prompts/full-version-install.md`](./prompts/full-version-install.md)
 - [`prompts/framework-only-install.md`](./prompts/framework-only-install.md)
 - [`prompts/full-version-update.md`](./prompts/full-version-update.md)
 - [`prompts/framework-only-update.md`](./prompts/framework-only-update.md)
 
-## 宿主专页
-
-如果你要装到以下宿主，可以直接看对应专页：
-
-- `openclaw`：[`openclaw-path.md`](./openclaw-path.md)
-- `opencode`：[`opencode-path.md`](./opencode-path.md)
-
 ## 需要时再继续看
 
+- 宿主补充说明：
+  - [`openclaw-path.md`](./openclaw-path.md)
+  - [`opencode-path.md`](./opencode-path.md)
 - 仅核心框架命令路径：
   - [`minimal-path.md`](./minimal-path.md)
 - 更多安装命令和宿主细节：
   - [`recommended-full-path.md`](./recommended-full-path.md)
   - [`manual-copy-install.md`](./manual-copy-install.md)
   - [`host-plugin-policy.md`](./host-plugin-policy.md)
-  - [`openclaw-path.md`](./openclaw-path.md)
-  - [`opencode-path.md`](./opencode-path.md)
 - 后续接自己的 workflow / skill：
   - [`custom-workflow-onboarding.md`](./custom-workflow-onboarding.md)
   - [`custom-skill-governance-rules.md`](./custom-skill-governance-rules.md)
+
+## 关于补充配置
+
+- 基础安装完成后即可直接使用
+- 如果你还想补在线 provider、MCP、宿主本地 settings 或插件联动，这些都属于增强建议，不是基础安装的前置门槛
+- 各宿主哪些内容仍由宿主侧本地维护，会在对应提示词和参考文档中如实说明

@@ -2,6 +2,12 @@
 
 This document summarizes the most common commands, default root, and follow-up notes for installing VibeSkills into OpenClaw.
 
+## Why This Guide Exists
+
+- the generic install prompts can already install `openclaw`
+- this guide does not replace the generic install prompts; it expands OpenClaw-specific details
+- it is split out because OpenClaw also needs clearer coverage of its default root, attach / copy / bundle paths, and host-local boundaries, which would make the common install docs too noisy
+
 ## Default Install Information
 
 - default target root: `OPENCLAW_HOME` or `~/.openclaw`

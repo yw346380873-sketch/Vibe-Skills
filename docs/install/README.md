@@ -4,25 +4,30 @@
 
 ## 快速导航
 
-### 新安装
+### 公开安装入口
 
-- [`prompts/full-version-install.md`](./prompts/full-version-install.md)：全量版本安装提示词
-- [`prompts/framework-only-install.md`](./prompts/framework-only-install.md)：框架版本安装提示词
-
-### 更新已安装版本
-
-- [`prompts/full-version-update.md`](./prompts/full-version-update.md)：全量版本更新提示词
-- [`prompts/framework-only-update.md`](./prompts/framework-only-update.md)：框架版本更新提示词
+- [`one-click-install-release-copy.md`](./one-click-install-release-copy.md)：唯一公开安装入口；先选宿主、动作和版本，再复制对应提示词
 
 ### 参考说明
 
-- [`one-click-install-release-copy.md`](./one-click-install-release-copy.md)：默认推荐入口，先看版本和宿主选择，再跳转到对应提示词
 - [`recommended-full-path.md`](./recommended-full-path.md)：多宿主安装命令参考
 - [`openclaw-path.md`](./openclaw-path.md)：OpenClaw 专用安装与使用说明
 - [`opencode-path.md`](./opencode-path.md)：OpenCode 专用安装与使用说明
 - [`manual-copy-install.md`](./manual-copy-install.md)：离线或无管理员权限时的手动复制路径
+- [`framework-only-path.md`](./framework-only-path.md)：旧入口名兼容说明
+- [`full-featured-install-prompts.md`](./full-featured-install-prompts.md)：Codex 深度路径兼容说明
 - [`installation-rules.md`](./installation-rules.md)：安装助手必须遵守的 truth-first 规则
 - [`configuration-guide.md`](./configuration-guide.md)：本地配置说明
+
+说明：
+
+- 面向普通用户时，公开安装入口只保留 [`one-click-install-release-copy.md`](./one-click-install-release-copy.md)
+- 真正保留的安装提示词文档仍是 4 份：全量安装、框架安装、全量更新、框架更新
+- 其他安装相关页面只作为兼容说明、宿主补充说明或命令参考，不再作为平行公开入口
+- 通用安装提示词同样支持 `openclaw` 和 `opencode`
+- 单独拆出 [`openclaw-path.md`](./openclaw-path.md) 与 [`opencode-path.md`](./opencode-path.md)，只是为了补充宿主特有细节，不是因为通用安装路径不能安装
+- 这些宿主专页主要展开默认根目录、额外安装方式、验证方式与宿主侧本地边界，避免把公共安装文档写得过重
+- provider / MCP / 宿主 settings 等补充配置，默认都按“增强建议”处理；基础安装完成后即可直接使用，需要更强集成时再按需补充
 
 ## 公开版本
 
@@ -53,8 +58,8 @@
 - `claude-code`：支持的安装与使用路径
 - `cursor`：支持的安装与使用路径
 - `windsurf`：支持的安装与使用路径
-- `openclaw`：支持的安装与使用路径，细节见专页
-- `opencode`：支持的安装与使用路径，细节见专页
+- `openclaw`：支持的安装与使用路径，通用安装提示词可直接安装，宿主专页只补充细节
+- `opencode`：支持的安装与使用路径，通用安装提示词可直接安装，宿主专页只补充细节
 
 其他宿主当前不应被描述成“已支持安装”。
 
@@ -63,7 +68,7 @@
 如果你是普通用户：
 
 1. [`one-click-install-release-copy.md`](./one-click-install-release-copy.md)
-2. 对应的提示词文档
+2. 只在这一个入口里选择对应提示词
 3. [`custom-workflow-onboarding.md`](./custom-workflow-onboarding.md)
 4. [`custom-skill-governance-rules.md`](./custom-skill-governance-rules.md)
 

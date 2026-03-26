@@ -489,15 +489,15 @@ The runtime core behind **VibeSkills** is **VCO**. This is not a single-point to
 
 _Skills keep growing — but you don't need to manage them individually._
 
-### Install: Two options, two needs
+### Install: One entry, two public versions
 
 <div align="center">
 
-| | Full Version | Framework Only |
-|:---:|:---|:---|
-| **You get** | vibe runtime + full governance + all 340+ skills | vibe runtime + governance skeleton (no pre-loaded skills) |
-| **Best for** | Out-of-the-box use, extend as needed | Framework only, add skills selectively |
-| **Install** | [⚡ Prompt-based install (recommended)](./docs/install/one-click-install-release-copy.en.md) | [🔧 Framework-only install](./docs/install/prompts/framework-only-install.en.md) |
+| | Single Public Entry |
+|:---:|:---|
+| **Install** | [⚡ Prompt-based install (recommended)](./docs/install/one-click-install-release-copy.en.md) |
+| **Public versions inside the same entry** | `Full Version + Customizable Governance` / `Framework Only + Customizable Governance` |
+| **Result** | choose host + action + version in one place, then copy the matching prompt |
 
 </div>
 
@@ -582,7 +582,7 @@ _You know what this is now. All it takes from here is one prompt:_
 - 📄 [OpenClaw host notes](./docs/install/openclaw-path.en.md)
 - 📄 [OpenCode host notes](./docs/install/opencode-path.en.md)
 - 📁 [Manual copy install (offline)](./docs/install/manual-copy-install.en.md)
-- 🛠 [Advanced host / lane reference](./docs/install/recommended-full-path.en.md)
+- 🛠 [Advanced install command reference](./docs/install/recommended-full-path.en.md)
 - 🧊 [Cold start & other environments](./docs/cold-start-install-paths.en.md)
 
 </details>

@@ -1,5 +1,11 @@
 # OpenCode Install and Use Guide
 
+## Why This Guide Exists
+
+- the generic install prompts can already install `opencode`
+- this guide does not replace the generic install prompts; it expands OpenCode-specific details
+- it is split out because OpenCode also needs clearer coverage of direct install/check, its default root, project-local isolation, the files written by install, and host-local boundaries, which would make the common install docs too heavy
+
 ## What The Repository Installs
 
 - repo-distributed content

@@ -1,151 +1,39 @@
-# Codex Deep Install Prompts (Optional Advanced Path)
+# Codex Deep Install Path Notes (Compatibility Page)
 
-This document provides **copy-paste prompts for AI coding assistants / agents** for people who specifically want the deeper Codex automation path.
+This document is no longer a public install prompt entrypoint.
 
-Before you use it:
+If you are installing or updating now, go back to the single public entry first:
 
-- this is not the only default install entry for the project
-- for most people, [`one-click-install-release-copy.en.md`](./one-click-install-release-copy.en.md) is the simpler starting point
-- this document is mainly for Codex users who want the agent to handle the Windows / Linux differences automatically
-- the current default lane should treat `scrapling` as a default local runtime surface
-- the current default lane should treat `Cognee` as the governed long-term enhancement lane
-- `Composio / Activepieces` should be described as prewired but setup-required external action surfaces
-- Windows is the current strongest reference path
-- Linux only reaches the current authoritative full-featured lane when `pwsh` is available
-- Linux without `pwsh` can still install and run, but it is `degraded-but-supported`, not equivalent to the full Windows lane
-- if your target host is not Codex, use [`recommended-full-path.en.md`](./recommended-full-path.en.md) or the matching host-specific guide instead.
+- [`one-click-install-release-copy.en.md`](./one-click-install-release-copy.en.md)
 
-## Universal Prompt
+## What This Page Still Keeps
 
-Use this when:
+- a note that this is the compatibility landing page for the older Codex deep install prompt surface
+- a reminder that the public install surface has been consolidated to one entry
+- follow-up references for readers who are specifically researching Codex-side command boundaries and host details
 
-- you explicitly want the Codex path
-- the user does not want to choose platform-specific commands manually
-- the agent should detect Windows vs Linux
-- you want one-shot bootstrap + doctor + truthful boundary reporting
+## When You Might Still Open This Page
 
-Copy:
+- you are following an older link or discussion that still mentions “Codex deep install prompts”
+- you already know you are looking for Codex-specific reference context instead of the public install entry
+- you want command-boundary or host-side follow-up references
 
-```text
-Please install the current repository using the VibeSkills Codex deep install path, while staying strictly truth-first.
-Repository address: https://github.com/foryourhealth111-pixel/Vibe-Skills
-1. Detect whether the current system is Windows or Linux.
-2. If it is Windows:
-   - prefer `pwsh -File .\scripts\bootstrap\one-shot-setup.ps1`
-   - then run `pwsh -File .\check.ps1 -Profile full -Deep`
-   - if `pwsh` is unavailable, fall back to Windows PowerShell
-3. If it is Linux:
-   - first check whether `pwsh` is available
-   - if `pwsh` is available, run `bash ./scripts/bootstrap/one-shot-setup.sh` and then `bash ./check.sh --profile full --deep`
-   - and explicitly state that this is the strongest Linux path currently available, but it still ships as `supported-with-constraints`
-   - if `pwsh` is not available, still run `bash ./scripts/bootstrap/one-shot-setup.sh` and `bash ./check.sh --profile full --deep`
-   - but explicitly state that the result is only degraded-but-supported, and do not claim it is equivalent to full-featured Windows
-4. After installation, give me a concise conclusion:
-   - current platform
-   - commands executed
-   - final readiness_state
-   - remaining host-managed surfaces
-   - whether this platform has reached the strongest currently supported state available for this lane
-5. Do not pretend that host plugins, external MCP surfaces, or provider secrets were auto-installed.
-6. Treat `scrapling` as part of the default full lane:
-   - if Python packaging is available, allow the installer to attempt `scrapling[ai]`
-   - report clearly whether the `scrapling` CLI ended up callable
-7. Treat `Cognee` as the default long-term enhancement lane, not as a replacement for session truth.
-8. Treat `Composio / Activepieces` as prewired external action integrations:
-   - visible by default
-   - still setup-required
-   - not auto-enabled
-   - still confirm-gated when enabled
-9. If the result is `manual_actions_pending`, list the remaining manual actions as recommended next steps instead of calling it a failure.
-10. If follow-up is needed, only recommend officially supportable surfaces for the host, and explain in a recommendation tone that the hook install surface is still paused while the author works through compatibility issues, so this should not be framed as an install failure.
-11. For Claude Code:
-   - do not ask me to paste secrets into chat
-   - tell me to open `~/.claude/settings.json`
-   - only add missing `env` fields such as `VCO_AI_PROVIDER_URL`, `VCO_AI_PROVIDER_API_KEY`, and `VCO_AI_PROVIDER_MODEL`
-   - add `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` only when they are actually needed for the host connection
-   - the current version no longer writes `settings.vibe.preview.json`
-12. For Codex:
-   - explain in a recommendation tone that the hook install surface is not open yet because the author is still working through compatibility issues, and that this does not mean the install is broken
-   - keep guidance limited to local `~/.codex` settings, official MCP registration, and optional CLI dependencies
-   - if online model access is needed, tell me to configure values such as `OPENAI_API_KEY` and `OPENAI_BASE_URL` in `~/.codex/settings.json` under `env` or in local environment variables
-   - also tell me clearly that `OPENAI_*` only covers Codex base online provider access and does not mean the governance AI online layer is configured
-   - if the governance AI online layer is needed too, recommend `VCO_AI_PROVIDER_URL`, `VCO_AI_PROVIDER_API_KEY`, and `VCO_AI_PROVIDER_MODEL` as optional enhancement settings that I can ask you to add next
-13. Do not modify runtime logic during this flow; only install, check, and summarize.
-> Reminder: AI governance layer values must be filled in by the user in local files or local environment variables. Do not ask the user to paste `url`, `apikey`, or `model` into chat.
-```
+## Current Recommendation
 
-## Windows Deep Install Prompt
+- normal install or upgrade: use [`one-click-install-release-copy.en.md`](./one-click-install-release-copy.en.md)
+- multi-host command boundaries: use [`recommended-full-path.en.md`](./recommended-full-path.en.md)
+- host-local settings and boundary notes: use [`host-plugin-policy.en.md`](./host-plugin-policy.en.md)
 
-Use this when:
+## About Follow-Up Configuration
 
-- the user is clearly on Windows
-- they want the strongest current reference path
-
-Copy:
-
-```text
-Please install the current repository using the Windows-recommended Codex deep path.
-Repository address: https://github.com/foryourhealth111-pixel/Vibe-Skills
-Requirements:
-
-1. Prefer `pwsh` and run:
-   - `pwsh -File .\scripts\bootstrap\one-shot-setup.ps1`
-   - `pwsh -File .\check.ps1 -Profile full -Deep`
-2. If `pwsh` is unavailable, fall back to:
-   - `powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap\one-shot-setup.ps1`
-   - `powershell -ExecutionPolicy Bypass -File .\check.ps1 -Profile full -Deep`
-3. After installation, tell me:
-   - the readiness_state
-   - whether this qualifies as the current Windows reference full-featured lane
-   - which host-managed surfaces still need manual provisioning
-4. Do not pretend host plugins, provider secrets, or plugin-backed MCP surfaces were completed automatically.
-5. If the result is `manual_actions_pending`, list the remaining actions clearly.
-6. Keep Codex guidance limited to local settings, official MCP, and optional CLI dependencies, and explain in a recommendation tone that the hook install surface is still paused while compatibility work is in progress, so this is not an install failure.
-7. If AI governance layer values are needed, tell me where to configure them locally instead of asking me to paste `url`, `apikey`, or `model` into chat.
-```
-
-## Linux Deep Install Prompt
-
-Use this when:
-
-- the user is clearly on Linux
-- they want the agent to handle the `pwsh` check
-
-Copy:
-
-```text
-Please install the current repository using the Linux-recommended Codex deep path, and first determine whether this Linux environment has `pwsh`.
-Repository address: https://github.com/foryourhealth111-pixel/Vibe-Skills
-Requirements:
-
-1. Check whether `pwsh` is available.
-2. Run:
-   - `bash ./scripts/bootstrap/one-shot-setup.sh`
-   - `bash ./check.sh --profile full --deep`
-3. If `pwsh` is available, explicitly tell me that the result is on the Linux authoritative full-featured lane.
-4. If `pwsh` is not available, explicitly tell me:
-   - the result is only degraded-but-supported
-   - it must not be described as equivalent to the full Windows lane
-5. After installation, summarize:
-   - readiness_state
-   - whether host-managed surfaces are still missing
-   - whether I should add `pwsh`
-   - whether I should add official MCP or local configuration next as optional enhancements
-6. Explain in a recommendation tone that the hook install surface is still paused while compatibility work is in progress, so this is not an install failure.
-7. If the result is `manual_actions_pending`, list the remaining manual actions as recommended follow-up work instead of calling the install failed.
-> Reminder: AI governance layer values must be filled in by the user in local files or local environment variables. Do not ask the user to paste `url`, `apikey`, or `model` into chat.
-```
-
-## Suggested README / Community Framing
-
-If you want to place this into a README, issue template, or community post, add one sentence like this:
-
-> Copy the prompt below into your AI coding assistant and it will choose the correct Windows or Linux install path automatically, while still reporting the remaining host-side provisioning work truthfully.
+- the base install can be used directly once it succeeds
+- if you later add online providers, MCP, CLI helpers, or host-local settings, treat them as optional enhancements rather than proof that the base install failed
+- the prompt docs and references still describe truthfully which capabilities remain host-managed
 
 ## Related Docs
 
 - [`one-click-install-release-copy.en.md`](./one-click-install-release-copy.en.md)
 - [`recommended-full-path.en.md`](./recommended-full-path.en.md)
+- [`host-plugin-policy.en.md`](./host-plugin-policy.en.md)
 - [`opencode-path.en.md`](./opencode-path.en.md)
 - [`../one-shot-setup.md`](../one-shot-setup.md)
-- [`../cold-start-install-paths.en.md`](../cold-start-install-paths.en.md)

@@ -4,25 +4,30 @@ This directory contains the public install, upgrade, and custom-integration docs
 
 ## Quick Navigation
 
-### Fresh Install
+### Public Install Entry
 
-- [`prompts/full-version-install.en.md`](./prompts/full-version-install.en.md): full-version install prompt
-- [`prompts/framework-only-install.en.md`](./prompts/framework-only-install.en.md): framework-version install prompt
-
-### Upgrade Existing Install
-
-- [`prompts/full-version-update.en.md`](./prompts/full-version-update.en.md): full-version upgrade prompt
-- [`prompts/framework-only-update.en.md`](./prompts/framework-only-update.en.md): framework-version upgrade prompt
+- [`one-click-install-release-copy.en.md`](./one-click-install-release-copy.en.md): the single public install entry; choose host, action, and version there, then copy the matching prompt
 
 ### Reference Docs
 
-- [`one-click-install-release-copy.en.md`](./one-click-install-release-copy.en.md): default entrypoint with host/version selection and links to prompt files
 - [`recommended-full-path.en.md`](./recommended-full-path.en.md): multi-host install command reference
 - [`openclaw-path.en.md`](./openclaw-path.en.md): dedicated install-and-use guide for OpenClaw
 - [`opencode-path.en.md`](./opencode-path.en.md): dedicated install-and-use guide for OpenCode
 - [`manual-copy-install.en.md`](./manual-copy-install.en.md): manual copy path for offline or no-admin environments
+- [`framework-only-path.en.md`](./framework-only-path.en.md): compatibility note for the older framework-only entry name
+- [`full-featured-install-prompts.en.md`](./full-featured-install-prompts.en.md): compatibility note for the older Codex deep install prompt page
 - [`installation-rules.en.md`](./installation-rules.en.md): truth-first rules every install assistant must follow
 - [`configuration-guide.en.md`](./configuration-guide.en.md): local configuration guidance
+
+Notes:
+
+- for normal users, the public install surface now keeps only [`one-click-install-release-copy.en.md`](./one-click-install-release-copy.en.md) as the primary entry
+- the four retained install prompt docs still exist underneath that entry: full install, framework install, full upgrade, and framework upgrade
+- other install-related pages now act only as compatibility notes, host-specific references, or command references instead of parallel public entrypoints
+- the generic install prompts still support `openclaw` and `opencode`
+- [`openclaw-path.en.md`](./openclaw-path.en.md) and [`opencode-path.en.md`](./opencode-path.en.md) are split out only to expand host-specific details, not because the generic install path cannot handle those hosts
+- these host guides mainly cover default roots, extra install styles, verification details, and host-local boundaries so the common install docs stay readable
+- provider / MCP / host settings follow-up should be treated as optional enhancement guidance when the base install already works
 
 ## Public Versions
 
@@ -53,8 +58,8 @@ Within that scope:
 - `claude-code`: supported install-and-use path
 - `cursor`: supported install-and-use path
 - `windsurf`: supported install-and-use path
-- `openclaw`: supported install-and-use path; see the dedicated host guide for details
-- `opencode`: supported install-and-use path; see the dedicated host guide for details
+- `openclaw`: supported install-and-use path; the generic install prompts can already install it, and the host guide only expands the details
+- `opencode`: supported install-and-use path; the generic install prompts can already install it, and the host guide only expands the details
 
 Other hosts should not currently be described as supported installation targets.
 
@@ -63,7 +68,7 @@ Other hosts should not currently be described as supported installation targets.
 If you are a regular user:
 
 1. [`one-click-install-release-copy.en.md`](./one-click-install-release-copy.en.md)
-2. the matching prompt file
+2. choose the matching prompt only inside that one entry
 3. [`custom-workflow-onboarding.en.md`](./custom-workflow-onboarding.en.md)
 4. [`custom-skill-governance-rules.en.md`](./custom-skill-governance-rules.en.md)
 
