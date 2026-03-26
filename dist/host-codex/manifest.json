@@ -5,8 +5,8 @@
   "host_id": "codex",
   "stability": "supported-with-constraints",
   "source_release": {
-    "version": "2.3.49",
-    "updated": "2026-03-23"
+    "version": "2.3.50",
+    "updated": "2026-03-26"
   },
   "summary": "Codex host adapter lane. Uses the official runtime entrypoints, but remains honest about host-managed plugin and credential surfaces.",
   "runtime_ownership": {

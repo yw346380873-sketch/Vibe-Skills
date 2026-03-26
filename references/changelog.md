@@ -1,5 +1,13 @@
 # VCO Changelog
 
+## v2.3.50 (2026-03-26)
+
+- Added router AI connectivity proofing for the governance advice path, including a PowerShell gate, a runtime-neutral Python probe, and install-entry quick-check guidance that reports structured readiness states.
+- Hardened LLM acceleration overlay optional-field handling and aligned the default Windows verification command with `powershell.exe` so stock Windows environments can run the router gate without requiring `pwsh`.
+- Landed the current host-adapter and install-surface closure now present on main: OpenClaw runtime-core normalization, OpenCode preview adapter/install surface, Cursor/Windsurf preview support alignment, and a single public install entry with bilingual parity.
+- Detailed release notes: `docs/releases/v2.3.50.md`.
+
+
 ## v2.3.49 (2026-03-23)
 
 - Hardened install/check path resolution so PowerShell and shell entrypoints no longer assume deep parent-directory layouts when launched from shallow release worktrees under `/tmp`.

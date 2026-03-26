@@ -3,8 +3,8 @@
   "bundle_id": "openclaw-runtime-core-preview-candidate-2026-03-25",
   "frozen_at": "2026-03-25",
   "source_release": {
-    "version": "2.3.49",
-    "updated": "2026-03-25"
+    "version": "2.3.50",
+    "updated": "2026-03-26"
   },
   "lane_id": "openclaw/runtime-core-preview",
   "current_status": "preview",

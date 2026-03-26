@@ -10,7 +10,7 @@ This directory stores governed VCO release notes and the minimum runtime-facing 
 
 ### Current Release Surface
 
-- [`v2.3.48.md`](v2.3.48.md): benchmark mode compatibility downgrade to `interactive_governed`, governed proof alignment, and adaptive-routing release-gate robustness
+- [`v2.3.50.md`](v2.3.50.md): router AI connectivity probe / host-adapter expansion / single-entry install surface / Windows PowerShell default verification guidance
 
 ### Release Runtime / Proof Handoff
 
@@ -22,6 +22,8 @@ This directory stores governed VCO release notes and the minimum runtime-facing 
 
 ## Recent Governed Releases
 
+- [`v2.3.50.md`](v2.3.50.md) - 2026-03-26 - router AI connectivity probe / host-adapter expansion / single-entry install surface / Windows PowerShell default verification guidance
+- [`v2.3.49.md`](v2.3.49.md) - 2026-03-23 - shallow-worktree install/check hardening / installed-runtime adapter fallback / parent-path guard convergence
 - [`v2.3.48.md`](v2.3.48.md) - 2026-03-23 - benchmark mode compatibility downgrade / governed proof alignment / adaptive-routing gate robustness
 - [`v2.3.47.md`](v2.3.47.md) - 2026-03-15 - no-silent-fallback governance / degraded-truth hazard surfacing / release-truth consistency closure
 - [`v2.3.46.md`](v2.3.46.md) - 2026-03-15 - Linux benchmark/governed-runtime Python host neutrality / proof-chain closure

@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
   "release": {
-    "version": "2.3.49",
-    "updated": "2026-03-23",
+    "version": "2.3.50",
+    "updated": "2026-03-26",
     "channel": "stable",
-    "notes": "Establishes no-silent-fallback governance, forbids self-introduced fallback without requirement approval, and aligns release truth with explicit degraded-path hazard signaling."
+    "notes": "Adds router AI connectivity proofing, tightens llm acceleration overlay handling, expands host-adapter/install truth across OpenClaw/OpenCode/Cursor/Windsurf, and switches Windows install verification guidance to built-in PowerShell."
   },
   "source_of_truth": {
     "canonical_root": ".",
