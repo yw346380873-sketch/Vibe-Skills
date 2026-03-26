@@ -34,8 +34,123 @@ class InstalledRuntimeScriptsTests(unittest.TestCase):
         ]
         subprocess.run(cmd, capture_output=True, text=True, check=True)
 
+    def assert_nested_runtime_skill_entrypoints_sanitized(self, target_root: Path) -> None:
+        nested_skills_root = target_root / "skills" / "vibe" / "bundled" / "skills"
+        self.assertTrue(nested_skills_root.exists())
+        self.assertEqual([], sorted(nested_skills_root.glob("*/SKILL.md")))
+        for name in ("vibe", "ralph-loop", "cancel-ralph", "xan"):
+            self.assertTrue((nested_skills_root / name / "SKILL.runtime-mirror.md").exists())
+
+    def test_shell_install_quarantines_legacy_agents_duplicate_for_default_codex_root(self) -> None:
+        home_root = self.root / "home"
+        target_root = home_root / ".codex"
+        duplicate_root = home_root / ".agents" / "skills" / "vibe"
+        target_root.mkdir(parents=True, exist_ok=True)
+        duplicate_root.mkdir(parents=True, exist_ok=True)
+        (duplicate_root / "SKILL.md").write_text(
+            "---\nname: vibe\ndescription: legacy duplicate\n---\n",
+            encoding="utf-8",
+        )
+
+        env = os.environ.copy()
+        env["HOME"] = str(home_root)
+
+        cmd = [
+            "bash",
+            str(REPO_ROOT / "install.sh"),
+            "--host",
+            "codex",
+            "--profile",
+            "full",
+            "--target-root",
+            str(target_root),
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True, env=env)
+
+        self.assertIn("Quarantined duplicate Codex-discovered vibe skill", result.stdout)
+        self.assertTrue((target_root / "skills" / "vibe" / "SKILL.md").exists())
+        self.assertFalse(duplicate_root.exists())
+        quarantined = list((home_root / ".agents" / "skills-disabled").glob("vibe.codex-duplicate-*"))
+        self.assertEqual(1, len(quarantined))
+        self.assertTrue((quarantined[0] / "SKILL.md").exists())
+
+    def test_shell_install_does_not_mutate_agents_duplicate_for_custom_codex_target_root(self) -> None:
+        home_root = self.root / "home"
+        target_root = home_root / "custom-codex-root"
+        duplicate_root = home_root / ".agents" / "skills" / "vibe"
+        target_root.mkdir(parents=True, exist_ok=True)
+        duplicate_root.mkdir(parents=True, exist_ok=True)
+        (duplicate_root / "SKILL.md").write_text(
+            "---\nname: vibe\ndescription: legacy duplicate\n---\n",
+            encoding="utf-8",
+        )
+
+        env = os.environ.copy()
+        env["HOME"] = str(home_root)
+
+        cmd = [
+            "bash",
+            str(REPO_ROOT / "install.sh"),
+            "--host",
+            "codex",
+            "--profile",
+            "full",
+            "--target-root",
+            str(target_root),
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True, env=env)
+
+        self.assertNotIn("Quarantined duplicate Codex-discovered vibe skill", result.stdout)
+        self.assertTrue((target_root / "skills" / "vibe" / "SKILL.md").exists())
+        self.assertTrue(duplicate_root.exists())
+        self.assertFalse((home_root / ".agents" / "skills-disabled").exists())
+
+    def test_shell_check_fails_when_legacy_agents_duplicate_is_reintroduced(self) -> None:
+        home_root = self.root / "home"
+        target_root = home_root / ".codex"
+        target_root.mkdir(parents=True, exist_ok=True)
+
+        env = os.environ.copy()
+        env["HOME"] = str(home_root)
+
+        install_cmd = [
+            "bash",
+            str(REPO_ROOT / "install.sh"),
+            "--host",
+            "codex",
+            "--profile",
+            "full",
+            "--target-root",
+            str(target_root),
+        ]
+        subprocess.run(install_cmd, capture_output=True, text=True, check=True, env=env)
+
+        duplicate_root = home_root / ".agents" / "skills" / "vibe"
+        duplicate_root.mkdir(parents=True, exist_ok=True)
+        (duplicate_root / "SKILL.md").write_text(
+            "---\nname: vibe\ndescription: legacy duplicate\n---\n",
+            encoding="utf-8",
+        )
+
+        installed_root = target_root / "skills" / "vibe"
+        check_cmd = [
+            "bash",
+            str(installed_root / "check.sh"),
+            "--host",
+            "codex",
+            "--profile",
+            "full",
+            "--target-root",
+            str(target_root),
+        ]
+        check_result = subprocess.run(check_cmd, capture_output=True, text=True, env=env)
+        self.assertNotEqual(0, check_result.returncode)
+        self.assertIn("duplicate Codex-discovered vibe skill surface", check_result.stdout)
+        self.assertNotIn("safe_parent_dir: command not found", check_result.stderr)
+
     def test_installed_shell_scripts_work_without_repo_level_adapter_registry(self) -> None:
         self.install_shell_runtime()
+        self.assert_nested_runtime_skill_entrypoints_sanitized(self.target_root)
 
         installed_root = self.target_root / "skills" / "vibe"
         check_cmd = [
@@ -96,6 +211,7 @@ class InstalledRuntimeScriptsTests(unittest.TestCase):
             str(self.target_root),
         ]
         subprocess.run(install_cmd, capture_output=True, text=True, check=True)
+        self.assert_nested_runtime_skill_entrypoints_sanitized(self.target_root)
 
         installed_root = self.target_root / "skills" / "vibe"
         check_cmd = [
@@ -116,6 +232,99 @@ class InstalledRuntimeScriptsTests(unittest.TestCase):
         self.assertIn("=== VCO Adapter Health Check ===", check_result.stdout)
         self.assertNotIn("VGO adapter registry not found", check_result.stdout)
         self.assertNotIn("VGO adapter registry not found", check_result.stderr)
+
+    def test_powershell_install_quarantines_legacy_agents_duplicate_for_default_codex_root(self) -> None:
+        if shutil.which("pwsh") is None:
+            self.skipTest("pwsh not available")
+
+        home_root = self.root / "home"
+        target_root = home_root / ".codex"
+        duplicate_root = home_root / ".agents" / "skills" / "vibe"
+        target_root.mkdir(parents=True, exist_ok=True)
+        duplicate_root.mkdir(parents=True, exist_ok=True)
+        (duplicate_root / "SKILL.md").write_text(
+            "---\nname: vibe\ndescription: legacy duplicate\n---\n",
+            encoding="utf-8",
+        )
+
+        env = os.environ.copy()
+        env["HOME"] = str(home_root)
+
+        install_cmd = [
+            "pwsh",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(REPO_ROOT / "install.ps1"),
+            "-HostId",
+            "codex",
+            "-Profile",
+            "full",
+            "-TargetRoot",
+            str(target_root),
+        ]
+        result = subprocess.run(install_cmd, capture_output=True, text=True, check=True, env=env)
+
+        self.assertIn("Quarantined duplicate Codex-discovered vibe skill", result.stderr + result.stdout)
+        self.assertTrue((target_root / "skills" / "vibe" / "SKILL.md").exists())
+        self.assertFalse(duplicate_root.exists())
+        quarantined = list((home_root / ".agents" / "skills-disabled").glob("vibe.codex-duplicate-*"))
+        self.assertEqual(1, len(quarantined))
+        self.assertTrue((quarantined[0] / "SKILL.md").exists())
+
+    def test_powershell_check_fails_when_legacy_agents_duplicate_is_reintroduced(self) -> None:
+        if shutil.which("pwsh") is None:
+            self.skipTest("pwsh not available")
+
+        home_root = self.root / "home"
+        target_root = home_root / ".codex"
+        target_root.mkdir(parents=True, exist_ok=True)
+
+        env = os.environ.copy()
+        env["HOME"] = str(home_root)
+
+        install_cmd = [
+            "pwsh",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(REPO_ROOT / "install.ps1"),
+            "-HostId",
+            "codex",
+            "-Profile",
+            "full",
+            "-TargetRoot",
+            str(target_root),
+        ]
+        subprocess.run(install_cmd, capture_output=True, text=True, check=True, env=env)
+
+        duplicate_root = home_root / ".agents" / "skills" / "vibe"
+        duplicate_root.mkdir(parents=True, exist_ok=True)
+        (duplicate_root / "SKILL.md").write_text(
+            "---\nname: vibe\ndescription: legacy duplicate\n---\n",
+            encoding="utf-8",
+        )
+
+        installed_root = target_root / "skills" / "vibe"
+        check_cmd = [
+            "pwsh",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(installed_root / "check.ps1"),
+            "-HostId",
+            "codex",
+            "-Profile",
+            "full",
+            "-TargetRoot",
+            str(target_root),
+        ]
+        check_result = subprocess.run(check_cmd, capture_output=True, text=True, env=env)
+        self.assertNotEqual(0, check_result.returncode)
+        self.assertIn("duplicate Codex-discovered vibe skill surface", check_result.stdout)
 
 
 if __name__ == "__main__":
