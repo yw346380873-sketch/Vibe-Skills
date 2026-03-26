@@ -26,7 +26,7 @@ This probe targets only the router AI advice path (intent/advice layer). It is a
 Run:
 
 ```powershell
-pwsh -NoProfile -File .\vibe-router-ai-connectivity-gate.ps1 -WriteArtifacts
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\vibe-router-ai-connectivity-gate.ps1 -WriteArtifacts
 ```
 
 Typical states:

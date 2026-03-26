@@ -55,9 +55,11 @@
 如果你想快速确认“路由里的 AI 治理 advice 是否已经配通”，可以在仓库根目录运行：
 
 - Windows：
-  - `pwsh -NoProfile -File .\scripts\verify\vibe-router-ai-connectivity-gate.ps1 -TargetRoot "<目标宿主根目录>" -WriteArtifacts`
+  - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify\vibe-router-ai-connectivity-gate.ps1 -TargetRoot "<目标宿主根目录>" -WriteArtifacts`
 - Linux / macOS：
   - `python3 ./scripts/verify/runtime_neutral/router_ai_connectivity_probe.py --target-root "<目标宿主根目录>" --write-artifacts`
+
+如果你本机已经装了 PowerShell 7，也可以把 `powershell.exe` 换成 `pwsh`。
 
 常见默认根目录：
 

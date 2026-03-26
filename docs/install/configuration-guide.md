@@ -218,8 +218,10 @@ bash ./check.sh --host claude-code --profile full --deep
 运行方式：
 
 ```powershell
-pwsh -NoProfile -File .\scripts\verify\vibe-router-ai-connectivity-gate.ps1 -WriteArtifacts
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify\vibe-router-ai-connectivity-gate.ps1 -WriteArtifacts
 ```
+
+如果本机已经安装了 PowerShell 7，也可以改用 `pwsh`。
 
 结果读取：
 - JSON：`outputs/verify/vibe-router-ai-connectivity-gate.json`（机器可读，含状态与 next steps）

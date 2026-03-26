@@ -31,8 +31,9 @@ Rules:
 10. Never ask me to paste secrets, URLs, or model names into chat.
 11. Distinguish “installed locally” from “online-ready”.
 12. After installation, proactively give me one quick check command for “is AI governance configured?”:
-   - Windows: `pwsh -NoProfile -File .\\scripts\\verify\\vibe-router-ai-connectivity-gate.ps1 -TargetRoot "<resolved host root>" -WriteArtifacts`
+   - Windows: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\verify\\vibe-router-ai-connectivity-gate.ps1 -TargetRoot "<resolved host root>" -WriteArtifacts`
    - Linux / macOS: `python3 ./scripts/verify/runtime_neutral/router_ai_connectivity_probe.py --target-root "<resolved host root>" --write-artifacts`
+   - if the user already has PowerShell 7, an equivalent `pwsh` command is acceptable, but `pwsh` must not be treated as the default prerequisite.
    - also add one short sentence: `ok` means AI governance advice is online; `missing_credentials`, `missing_model`, or `provider_rejected_request` mean local or online readiness is still incomplete.
 13. End with a concise report covering host, public version, real profile, commands executed, completed parts, and manual follow-up.
 ```

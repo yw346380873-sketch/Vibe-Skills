@@ -218,8 +218,10 @@ Typical states:
 Run:
 
 ```powershell
-pwsh -NoProfile -File .\scripts\verify\vibe-router-ai-connectivity-gate.ps1 -WriteArtifacts
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify\vibe-router-ai-connectivity-gate.ps1 -WriteArtifacts
 ```
+
+If PowerShell 7 is already installed on your machine, you can use `pwsh` instead.
 
 Read outputs:
 - JSON: `outputs/verify/vibe-router-ai-connectivity-gate.json` (machine-readable status + next steps)
