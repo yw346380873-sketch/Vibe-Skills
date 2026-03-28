@@ -216,11 +216,309 @@ function Invoke-VibeExecutionUnit {
     }
 }
 
-function Invoke-VibeSpecialistDispatchUnit {
+function Test-VibeTruthyEnvironmentValue {
+    param(
+        [AllowEmptyString()] [string]$Value
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return $false
+    }
+
+    return @('1', 'true', 'yes', 'on') -contains $Value.Trim().ToLowerInvariant()
+}
+
+function Resolve-VibeNativeSpecialistAdapter {
+    param(
+        [Parameter(Mandatory)] [string]$ScriptPath
+    )
+
+    $runtime = Get-VibeRuntimeContext -ScriptPath $ScriptPath
+    $policy = $runtime.native_specialist_execution_policy
+    if ($null -eq $policy -or -not [bool]$policy.enabled) {
+        return [pscustomobject]@{
+            enabled = $false
+            live_execution_allowed = $false
+            reason = 'native_specialist_execution_policy_disabled'
+            runtime = $runtime
+            policy = $policy
+            adapter = $null
+            command_path = $null
+        }
+    }
+
+    $disableEnvName = if ($policy.PSObject.Properties.Name -contains 'disable_env') { [string]$policy.disable_env } else { '' }
+    if (-not [string]::IsNullOrWhiteSpace($disableEnvName)) {
+        $disableEnvValue = [Environment]::GetEnvironmentVariable($disableEnvName)
+        if (Test-VibeTruthyEnvironmentValue -Value $disableEnvValue) {
+            return [pscustomobject]@{
+                enabled = $true
+                live_execution_allowed = $false
+                reason = ("native_specialist_execution_disabled_via_env:{0}" -f $disableEnvName)
+                runtime = $runtime
+                policy = $policy
+                adapter = $null
+                command_path = $null
+            }
+        }
+    }
+
+    $enableEnvName = if ($policy.PSObject.Properties.Name -contains 'enable_env') { [string]$policy.enable_env } else { '' }
+    $defaultEnabled = if ($policy.PSObject.Properties.Name -contains 'default_enabled') { [bool]$policy.default_enabled } else { $false }
+    $liveExecutionAllowed = $defaultEnabled
+    if (-not [string]::IsNullOrWhiteSpace($enableEnvName)) {
+        $enableEnvValue = [Environment]::GetEnvironmentVariable($enableEnvName)
+        if (Test-VibeTruthyEnvironmentValue -Value $enableEnvValue) {
+            $liveExecutionAllowed = $true
+        }
+    }
+
+    if (-not $liveExecutionAllowed) {
+        return [pscustomobject]@{
+            enabled = $true
+            live_execution_allowed = $false
+            reason = 'native_specialist_execution_not_enabled'
+            runtime = $runtime
+            policy = $policy
+            adapter = $null
+            command_path = $null
+        }
+    }
+
+    $adapterId = if ($policy.PSObject.Properties.Name -contains 'default_adapter_id' -and -not [string]::IsNullOrWhiteSpace([string]$policy.default_adapter_id)) {
+        [string]$policy.default_adapter_id
+    } else {
+        'codex'
+    }
+    $adapter = $null
+    foreach ($candidate in @($policy.adapters)) {
+        if ([string]$candidate.id -eq $adapterId) {
+            $adapter = $candidate
+            break
+        }
+    }
+    if ($null -eq $adapter) {
+        return [pscustomobject]@{
+            enabled = $true
+            live_execution_allowed = $false
+            reason = ("native_specialist_adapter_missing:{0}" -f $adapterId)
+            runtime = $runtime
+            policy = $policy
+            adapter = $null
+            command_path = $null
+        }
+    }
+
+    $commandPath = $null
+    $resolvedReason = $null
+    if ($adapter.PSObject.Properties.Name -contains 'executable_env' -and -not [string]::IsNullOrWhiteSpace([string]$adapter.executable_env)) {
+        $envCommand = [Environment]::GetEnvironmentVariable([string]$adapter.executable_env)
+        if (-not [string]::IsNullOrWhiteSpace($envCommand)) {
+            $candidate = Get-Command $envCommand -ErrorAction SilentlyContinue
+            if ($candidate) {
+                $commandPath = [string]$candidate.Source
+            } elseif (Test-Path -LiteralPath $envCommand) {
+                $commandPath = [System.IO.Path]::GetFullPath($envCommand)
+            }
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($commandPath)) {
+        $candidate = Get-Command ([string]$adapter.command) -ErrorAction SilentlyContinue
+        if ($candidate) {
+            $commandPath = [string]$candidate.Source
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($commandPath)) {
+        $resolvedReason = ("native_specialist_adapter_command_unavailable:{0}" -f [string]$adapter.command)
+    }
+
+    return [pscustomobject]@{
+        enabled = $true
+        live_execution_allowed = [bool](-not [string]::IsNullOrWhiteSpace($commandPath))
+        reason = if ($resolvedReason) { $resolvedReason } else { 'native_specialist_execution_ready' }
+        runtime = $runtime
+        policy = $policy
+        adapter = $adapter
+        command_path = $commandPath
+    }
+}
+
+function New-VibeSpecialistResultSchema {
+    param(
+        [Parameter(Mandatory)] [object]$Policy
+    )
+
+    $statusEnum = if ($Policy.result_schema -and $Policy.result_schema.status_enum) {
+        @($Policy.result_schema.status_enum)
+    } else {
+        @('completed', 'completed_with_notes', 'blocked')
+    }
+    $requiredFields = if ($Policy.result_schema -and $Policy.result_schema.required_fields) {
+        @($Policy.result_schema.required_fields)
+    } else {
+        @('status', 'summary', 'verification_notes', 'changed_files', 'bounded_output_notes')
+    }
+
+    return [pscustomobject]@{
+        type = 'object'
+        properties = [pscustomobject]@{
+            status = [pscustomobject]@{
+                type = 'string'
+                enum = @($statusEnum)
+            }
+            summary = [pscustomobject]@{
+                type = 'string'
+            }
+            verification_notes = [pscustomobject]@{
+                type = 'array'
+                items = [pscustomobject]@{
+                    type = 'string'
+                }
+            }
+            changed_files = [pscustomobject]@{
+                type = 'array'
+                items = [pscustomobject]@{
+                    type = 'string'
+                }
+            }
+            bounded_output_notes = [pscustomobject]@{
+                type = 'array'
+                items = [pscustomobject]@{
+                    type = 'string'
+                }
+            }
+        }
+        required = @($requiredFields)
+        additionalProperties = $false
+    }
+}
+
+function Get-VibeGitStatusSnapshot {
+    param(
+        [Parameter(Mandatory)] [string]$RepoRoot
+    )
+
+    $gitDir = Join-Path $RepoRoot '.git'
+    if (-not (Test-Path -LiteralPath $gitDir)) {
+        return [pscustomobject]@{
+            available = $false
+            paths = @()
+            lines = @()
+        }
+    }
+
+    $gitCommand = Get-Command git -ErrorAction SilentlyContinue
+    if (-not $gitCommand) {
+        return [pscustomobject]@{
+            available = $false
+            paths = @()
+            lines = @()
+        }
+    }
+
+    $snapshot = & ([string]$gitCommand.Source) -C $RepoRoot status --porcelain --untracked-files=all 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        return [pscustomobject]@{
+            available = $false
+            paths = @()
+            lines = @()
+        }
+    }
+
+    $paths = @()
+    foreach ($line in @($snapshot)) {
+        $text = [string]$line
+        if ([string]::IsNullOrWhiteSpace($text) -or $text.Length -lt 4) {
+            continue
+        }
+        $pathText = $text.Substring(3).Trim()
+        if ($pathText -match ' -> ') {
+            $pathText = ($pathText -split ' -> ')[-1].Trim()
+        }
+        if (-not [string]::IsNullOrWhiteSpace($pathText)) {
+            $paths += $pathText
+        }
+    }
+
+    return [pscustomobject]@{
+        available = $true
+        paths = @($paths | Select-Object -Unique)
+        lines = @($snapshot)
+    }
+}
+
+function New-VibeNativeSpecialistPrompt {
+    param(
+        [Parameter(Mandatory)] [object]$Dispatch,
+        [Parameter(Mandatory)] [string]$RequirementDocPath,
+        [Parameter(Mandatory)] [string]$ExecutionPlanPath,
+        [Parameter(Mandatory)] [string]$GovernanceScope,
+        [Parameter(Mandatory)] [string]$WriteScope,
+        [Parameter(Mandatory)] [string]$RunId,
+        [AllowEmptyString()] [string]$RootRunId = '',
+        [AllowEmptyString()] [string]$ParentRunId = '',
+        [AllowEmptyString()] [string]$ParentUnitId = ''
+    )
+
+    $lines = @(
+        ('$' + [string]$Dispatch.skill_id),
+        '',
+        'You are a bounded specialist execution lane running under hidden vibe governance.',
+        'Do not replace the governed runtime. Do not create a second requirement surface or a second plan surface.',
+        ('specialist_skill_id: {0}' -f [string]$Dispatch.skill_id),
+        ('bounded_role: {0}' -f [string]$Dispatch.bounded_role),
+        ('governance_scope: {0}' -f $GovernanceScope),
+        ('run_id: {0}' -f $RunId)
+    )
+    if (-not [string]::IsNullOrWhiteSpace($RootRunId)) {
+        $lines += ('root_run_id: {0}' -f $RootRunId)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ParentRunId)) {
+        $lines += ('parent_run_id: {0}' -f $ParentRunId)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ParentUnitId)) {
+        $lines += ('parent_unit_id: {0}' -f $ParentUnitId)
+    }
+    $lines += @(
+        ('write_scope: {0}' -f $WriteScope),
+        ('requirement_doc: {0}' -f $RequirementDocPath),
+        ('execution_plan: {0}' -f $ExecutionPlanPath),
+        '',
+        'Rules:',
+        '- Preserve the named specialist skill native workflow.',
+        '- Remain bounded to the frozen requirement and execution plan.',
+        '- Do not widen scope or self-approve new specialist dispatch.',
+        '- Keep outputs specialist-specific and include verification notes.',
+        '- If no repo change is needed, return an empty changed_files array.',
+        '',
+        'Required inputs:'
+    )
+    foreach ($item in @($Dispatch.required_inputs)) {
+        $lines += ('- {0}' -f [string]$item)
+    }
+    $lines += @(
+        '',
+        'Expected outputs:'
+    )
+    foreach ($item in @($Dispatch.expected_outputs)) {
+        $lines += ('- {0}' -f [string]$item)
+    }
+    $lines += @(
+        '',
+        ('Verification expectation: {0}' -f [string]$Dispatch.verification_expectation),
+        '',
+        'Return only JSON matching the provided schema.'
+    )
+    return ($lines -join [Environment]::NewLine)
+}
+
+function New-VibeDegradedSpecialistDispatchResult {
     param(
         [Parameter(Mandatory)] [string]$UnitId,
         [Parameter(Mandatory)] [object]$Dispatch,
         [Parameter(Mandatory)] [string]$SessionRoot,
+        [Parameter(Mandatory)] [object]$Policy,
+        [Parameter(Mandatory)] [string]$Reason,
         [AllowEmptyString()] [string]$WriteScope = '',
         [AllowEmptyString()] [string]$ReviewMode = 'native_contract'
     )
@@ -235,20 +533,10 @@ function Invoke-VibeSpecialistDispatchUnit {
     $startedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.ffffffZ')
 
     $stdoutLines = @(
-        "Native specialist dispatch executed under vibe governance.",
+        ([string]$Policy.degrade_contract.hazard_alert),
         ("skill_id={0}" -f [string]$Dispatch.skill_id),
-        ("bounded_role={0}" -f [string]$Dispatch.bounded_role),
-        ("native_usage_required={0}" -f [bool]$Dispatch.native_usage_required),
-        ("must_preserve_workflow={0}" -f [bool]$Dispatch.must_preserve_workflow),
-        ("verification_expectation={0}" -f [string]$Dispatch.verification_expectation)
+        ("degradation_reason={0}" -f $Reason)
     )
-    if ($Dispatch.required_inputs) {
-        $stdoutLines += ("required_inputs={0}" -f [string]::Join(', ', @($Dispatch.required_inputs)))
-    }
-    if ($Dispatch.expected_outputs) {
-        $stdoutLines += ("expected_outputs={0}" -f [string]::Join(', ', @($Dispatch.expected_outputs)))
-    }
-
     Write-VgoUtf8NoBomText -Path $stdoutPath -Content (($stdoutLines -join [Environment]::NewLine) + [Environment]::NewLine)
     Write-VgoUtf8NoBomText -Path $stderrPath -Content ''
 
@@ -256,7 +544,7 @@ function Invoke-VibeSpecialistDispatchUnit {
     $unitResult = [pscustomobject]@{
         unit_id = $UnitId
         kind = 'specialist_dispatch'
-        status = 'completed'
+        status = [string]$Policy.degrade_contract.status
         started_at = $startedAt
         finished_at = $finishedAt
         command = ("specialist:{0}" -f [string]$Dispatch.skill_id)
@@ -271,16 +559,227 @@ function Invoke-VibeSpecialistDispatchUnit {
         timed_out = $false
         stdout_path = $stdoutPath
         stderr_path = $stderrPath
-        stdout_preview = @($stdoutLines | Select-Object -First 5)
+        stdout_preview = @($stdoutLines)
         stderr_preview = @()
         expected_artifacts = @()
-        verification_passed = $true
+        verification_passed = [bool]$Policy.degrade_contract.verification_passed
         specialist_skill_id = [string]$Dispatch.skill_id
         bounded_role = [string]$Dispatch.bounded_role
         native_usage_required = [bool]$Dispatch.native_usage_required
         must_preserve_workflow = [bool]$Dispatch.must_preserve_workflow
         write_scope = $WriteScope
         review_mode = $ReviewMode
+        execution_driver = [string]$Policy.degrade_contract.execution_driver
+        live_native_execution = $false
+        degraded = $true
+        degradation_reason = $Reason
+        hazard_alert = [string]$Policy.degrade_contract.hazard_alert
+        changed_files = @()
+        verification_notes = @()
+        bounded_output_notes = @()
+    }
+
+    $resultPath = Join-Path $resultsRoot ("{0}.json" -f $UnitId)
+    Write-VibeJsonArtifact -Path $resultPath -Value $unitResult
+
+    return [pscustomobject]@{
+        result = $unitResult
+        result_path = $resultPath
+    }
+}
+
+function Invoke-VibeSpecialistDispatchUnit {
+    param(
+        [Parameter(Mandatory)] [string]$UnitId,
+        [Parameter(Mandatory)] [object]$Dispatch,
+        [Parameter(Mandatory)] [string]$SessionRoot,
+        [Parameter(Mandatory)] [string]$RepoRoot,
+        [Parameter(Mandatory)] [string]$RequirementDocPath,
+        [Parameter(Mandatory)] [string]$ExecutionPlanPath,
+        [Parameter(Mandatory)] [string]$RunId,
+        [Parameter(Mandatory)] [string]$GovernanceScope,
+        [AllowEmptyString()] [string]$RootRunId = '',
+        [AllowEmptyString()] [string]$ParentRunId = '',
+        [AllowEmptyString()] [string]$ParentUnitId = '',
+        [AllowEmptyString()] [string]$WriteScope = '',
+        [AllowEmptyString()] [string]$ReviewMode = 'native_contract'
+    )
+
+    $adapterResolution = Resolve-VibeNativeSpecialistAdapter -ScriptPath $PSCommandPath
+    $policy = $adapterResolution.policy
+    if (-not $adapterResolution.live_execution_allowed -or $null -eq $adapterResolution.adapter) {
+        return New-VibeDegradedSpecialistDispatchResult `
+            -UnitId $UnitId `
+            -Dispatch $Dispatch `
+            -SessionRoot $SessionRoot `
+            -Policy $policy `
+            -Reason ([string]$adapterResolution.reason) `
+            -WriteScope $WriteScope `
+            -ReviewMode $ReviewMode
+    }
+
+    $adapter = $adapterResolution.adapter
+    $logsRoot = Join-Path $SessionRoot 'execution-logs'
+    $resultsRoot = Join-Path $SessionRoot 'execution-results'
+    New-Item -ItemType Directory -Path $logsRoot -Force | Out-Null
+    New-Item -ItemType Directory -Path $resultsRoot -Force | Out-Null
+
+    $stdoutPath = Join-Path $logsRoot ("{0}.stdout.log" -f $UnitId)
+    $stderrPath = Join-Path $logsRoot ("{0}.stderr.log" -f $UnitId)
+    $responsePath = Join-Path $resultsRoot ("{0}.response.json" -f $UnitId)
+    $schemaPath = Join-Path $SessionRoot ("{0}.schema.json" -f $UnitId)
+    $promptPath = Join-Path $SessionRoot ("{0}.prompt.md" -f $UnitId)
+    $beforeGitPath = Join-Path $SessionRoot ("{0}.git-before.txt" -f $UnitId)
+    $afterGitPath = Join-Path $SessionRoot ("{0}.git-after.txt" -f $UnitId)
+    $startedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.ffffffZ')
+
+    $schema = New-VibeSpecialistResultSchema -Policy $policy
+    Write-VibeJsonArtifact -Path $schemaPath -Value $schema
+    $prompt = New-VibeNativeSpecialistPrompt `
+        -Dispatch $Dispatch `
+        -RequirementDocPath $RequirementDocPath `
+        -ExecutionPlanPath $ExecutionPlanPath `
+        -GovernanceScope $GovernanceScope `
+        -WriteScope $WriteScope `
+        -RunId $RunId `
+        -RootRunId $RootRunId `
+        -ParentRunId $ParentRunId `
+        -ParentUnitId $ParentUnitId
+    Write-VgoUtf8NoBomText -Path $promptPath -Content ($prompt + [Environment]::NewLine)
+
+    $beforeSnapshot = Get-VibeGitStatusSnapshot -RepoRoot $RepoRoot
+    Write-VgoUtf8NoBomText -Path $beforeGitPath -Content ((@($beforeSnapshot.lines) -join [Environment]::NewLine) + [Environment]::NewLine)
+
+    $arguments = @()
+    foreach ($item in @($adapter.arguments_prefix)) {
+        $arguments += [string]$item
+    }
+    $arguments += @(
+        '-C', $RepoRoot,
+        '--output-schema', $schemaPath,
+        '-o', $responsePath,
+        $prompt
+    )
+    $processResult = Invoke-VibeCapturedProcess `
+        -Command ([string]$adapterResolution.command_path) `
+        -Arguments $arguments `
+        -WorkingDirectory $RepoRoot `
+        -TimeoutSeconds ([int]$policy.default_timeout_seconds) `
+        -StdOutPath $stdoutPath `
+        -StdErrPath $stderrPath
+
+    $afterSnapshot = Get-VibeGitStatusSnapshot -RepoRoot $RepoRoot
+    Write-VgoUtf8NoBomText -Path $afterGitPath -Content ((@($afterSnapshot.lines) -join [Environment]::NewLine) + [Environment]::NewLine)
+
+    $parsedResponse = $null
+    $responseParseError = $null
+    if (Test-Path -LiteralPath $responsePath) {
+        try {
+            $parsedResponse = Get-Content -LiteralPath $responsePath -Raw -Encoding UTF8 | ConvertFrom-Json
+        } catch {
+            $responseParseError = $_.Exception.Message
+        }
+    } else {
+        $responseParseError = 'native_specialist_response_missing'
+    }
+
+    $beforeLookup = @{}
+    foreach ($path in @($beforeSnapshot.paths)) {
+        $beforeLookup[[string]$path] = $true
+    }
+    $observedChangedFiles = @()
+    foreach ($path in @($afterSnapshot.paths)) {
+        if (-not $beforeLookup.ContainsKey([string]$path)) {
+            $observedChangedFiles += [string]$path
+        }
+    }
+
+    $responseStatus = if ($parsedResponse -and $parsedResponse.PSObject.Properties.Name -contains 'status') {
+        [string]$parsedResponse.status
+    } else {
+        ''
+    }
+    $responseSummary = if ($parsedResponse -and $parsedResponse.PSObject.Properties.Name -contains 'summary') {
+        [string]$parsedResponse.summary
+    } else {
+        $null
+    }
+    $verificationNotes = if ($parsedResponse -and $parsedResponse.PSObject.Properties.Name -contains 'verification_notes') {
+        @($parsedResponse.verification_notes | ForEach-Object { [string]$_ })
+    } else {
+        @()
+    }
+    $changedFiles = if ($parsedResponse -and $parsedResponse.PSObject.Properties.Name -contains 'changed_files') {
+        @($parsedResponse.changed_files | ForEach-Object { [string]$_ })
+    } else {
+        @()
+    }
+    $boundedOutputNotes = if ($parsedResponse -and $parsedResponse.PSObject.Properties.Name -contains 'bounded_output_notes') {
+        @($parsedResponse.bounded_output_notes | ForEach-Object { [string]$_ })
+    } else {
+        @()
+    }
+
+    $verificationPassed = (-not $processResult.timed_out) -and ([int]$processResult.exit_code -eq 0) -and ($null -ne $parsedResponse) -and (@('completed', 'completed_with_notes') -contains $responseStatus)
+    $effectiveStatus = if ($verificationPassed) {
+        'completed'
+    } elseif ($processResult.timed_out) {
+        'timed_out'
+    } elseif (-not [string]::IsNullOrWhiteSpace($responseStatus)) {
+        $responseStatus
+    } else {
+        'failed'
+    }
+
+    $finishedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.ffffffZ')
+    $unitResult = [pscustomobject]@{
+        unit_id = $UnitId
+        kind = 'specialist_dispatch'
+        status = $effectiveStatus
+        started_at = $startedAt
+        finished_at = $finishedAt
+        command = [string]$adapterResolution.command_path
+        arguments = @($arguments)
+        display_command = @([string]$adapterResolution.command_path) + @($arguments) -join ' '
+        cwd = $RepoRoot
+        timeout_seconds = [int]$policy.default_timeout_seconds
+        expected_exit_code = 0
+        exit_code = [int]$processResult.exit_code
+        timed_out = [bool]$processResult.timed_out
+        stdout_path = $processResult.stdout_path
+        stderr_path = $processResult.stderr_path
+        stdout_preview = @($processResult.stdout_preview)
+        stderr_preview = @($processResult.stderr_preview)
+        expected_artifacts = @(
+            [pscustomobject]@{
+                path = $responsePath
+                exists = [bool](Test-Path -LiteralPath $responsePath)
+            }
+        )
+        verification_passed = [bool]$verificationPassed
+        specialist_skill_id = [string]$Dispatch.skill_id
+        bounded_role = [string]$Dispatch.bounded_role
+        native_usage_required = [bool]$Dispatch.native_usage_required
+        must_preserve_workflow = [bool]$Dispatch.must_preserve_workflow
+        write_scope = $WriteScope
+        review_mode = $ReviewMode
+        execution_driver = [string]$adapter.execution_driver
+        host_adapter_id = [string]$adapter.id
+        live_native_execution = $true
+        degraded = $false
+        requirement_doc_path = $RequirementDocPath
+        execution_plan_path = $ExecutionPlanPath
+        response_json_path = $responsePath
+        prompt_path = $promptPath
+        schema_path = $schemaPath
+        git_status_before_path = $beforeGitPath
+        git_status_after_path = $afterGitPath
+        changed_files = @($changedFiles)
+        observed_changed_files = @($observedChangedFiles)
+        verification_notes = @($verificationNotes)
+        bounded_output_notes = @($boundedOutputNotes)
+        summary = $responseSummary
+        response_parse_error = $responseParseError
     }
 
     $resultPath = Join-Path $resultsRoot ("{0}.json" -f $UnitId)
@@ -429,7 +928,7 @@ function New-VibeExecutionTopology {
             }
         }
 
-        if ($GovernanceScope -eq 'root' -and $effectiveSpecialistExecutionMode -eq 'native_bounded_units' -and @($ApprovedDispatch).Count -gt 0) {
+        if ($effectiveSpecialistExecutionMode -eq 'native_bounded_units' -and @($ApprovedDispatch).Count -gt 0) {
             $specialistUnits = @()
             foreach ($dispatch in @($ApprovedDispatch)) {
                 $specialistUnits += [pscustomobject]@{

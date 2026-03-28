@@ -80,6 +80,14 @@ switch ($laneKind) {
             -UnitId ("{0}-specialist" -f [string]$laneSpec.lane_id) `
             -Dispatch $dispatch `
             -SessionRoot $laneRoot `
+            -RepoRoot ([string]$laneSpec.repo_root) `
+            -RequirementDocPath ([string]$laneSpec.requirement_doc_path) `
+            -ExecutionPlanPath ([string]$laneSpec.execution_plan_path) `
+            -RunId ([string]$laneSpec.run_id) `
+            -GovernanceScope ([string]$laneSpec.governance_scope) `
+            -RootRunId ([string]$laneSpec.root_run_id) `
+            -ParentRunId ([string]$laneSpec.parent_run_id) `
+            -ParentUnitId ([string]$laneSpec.parent_unit_id) `
             -WriteScope ([string]$laneSpec.write_scope) `
             -ReviewMode ([string]$laneSpec.review_mode)
 
@@ -94,7 +102,7 @@ switch ($laneKind) {
             parent_unit_id = [string]$laneSpec.parent_unit_id
             requirement_doc_path = [string]$laneSpec.requirement_doc_path
             execution_plan_path = [string]$laneSpec.execution_plan_path
-            execution_driver = 'native_specialist_contract_receipt'
+            execution_driver = [string]$executed.result.execution_driver
             parallelizable = $false
             write_scope = [string]$laneSpec.write_scope
             review_mode = [string]$laneSpec.review_mode
@@ -113,6 +121,7 @@ switch ($laneKind) {
             "# Native Specialist Dispatch Receipt",
             '',
             "- specialist_skill_id: $([string]$dispatch.skill_id)",
+            "- execution_driver: $([string]$executed.result.execution_driver)",
             "- bounded_role: $([string]$dispatch.bounded_role)",
             "- native_usage_required: $([bool]$dispatch.native_usage_required)",
             "- verification_expectation: $([string]$dispatch.verification_expectation)",
