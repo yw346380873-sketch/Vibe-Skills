@@ -5,6 +5,7 @@ param(
     [string]$RequirementDocPath = '',
     [string]$ExecutionPlanPath = '',
     [string]$RuntimeInputPacketPath = '',
+    [string]$ExecutionMemoryContextPath = '',
     [string]$ArtifactRoot = '',
     [AllowEmptyString()] [string]$GovernanceScope = '',
     [AllowEmptyString()] [string]$RootRunId = '',
@@ -730,6 +731,11 @@ $runtimeInputPacket = if (Test-Path -LiteralPath $runtimeInputPath) {
 } else {
     $null
 }
+$executionMemoryContext = if (-not [string]::IsNullOrWhiteSpace($ExecutionMemoryContextPath) -and (Test-Path -LiteralPath $ExecutionMemoryContextPath)) {
+    Get-Content -LiteralPath $ExecutionMemoryContextPath -Raw -Encoding UTF8 | ConvertFrom-Json
+} else {
+    $null
+}
 $hierarchyState = Get-VibeHierarchyState `
     -GovernanceScope $(if ($runtimeInputPacket) { [string]$runtimeInputPacket.governance_scope } else { $GovernanceScope }) `
     -RunId $RunId `
@@ -1181,6 +1187,13 @@ $executionManifest = [pscustomobject]@{
 }
 
 $executionManifestPath = Join-Path $sessionRoot 'execution-manifest.json'
+if ($executionMemoryContext) {
+    $executionManifest | Add-Member -NotePropertyName execution_memory_context -NotePropertyValue ([pscustomobject]@{
+        context_path = [string]$ExecutionMemoryContextPath
+        injected_item_count = @($executionMemoryContext.items).Count
+        items = @($executionMemoryContext.items)
+    }) -Force
+}
 Write-VibeJsonArtifact -Path $executionManifestPath -Value $executionManifest
 
 $proofManifest = [pscustomobject]@{
@@ -1270,6 +1283,7 @@ $receipt = [pscustomobject]@{
     requirement_doc_path = $requirementPath
     execution_plan_path = $planPath
     runtime_input_packet_path = $runtimeInputPath
+    execution_memory_context_path = $ExecutionMemoryContextPath
     plan_shadow_path = $planShadow.path
     execution_manifest_path = $executionManifestPath
     benchmark_proof_manifest_path = $proofManifestPath

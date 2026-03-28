@@ -11,6 +11,11 @@
           "owner": "state_store",
           "status": "fallback_local_digest",
           "artifact_kind": "local_digest"
+        },
+        {
+          "owner": "cognee",
+          "status": "backend_read_or_fallback",
+          "artifact_kind": "relationship_digest"
         }
       ],
       "write_actions": []
@@ -42,17 +47,39 @@
     },
     {
       "stage": "xl_plan",
-      "read_actions": [],
+      "read_actions": [
+        {
+          "owner": "serena",
+          "status": "backend_read_or_fallback",
+          "artifact_kind": "decision_digest"
+        },
+        {
+          "owner": "cognee",
+          "status": "backend_read_or_fallback",
+          "artifact_kind": "relationship_digest"
+        }
+      ],
       "write_actions": []
     },
     {
       "stage": "plan_execute",
-      "read_actions": [],
+      "read_actions": [
+        {
+          "owner": "ruflo",
+          "status": "backend_read_or_fallback",
+          "artifact_kind": "handoff_card_recall"
+        }
+      ],
       "write_actions": [
         {
           "owner": "state_store",
           "status": "fallback_local_artifact",
           "artifact_kind": "execution_handoff_card"
+        },
+        {
+          "owner": "ruflo",
+          "status": "backend_write_or_fallback",
+          "artifact_kind": "handoff_card"
         }
       ]
     },
@@ -62,8 +89,13 @@
       "write_actions": [
         {
           "owner": "serena",
-          "status": "guarded_no_write",
+          "status": "backend_write_or_guarded",
           "artifact_kind": "project_decision_gate"
+        },
+        {
+          "owner": "cognee",
+          "status": "backend_write_or_guarded",
+          "artifact_kind": "entity_relation_ingest"
         },
         {
           "owner": "state_store",

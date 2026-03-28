@@ -73,6 +73,24 @@ Advice payload includes:
 - disabled systems list
 - extension boundary snapshot (`mem0`, `Letta`)
 
+## Runtime Activation
+
+Router advice is no longer the whole story.
+`vibe` runtime now has a bounded adapter layer that can execute real lane actions for:
+
+- `Serena`: project-decision recall/write
+- `ruflo`: XL handoff recall/write
+- `Cognee`: bounded relation recall/write
+
+Primary adapter assets:
+
+- `config/memory-backend-adapters.json`
+- `scripts/runtime/VibeMemoryBackends.Common.ps1`
+- `scripts/runtime/memory_backend_driver.py`
+
+The runtime still preserves one truth-source per lane.
+If an adapter is disabled, missing, or not relevant for the stage, the run degrades to `state_store` and local governed artifacts.
+
 ## Verification
 
 Run dedicated memory governance gates:

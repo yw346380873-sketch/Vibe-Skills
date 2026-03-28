@@ -118,6 +118,276 @@ function Get-VibeEstimatedTokenCount {
     return [int][Math]::Ceiling($charCount / 4.0)
 }
 
+function Get-VibeMemoryReadActionObject {
+    param(
+        [Parameter(Mandatory)] [string]$Owner,
+        [Parameter(Mandatory)] [object]$BackendResult
+    )
+
+    return [pscustomobject]@{
+        owner = $Owner
+        status = [string]$BackendResult.status
+        item_count = [int]$BackendResult.item_count
+        items = @($BackendResult.items)
+        artifact_path = if ($BackendResult.artifact_path) { [string]$BackendResult.artifact_path } else { $null }
+        project_key = if ($BackendResult.project_key) { [string]$BackendResult.project_key } else { $null }
+        project_key_source = if ($BackendResult.project_key_source) { [string]$BackendResult.project_key_source } else { $null }
+    }
+}
+
+function Get-VibeMemoryWriteActionObject {
+    param(
+        [Parameter(Mandatory)] [string]$Owner,
+        [Parameter(Mandatory)] [object]$BackendResult
+    )
+
+    return [pscustomobject]@{
+        owner = $Owner
+        status = [string]$BackendResult.status
+        item_count = [int]$BackendResult.item_count
+        items = @($BackendResult.items)
+        artifact_path = if ($BackendResult.artifact_path) { [string]$BackendResult.artifact_path } else { $null }
+        project_key = if ($BackendResult.project_key) { [string]$BackendResult.project_key } else { $null }
+        project_key_source = if ($BackendResult.project_key_source) { [string]$BackendResult.project_key_source } else { $null }
+        store_path = if ($BackendResult.store_path) { [string]$BackendResult.store_path } else { $null }
+    }
+}
+
+function Get-VibeLaneSearchPayload {
+    param(
+        [Parameter(Mandatory)] [string]$LaneId,
+        [Parameter(Mandatory)] [string]$Stage,
+        [Parameter(Mandatory)] [string]$Task,
+        [Parameter(Mandatory)] [object]$Budget
+    )
+
+    return [pscustomobject]@{
+        lane = $LaneId
+        stage = $Stage
+        task = $Task
+        top_k = [int]$Budget.top_k
+        max_chars_per_item = [int]$Budget.max_chars_per_item
+        keywords = @()
+        project_key_source = $null
+    }
+}
+
+function Get-VibeSearchKeywords {
+    param(
+        [AllowEmptyString()] [string]$Task = '',
+        [AllowEmptyCollection()] [string[]]$ExtraTokens = @()
+    )
+
+    $tokens = [System.Collections.Generic.List[string]]::new()
+    foreach ($match in [regex]::Matches($Task.ToLowerInvariant(), '[a-z0-9_/-]{3,}')) {
+        $value = [string]$match.Value
+        if (-not [string]::IsNullOrWhiteSpace($value)) {
+            $tokens.Add($value) | Out-Null
+        }
+    }
+    foreach ($token in @($ExtraTokens)) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$token)) {
+            $tokens.Add([string]$token) | Out-Null
+        }
+    }
+    return @($tokens | Select-Object -Unique | Select-Object -First 12)
+}
+
+function Get-VibeCogneeReadAction {
+    param(
+        [Parameter(Mandatory)] [object]$Runtime,
+        [Parameter(Mandatory)] [string]$Stage,
+        [Parameter(Mandatory)] [string]$Task,
+        [Parameter(Mandatory)] [string]$SessionRoot
+    )
+
+    $budget = Get-VibeMemoryBudgetSpec -Runtime $Runtime -Stage $Stage
+    $payload = Get-VibeLaneSearchPayload -LaneId 'cognee' -Stage $Stage -Task $Task -Budget $budget
+    $payload.keywords = @(Get-VibeSearchKeywords -Task $Task)
+    $result = Invoke-VibeMemoryBackendAction -Runtime $Runtime -LaneId 'cognee' -Action 'read' -Payload $payload -SessionRoot $SessionRoot
+    return Get-VibeMemoryReadActionObject -Owner 'Cognee' -BackendResult $result
+}
+
+function Get-VibeSerenaReadAction {
+    param(
+        [Parameter(Mandatory)] [object]$Runtime,
+        [Parameter(Mandatory)] [string]$Stage,
+        [Parameter(Mandatory)] [string]$Task,
+        [Parameter(Mandatory)] [string]$SessionRoot
+    )
+
+    $budget = Get-VibeMemoryBudgetSpec -Runtime $Runtime -Stage $Stage
+    $payload = Get-VibeLaneSearchPayload -LaneId 'serena' -Stage $Stage -Task $Task -Budget $budget
+    $payload.keywords = @(Get-VibeSearchKeywords -Task $Task)
+    $result = Invoke-VibeMemoryBackendAction -Runtime $Runtime -LaneId 'serena' -Action 'read' -Payload $payload -SessionRoot $SessionRoot
+    return Get-VibeMemoryReadActionObject -Owner 'Serena' -BackendResult $result
+}
+
+function Get-VibeRufloReadAction {
+    param(
+        [Parameter(Mandatory)] [object]$Runtime,
+        [Parameter(Mandatory)] [string]$Task,
+        [Parameter(Mandatory)] [string]$SessionRoot,
+        [Parameter(Mandatory)] [string]$Grade
+    )
+
+    if ($Grade -ne 'XL') {
+        return [pscustomobject]@{
+            owner = 'ruflo'
+            status = 'out_of_scope_serial_lane'
+            item_count = 0
+            items = @()
+            artifact_path = $null
+        }
+    }
+
+    $budget = Get-VibeMemoryBudgetSpec -Runtime $Runtime -Stage 'plan_execute'
+    $payload = Get-VibeLaneSearchPayload -LaneId 'ruflo' -Stage 'plan_execute' -Task $Task -Budget $budget
+    $payload.keywords = @(Get-VibeSearchKeywords -Task $Task -ExtraTokens @('handoff', 'milestone', 'xl'))
+    $result = Invoke-VibeMemoryBackendAction -Runtime $Runtime -LaneId 'ruflo' -Action 'read' -Payload $payload -SessionRoot $SessionRoot
+    return Get-VibeMemoryReadActionObject -Owner 'ruflo' -BackendResult $result
+}
+
+function New-VibePlanMemoryContextPack {
+    param(
+        [Parameter(Mandatory)] [object]$Runtime,
+        [Parameter(Mandatory)] [AllowEmptyCollection()] [object[]]$ReadActions,
+        [Parameter(Mandatory)] [string]$SessionRoot,
+        [string]$Stage = 'xl_plan',
+        [string]$ArtifactName = 'plan-context-pack.json'
+    )
+
+    $budget = Get-VibeMemoryBudgetSpec -Runtime $Runtime -Stage $Stage
+    $items = @()
+    foreach ($action in @($ReadActions)) {
+        foreach ($item in @($action.items)) {
+            if (-not [string]::IsNullOrWhiteSpace([string]$item)) {
+                $items += [string]$item
+            }
+        }
+    }
+    $boundedItems = Get-VibeBoundedMemoryItems -Items $items -Budget $budget
+    $estimatedTokens = Get-VibeEstimatedTokenCount -Items @($boundedItems)
+    $artifactPath = Join-Path (Get-VibeMemoryArtifactsRoot -SessionRoot $SessionRoot) $ArtifactName
+    $artifact = [pscustomobject]@{
+        stage = $Stage
+        owner = 'state_store'
+        generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+        items = @($boundedItems)
+        estimated_tokens = $estimatedTokens
+        budget = $budget
+    }
+    Write-VibeJsonArtifact -Path $artifactPath -Value $artifact
+
+    return [pscustomobject]@{
+        context_path = $artifactPath
+        injected_item_count = @($boundedItems).Count
+        estimated_tokens = $estimatedTokens
+        budget = $budget
+        items = @($boundedItems)
+    }
+}
+
+function Get-VibeDecisionCandidates {
+    param(
+        [Parameter(Mandatory)] [string]$RequirementDocPath,
+        [Parameter(Mandatory)] [string]$ExecutionPlanPath,
+        [AllowEmptyString()] [string]$Task = ''
+    )
+
+    $texts = @()
+    foreach ($path in @($RequirementDocPath, $ExecutionPlanPath)) {
+        if (Test-Path -LiteralPath $path) {
+            $texts += @(Get-Content -LiteralPath $path -Encoding UTF8)
+        }
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Task)) {
+        $texts += $Task
+    }
+
+    $candidates = [System.Collections.Generic.List[object]]::new()
+    foreach ($line in @($texts)) {
+        $trimmed = ([string]$line).Trim()
+        if ([string]::IsNullOrWhiteSpace($trimmed)) {
+            continue
+        }
+        if ($trimmed -match '(?i)approved decision|decision record|adr-|## decision') {
+            $summary = $trimmed -replace '^[#\-\*\s]+', ''
+            $keywords = Get-VibeSearchKeywords -Task $summary
+            $candidates.Add([pscustomobject]@{
+                summary = $summary
+                evidence_paths = @($RequirementDocPath, $ExecutionPlanPath)
+                keywords = @($keywords)
+            }) | Out-Null
+        }
+    }
+    return @($candidates | Select-Object -Unique -First 3)
+}
+
+function Get-VibeCogneeRelationCandidates {
+    param(
+        [Parameter(Mandatory)] [string]$Task,
+        [Parameter(Mandatory)] [string]$RequirementDocPath,
+        [Parameter(Mandatory)] [string]$ExecutionPlanPath,
+        [Parameter(Mandatory)] [string]$ExecutionManifestPath
+    )
+
+    $taskSlug = ConvertTo-VibeSlug -Text $Task
+    $keywords = Get-VibeSearchKeywords -Task $Task -ExtraTokens @($taskSlug)
+    return @(
+        [pscustomobject]@{
+            source = $taskSlug
+            relation = 'specified_by'
+            target = [System.IO.Path]::GetFileName($RequirementDocPath)
+            evidence_paths = @($RequirementDocPath)
+            keywords = @($keywords)
+        },
+        [pscustomobject]@{
+            source = $taskSlug
+            relation = 'planned_in'
+            target = [System.IO.Path]::GetFileName($ExecutionPlanPath)
+            evidence_paths = @($ExecutionPlanPath)
+            keywords = @($keywords)
+        },
+        [pscustomobject]@{
+            source = $taskSlug
+            relation = 'executed_as'
+            target = [System.IO.Path]::GetFileName($ExecutionManifestPath)
+            evidence_paths = @($ExecutionManifestPath)
+            keywords = @($keywords)
+        }
+    )
+}
+
+function Get-VibeRufloCardCandidates {
+    param(
+        [Parameter(Mandatory)] [string]$ExecutionManifestPath,
+        [Parameter(Mandatory)] [string]$RunId,
+        [Parameter(Mandatory)] [string]$Task,
+        [Parameter(Mandatory)] [string]$Grade
+    )
+
+    if ($Grade -ne 'XL') {
+        return @()
+    }
+
+    $manifest = Get-Content -LiteralPath $ExecutionManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $summary = 'XL handoff for {0}: executed {1} units with {2} failures.' -f $RunId, [int]$manifest.executed_unit_count, [int]$manifest.failed_unit_count
+    return @(
+        [pscustomobject]@{
+            scope = 'xl'
+            summary = $summary
+            items = @(
+                ('execution_status:{0}' -f [string]$manifest.status),
+                ('delegation_mode:{0}' -f [string]$manifest.execution_topology.delegation_mode),
+                ('specialist_execution_status:{0}' -f [string]$manifest.specialist_accounting.effective_execution_status)
+            )
+            evidence_paths = @($ExecutionManifestPath)
+            keywords = @(Get-VibeSearchKeywords -Task $Task -ExtraTokens @('xl', 'handoff', 'milestone'))
+        }
+    )
+}
+
 function New-VibeSkeletonMemoryDigest {
     param(
         [Parameter(Mandatory)] [object]$Runtime,
@@ -176,39 +446,42 @@ function New-VibeSkeletonMemoryDigest {
 
 function Get-VibeDeepInterviewMemoryReadAction {
     param(
-        [Parameter(Mandatory)] [object]$Runtime
+        [Parameter(Mandatory)] [object]$Runtime,
+        [Parameter(Mandatory)] [string]$Task,
+        [Parameter(Mandatory)] [string]$SessionRoot
     )
 
     $stagePolicy = Get-VibeMemoryStagePolicy -Runtime $Runtime -Stage 'deep_interview'
-    $readPolicy = @($stagePolicy.read_actions)[0]
-    $projectKeyEnv = @($readPolicy.project_key_env)
-    $projectKeyName = $null
-    foreach ($envName in $projectKeyEnv) {
-        $value = [Environment]::GetEnvironmentVariable([string]$envName)
-        if (-not [string]::IsNullOrWhiteSpace($value)) {
-            $projectKeyName = [string]$envName
-            break
-        }
+    $readAction = Get-VibeSerenaReadAction -Runtime $Runtime -Stage 'deep_interview' -Task $Task -SessionRoot $SessionRoot
+    if ($readAction.status -eq 'memory_backend_ready') {
+        $readAction.status = [string]@($stagePolicy.read_actions)[0].status_if_missing_project_key
     }
-
-    return [pscustomobject]@{
-        owner = 'Serena'
-        status = if ($null -eq $projectKeyName) { [string]$readPolicy.status_if_missing_project_key } else { 'backend_key_available' }
-        item_count = 0
-        items = @()
-        project_key_env = if ($null -eq $projectKeyName) { $null } else { $projectKeyName }
+    if ($readAction.status -eq 'backend_read_empty' -and -not $readAction.project_key_source) {
+        $readAction.status = [string]@($stagePolicy.read_actions)[0].status_if_missing_project_key
     }
+    if ($readAction.PSObject.Properties.Name -contains 'project_key_source') {
+        $readAction | Add-Member -NotePropertyName project_key_env -NotePropertyValue $readAction.project_key_source -Force
+    }
+    return $readAction
 }
 
 function New-VibeRequirementContextPack {
     param(
         [Parameter(Mandatory)] [object]$Runtime,
-        [Parameter(Mandatory)] [object]$SkeletonDigestAction,
+        [Parameter(Mandatory)] [AllowEmptyCollection()] [object[]]$ReadActions,
         [Parameter(Mandatory)] [string]$SessionRoot
     )
 
     $budget = Get-VibeMemoryBudgetSpec -Runtime $Runtime -Stage 'requirement_doc'
-    $boundedItems = Get-VibeBoundedMemoryItems -Items @($SkeletonDigestAction.items) -Budget $budget
+    $items = @()
+    foreach ($action in @($ReadActions)) {
+        foreach ($item in @($action.items)) {
+            if (-not [string]::IsNullOrWhiteSpace([string]$item)) {
+                $items += [string]$item
+            }
+        }
+    }
+    $boundedItems = Get-VibeBoundedMemoryItems -Items @($items) -Budget $budget
     $estimatedTokens = Get-VibeEstimatedTokenCount -Items @($boundedItems)
     $artifactPath = Join-Path (Get-VibeMemoryArtifactsRoot -SessionRoot $SessionRoot) 'requirement-context-pack.json'
     $artifact = [pscustomobject]@{
@@ -234,7 +507,11 @@ function New-VibeRequirementContextPack {
 function New-VibeExecutionMemoryWriteAction {
     param(
         [Parameter(Mandatory)] [string]$ExecutionManifestPath,
-        [Parameter(Mandatory)] [string]$SessionRoot
+        [Parameter(Mandatory)] [string]$SessionRoot,
+        [Parameter(Mandatory)] [object]$Runtime,
+        [Parameter(Mandatory)] [string]$RunId,
+        [Parameter(Mandatory)] [string]$Task,
+        [Parameter(Mandatory)] [string]$Grade
     )
 
     $manifest = Get-Content -LiteralPath $ExecutionManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -263,10 +540,44 @@ function New-VibeExecutionMemoryWriteAction {
     }
 }
 
+function New-VibeRufloExecutionWriteAction {
+    param(
+        [Parameter(Mandatory)] [object]$Runtime,
+        [Parameter(Mandatory)] [string]$ExecutionManifestPath,
+        [Parameter(Mandatory)] [string]$SessionRoot,
+        [Parameter(Mandatory)] [string]$RunId,
+        [Parameter(Mandatory)] [string]$Task,
+        [Parameter(Mandatory)] [string]$Grade
+    )
+
+    if ($Grade -ne 'XL') {
+        return [pscustomobject]@{
+            owner = 'ruflo'
+            status = 'out_of_scope_serial_lane'
+            item_count = 0
+            items = @()
+            artifact_path = $null
+            store_path = $null
+        }
+    }
+
+    $cards = Get-VibeRufloCardCandidates -ExecutionManifestPath $ExecutionManifestPath -RunId $RunId -Task $Task -Grade $Grade
+    $payload = [pscustomobject]@{
+        run_id = $RunId
+        task = $Task
+        cards = @($cards)
+    }
+    $result = Invoke-VibeMemoryBackendAction -Runtime $Runtime -LaneId 'ruflo' -Action 'write' -Payload $payload -SessionRoot $SessionRoot
+    return Get-VibeMemoryWriteActionObject -Owner 'ruflo' -BackendResult $result
+}
+
 function Get-VibeCleanupDecisionWriteAction {
     param(
         [Parameter(Mandatory)] [string]$RequirementDocPath,
-        [Parameter(Mandatory)] [string]$ExecutionPlanPath
+        [Parameter(Mandatory)] [string]$ExecutionPlanPath,
+        [Parameter(Mandatory)] [object]$Runtime,
+        [Parameter(Mandatory)] [string]$SessionRoot,
+        [AllowEmptyString()] [string]$Task = ''
     )
 
     $requirementText = if (Test-Path -LiteralPath $RequirementDocPath) {
@@ -279,17 +590,48 @@ function Get-VibeCleanupDecisionWriteAction {
     } else {
         ''
     }
-    $combined = "$requirementText`n$planText"
-    $hasExplicitDecision = $combined -match 'approved decision|decision record|adr-|## decision'
-
-    return [pscustomobject]@{
-        owner = 'Serena'
-        status = if ($hasExplicitDecision) { 'backend_write_candidate' } else { 'guarded_no_write' }
-        item_count = 0
-        items = @()
-        artifact_path = $null
-        reason = if ($hasExplicitDecision) { 'explicit decision markers detected' } else { 'no explicit approved decision markers detected in frozen requirement/plan surfaces' }
+    $decisions = Get-VibeDecisionCandidates -RequirementDocPath $RequirementDocPath -ExecutionPlanPath $ExecutionPlanPath -Task $Task
+    if (@($decisions).Count -eq 0) {
+        return [pscustomobject]@{
+            owner = 'Serena'
+            status = 'guarded_no_write'
+            item_count = 0
+            items = @()
+            artifact_path = $null
+            reason = 'no explicit approved decision markers detected in frozen requirement/plan surfaces'
+        }
     }
+
+    $payload = [pscustomobject]@{
+        decisions = @($decisions)
+    }
+    $result = Invoke-VibeMemoryBackendAction -Runtime $Runtime -LaneId 'serena' -Action 'write' -Payload $payload -SessionRoot $SessionRoot
+    $writeAction = Get-VibeMemoryWriteActionObject -Owner 'Serena' -BackendResult $result
+    $writeAction | Add-Member -NotePropertyName reason -NotePropertyValue 'explicit decision markers detected' -Force
+    return $writeAction
+}
+
+function Get-VibeCogneeCleanupWriteAction {
+    param(
+        [Parameter(Mandatory)] [object]$Runtime,
+        [Parameter(Mandatory)] [string]$Task,
+        [Parameter(Mandatory)] [string]$RequirementDocPath,
+        [Parameter(Mandatory)] [string]$ExecutionPlanPath,
+        [Parameter(Mandatory)] [string]$ExecutionManifestPath,
+        [Parameter(Mandatory)] [string]$SessionRoot
+    )
+
+    $relations = Get-VibeCogneeRelationCandidates `
+        -Task $Task `
+        -RequirementDocPath $RequirementDocPath `
+        -ExecutionPlanPath $ExecutionPlanPath `
+        -ExecutionManifestPath $ExecutionManifestPath
+    $payload = [pscustomobject]@{
+        task = $Task
+        relations = @($relations)
+    }
+    $result = Invoke-VibeMemoryBackendAction -Runtime $Runtime -LaneId 'cognee' -Action 'write' -Payload $payload -SessionRoot $SessionRoot
+    return Get-VibeMemoryWriteActionObject -Owner 'Cognee' -BackendResult $result
 }
 
 function New-VibeCleanupMemoryFold {
@@ -339,24 +681,26 @@ function New-VibeMemoryActivationReport {
         [Parameter(Mandatory)] [object]$Runtime,
         [Parameter(Mandatory)] [string]$RunId,
         [Parameter(Mandatory)] [string]$SessionRoot,
-        [Parameter(Mandatory)] [object]$SkeletonDigestAction,
-        [Parameter(Mandatory)] [object]$DeepInterviewReadAction,
+        [Parameter(Mandatory)] [AllowEmptyCollection()] [object[]]$SkeletonReadActions,
+        [Parameter(Mandatory)] [AllowEmptyCollection()] [object[]]$DeepInterviewReadActions,
         [Parameter(Mandatory)] [object]$RequirementContextPack,
-        [Parameter(Mandatory)] [object]$ExecuteWriteAction,
-        [Parameter(Mandatory)] [object]$CleanupDecisionAction,
+        [Parameter(Mandatory)] [AllowEmptyCollection()] [object[]]$XlPlanReadActions,
+        [Parameter(Mandatory)] [AllowEmptyCollection()] [object[]]$PlanExecuteReadActions,
+        [Parameter(Mandatory)] [AllowEmptyCollection()] [object[]]$PlanExecuteWriteActions,
+        [Parameter(Mandatory)] [AllowEmptyCollection()] [object[]]$CleanupWriteActions,
         [Parameter(Mandatory)] [object]$CleanupFoldAction
     )
 
     $stages = @(
         [pscustomobject]@{
             stage = 'skeleton_check'
-            read_actions = @($SkeletonDigestAction)
+            read_actions = @($SkeletonReadActions)
             context_injection = $null
             write_actions = @()
         },
         [pscustomobject]@{
             stage = 'deep_interview'
-            read_actions = @($DeepInterviewReadAction)
+            read_actions = @($DeepInterviewReadActions)
             context_injection = $null
             write_actions = @()
         },
@@ -373,21 +717,25 @@ function New-VibeMemoryActivationReport {
         },
         [pscustomobject]@{
             stage = 'xl_plan'
-            read_actions = @()
+            read_actions = @($XlPlanReadActions)
             context_injection = $null
             write_actions = @()
         },
         [pscustomobject]@{
             stage = 'plan_execute'
-            read_actions = @()
+            read_actions = @($PlanExecuteReadActions)
             context_injection = $null
-            write_actions = @($ExecuteWriteAction)
+            write_actions = @($PlanExecuteWriteActions)
         },
         [pscustomobject]@{
             stage = 'phase_cleanup'
             read_actions = @()
             context_injection = $null
-            write_actions = @($CleanupDecisionAction, $CleanupFoldAction)
+            write_actions = @(
+                if (@($CleanupWriteActions).Count -gt 0) { $CleanupWriteActions[0] }
+                $CleanupFoldAction
+                if (@($CleanupWriteActions).Count -gt 1) { @($CleanupWriteActions | Select-Object -Skip 1) }
+            )
         }
     )
 

@@ -108,15 +108,39 @@ Memory Runtime v3 的不变量如下：
 
 - Governance doc：`docs/memory-runtime-v3-governance.md`
 - Runtime policy：`config/memory-runtime-v3-policy.json`
+- Backend adapters：`config/memory-backend-adapters.json`
 - Unified contract：`references/memory-runtime-v3-contract.md`
 - mem0 admission：`references/mem0-write-admission-contract.md`
 - Letta conformance：`docs/letta-policy-conformance.md`
+- Runtime adapter helpers：
+  - `scripts/runtime/VibeMemoryBackends.Common.ps1`
+  - `scripts/runtime/memory_backend_driver.py`
 - Gates：
   - `scripts/verify/vibe-memory-runtime-v3-gate.ps1`
   - `scripts/verify/vibe-mem0-softrollout-gate.ps1`
   - `scripts/verify/vibe-letta-policy-conformance-gate.ps1`
 
-## 7. 验证方式
+## 7. Runtime Activation Boundary
+
+Memory Runtime v3 now has a governed runtime adapter layer.
+This layer does not create a second control plane.
+It only decides whether a bounded lane action can be executed, then falls back to `state_store` or local artifacts if the lane is unavailable.
+
+Stage-bound live actions:
+
+- `deep_interview`: `Serena` decision recall when a project key exists
+- `skeleton_check` / `xl_plan`: bounded `Cognee` relation recall
+- `plan_execute`: XL-only `ruflo` handoff recall + handoff card write
+- `phase_cleanup`: bounded `Serena` decision write and `Cognee` relation ingest
+
+Fallback contract:
+
+- missing `Serena` project key -> `deferred_no_project_key`
+- disabled or unavailable backend -> local governed fallback
+- no relevant memory hit -> `backend_read_empty`
+- no admissible write payload -> `guarded_no_write`
+
+## 8. 验证方式
 
 ```powershell
 pwsh -File .\scripts\verify\vibe-memory-runtime-v3-gate.ps1
@@ -124,7 +148,7 @@ pwsh -File .\scripts\verify\vibe-mem0-softrollout-gate.ps1
 pwsh -File .\scripts\verify\vibe-letta-policy-conformance-gate.ps1
 ```
 
-## 8. 完成定义（Definition of Done）
+## 9. 完成定义（Definition of Done）
 
 满足以下条件，才视为 Wave64 governance spine 落地完成：
 

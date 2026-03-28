@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import tempfile
@@ -27,7 +28,7 @@ def resolve_powershell() -> str | None:
     return None
 
 
-def run_governed_runtime(task: str, artifact_root: Path) -> dict[str, object]:
+def run_governed_runtime(task: str, artifact_root: Path, env: dict[str, str] | None = None) -> dict[str, object]:
     shell = resolve_powershell()
     if shell is None:
         raise unittest.SkipTest("PowerShell executable not available in PATH")
@@ -55,6 +56,7 @@ def run_governed_runtime(task: str, artifact_root: Path) -> dict[str, object]:
         capture_output=True,
         text=True,
         encoding="utf-8",
+        env=env,
         check=True,
     )
     stdout = completed.stdout.strip()
@@ -142,6 +144,61 @@ class MemoryRuntimeActivationTests(unittest.TestCase):
             self.assertGreaterEqual(summary_block["fallback_event_count"], 1)
             self.assertGreaterEqual(summary_block["artifact_count"], 3)
             self.assertTrue(summary_block["budget_guard_respected"])
+
+    def test_runtime_reads_and_writes_real_memory_backends_across_runs(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_root = Path(tempdir)
+            backend_root = temp_root / "backends"
+            env = os.environ.copy()
+            env["VIBE_MEMORY_BACKEND_ROOT"] = str(backend_root)
+            env["SERENA_PROJECT_KEY"] = "pytest-memory-project"
+
+            first = run_governed_runtime(
+                "XL approved decision: keep api worker runtime continuity and graph relationship between api worker and planner.",
+                artifact_root=temp_root / "run-1",
+                env=env,
+            )
+            first_report = json.loads(
+                Path(first["summary"]["artifacts"]["memory_activation_report"]).read_text(encoding="utf-8")
+            )
+            first_execute = first_report["stages"][4]
+            first_cleanup = first_report["stages"][5]
+
+            self.assertEqual("backend_write", first_execute["write_actions"][1]["status"])
+            self.assertEqual("backend_write", first_cleanup["write_actions"][0]["status"])
+            self.assertEqual("backend_write", first_cleanup["write_actions"][2]["status"])
+
+            second = run_governed_runtime(
+                "XL follow-up api worker continuity review with decision reuse and graph dependency recall.",
+                artifact_root=temp_root / "run-2",
+                env=env,
+            )
+            second_report = json.loads(
+                Path(second["summary"]["artifacts"]["memory_activation_report"]).read_text(encoding="utf-8")
+            )
+
+            skeleton = second_report["stages"][0]
+            deep_interview = second_report["stages"][1]
+            execute_stage = second_report["stages"][4]
+
+            self.assertGreaterEqual(len(skeleton["read_actions"]), 2)
+            self.assertEqual("backend_read", skeleton["read_actions"][1]["status"])
+            self.assertGreaterEqual(skeleton["read_actions"][1]["item_count"], 1)
+
+            self.assertEqual("backend_read", deep_interview["read_actions"][0]["status"])
+            self.assertGreaterEqual(deep_interview["read_actions"][0]["item_count"], 1)
+
+            self.assertGreaterEqual(len(execute_stage["read_actions"]), 1)
+            self.assertEqual("backend_read", execute_stage["read_actions"][0]["status"])
+            self.assertGreaterEqual(execute_stage["read_actions"][0]["item_count"], 1)
+
+            requirement_text = Path(second["summary"]["artifacts"]["requirement_doc"]).read_text(encoding="utf-8")
+            self.assertIn("## Memory Context", requirement_text)
+            self.assertIn("Serena decision:", requirement_text)
+
+            plan_text = Path(second["summary"]["artifacts"]["execution_plan"]).read_text(encoding="utf-8")
+            self.assertIn("## Memory Context", plan_text)
+            self.assertIn("Cognee relation:", plan_text)
 
 
 if __name__ == "__main__":

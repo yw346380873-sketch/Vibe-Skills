@@ -4,6 +4,7 @@ param(
     [string]$RunId = '',
     [string]$RequirementDocPath = '',
     [string]$RuntimeInputPacketPath = '',
+    [string]$PlanMemoryContextPath = '',
     [string]$ArtifactRoot = '',
     [AllowEmptyString()] [string]$GovernanceScope = '',
     [AllowEmptyString()] [string]$RootRunId = '',
@@ -49,6 +50,11 @@ $requirementPath = if (-not [string]::IsNullOrWhiteSpace($RequirementDocPath)) {
 $antiDriftDraft = Get-VgoAntiProxyGoalDriftPacketFromRequirementDoc -RequirementDocPath $requirementPath
 $runtimeInputPacket = if (-not [string]::IsNullOrWhiteSpace($RuntimeInputPacketPath) -and (Test-Path -LiteralPath $RuntimeInputPacketPath)) {
     Get-Content -LiteralPath $RuntimeInputPacketPath -Raw -Encoding UTF8 | ConvertFrom-Json
+} else {
+    $null
+}
+$planMemoryContext = if (-not [string]::IsNullOrWhiteSpace($PlanMemoryContextPath) -and (Test-Path -LiteralPath $PlanMemoryContextPath)) {
+    Get-Content -LiteralPath $PlanMemoryContextPath -Raw -Encoding UTF8 | ConvertFrom-Json
 } else {
     $null
 }
@@ -182,6 +188,14 @@ if (@($approvedDispatch).Count -gt 0 -or @($localSuggestions).Count -gt 0) {
         }
     }
 }
+if ($planMemoryContext -and @($planMemoryContext.items).Count -gt 0) {
+    $lines += @(
+        '',
+        '## Memory Context',
+        'Bounded stage-aware memory context injected into execution planning:'
+    )
+    $lines += @($planMemoryContext.items | ForEach-Object { "- $_" })
+}
 $lines += @(
     '',
     '## Completion Language Rules',
@@ -249,6 +263,7 @@ $receipt = [pscustomobject]@{
     canonical_write_allowed = -not $isChildScope
     inherited_execution_plan_path = if ($isChildScope) { $planPath } else { $null }
     runtime_input_packet_path = $RuntimeInputPacketPath
+    plan_memory_context_path = $PlanMemoryContextPath
     execution_topology_path = $executionTopologyPath
     generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 }

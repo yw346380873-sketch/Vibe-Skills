@@ -18,6 +18,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 . (Join-Path $PSScriptRoot 'VibeRuntime.Common.ps1')
+. (Join-Path $PSScriptRoot 'VibeMemoryBackends.Common.ps1')
 . (Join-Path $PSScriptRoot 'VibeMemoryActivation.Common.ps1')
 
 function Wait-VibeArtifactSet {
@@ -107,7 +108,8 @@ if (-not [string]::IsNullOrWhiteSpace([string]$hierarchyState.inherited_executio
 
 $skeleton = & (Join-Path $PSScriptRoot 'Invoke-SkeletonCheck.ps1') -Task $Task -Mode $Mode -RunId $RunId -ArtifactRoot $ArtifactRoot
 $memorySkeletonDigest = New-VibeSkeletonMemoryDigest -Runtime $runtime -Skeleton $skeleton -Task $Task -SessionRoot ([string]$skeleton.session_root)
-$requirementMemoryContext = New-VibeRequirementContextPack -Runtime $runtime -SkeletonDigestAction $memorySkeletonDigest -SessionRoot ([string]$skeleton.session_root)
+$memorySkeletonCognee = Get-VibeCogneeReadAction -Runtime $runtime -Stage 'skeleton_check' -Task $Task -SessionRoot ([string]$skeleton.session_root)
+$skeletonMemoryReads = @($memorySkeletonDigest, $memorySkeletonCognee)
 $freezeArgs = @{
     Task = $Task
     Mode = $Mode
@@ -120,6 +122,9 @@ foreach ($key in @($hierarchyArgs.Keys)) {
 }
 $runtimeInput = & (Join-Path $PSScriptRoot 'Freeze-RuntimeInputPacket.ps1') @freezeArgs
 $interview = & (Join-Path $PSScriptRoot 'Invoke-DeepInterview.ps1') -Task $Task -Mode $Mode -RunId $RunId -ArtifactRoot $ArtifactRoot
+$memoryDeepInterviewRead = Get-VibeDeepInterviewMemoryReadAction -Runtime $runtime -Task $Task -SessionRoot ([string]$skeleton.session_root)
+$requirementContextReads = @($memoryDeepInterviewRead, $memorySkeletonCognee, $memorySkeletonDigest)
+$requirementMemoryContext = New-VibeRequirementContextPack -Runtime $runtime -ReadActions $requirementContextReads -SessionRoot ([string]$skeleton.session_root)
 $requirementArgs = @{
     Task = $Task
     Mode = $Mode
@@ -145,7 +150,15 @@ foreach ($key in @($hierarchyArgs.Keys)) {
     $planArgs[$key] = $hierarchyArgs[$key]
 }
 $planArgs.InheritedRequirementDocPath = $requirement.requirement_doc_path
+$memoryPlanSerena = Get-VibeSerenaReadAction -Runtime $runtime -Stage 'xl_plan' -Task $Task -SessionRoot ([string]$skeleton.session_root)
+$memoryPlanCognee = Get-VibeCogneeReadAction -Runtime $runtime -Stage 'xl_plan' -Task $Task -SessionRoot ([string]$skeleton.session_root)
+$xlPlanReadActions = @($memoryPlanSerena, $memoryPlanCognee)
+$planMemoryContext = New-VibePlanMemoryContextPack -Runtime $runtime -ReadActions $xlPlanReadActions -SessionRoot ([string]$skeleton.session_root) -Stage 'xl_plan' -ArtifactName 'plan-context-pack.json'
+$planArgs.PlanMemoryContextPath = $planMemoryContext.context_path
 $plan = & (Join-Path $PSScriptRoot 'Write-XlPlan.ps1') @planArgs
+$grade = if ($plan.receipt -and $plan.receipt.internal_grade) { [string]$plan.receipt.internal_grade } else { Get-VibeInternalGrade -Task $Task }
+$memoryPlanExecuteRead = Get-VibeRufloReadAction -Runtime $runtime -Task $Task -SessionRoot ([string]$skeleton.session_root) -Grade $grade
+$executionMemoryContext = New-VibePlanMemoryContextPack -Runtime $runtime -ReadActions @($memoryPlanExecuteRead) -SessionRoot ([string]$skeleton.session_root) -Stage 'plan_execute' -ArtifactName 'execution-context-pack.json'
 $executeArgs = @{
     Task = $Task
     Mode = $Mode
@@ -160,11 +173,36 @@ foreach ($key in @('GovernanceScope', 'RootRunId', 'ParentRunId', 'ParentUnitId'
         $executeArgs[$key] = $hierarchyArgs[$key]
     }
 }
+$executeArgs.ExecutionMemoryContextPath = $executionMemoryContext.context_path
 $execute = & (Join-Path $PSScriptRoot 'Invoke-PlanExecute.ps1') @executeArgs
 $cleanup = & (Join-Path $PSScriptRoot 'Invoke-PhaseCleanup.ps1') -Task $Task -Mode $Mode -RunId $RunId -ArtifactRoot $ArtifactRoot -ExecuteGovernanceCleanup:$ExecuteGovernanceCleanup -ApplyManagedNodeCleanup:$ApplyManagedNodeCleanup
-$memoryDeepInterviewRead = Get-VibeDeepInterviewMemoryReadAction -Runtime $runtime
-$memoryExecuteWrite = New-VibeExecutionMemoryWriteAction -ExecutionManifestPath ([string]$execute.execution_manifest_path) -SessionRoot ([string]$skeleton.session_root)
-$memoryCleanupDecision = Get-VibeCleanupDecisionWriteAction -RequirementDocPath ([string]$requirement.requirement_doc_path) -ExecutionPlanPath ([string]$plan.execution_plan_path)
+$memoryExecuteWrite = New-VibeExecutionMemoryWriteAction `
+    -ExecutionManifestPath ([string]$execute.execution_manifest_path) `
+    -SessionRoot ([string]$skeleton.session_root) `
+    -Runtime $runtime `
+    -RunId $RunId `
+    -Task $Task `
+    -Grade $grade
+$memoryExecuteRufloWrite = New-VibeRufloExecutionWriteAction `
+    -Runtime $runtime `
+    -ExecutionManifestPath ([string]$execute.execution_manifest_path) `
+    -SessionRoot ([string]$skeleton.session_root) `
+    -RunId $RunId `
+    -Task $Task `
+    -Grade $grade
+$memoryCleanupDecision = Get-VibeCleanupDecisionWriteAction `
+    -RequirementDocPath ([string]$requirement.requirement_doc_path) `
+    -ExecutionPlanPath ([string]$plan.execution_plan_path) `
+    -Runtime $runtime `
+    -SessionRoot ([string]$skeleton.session_root) `
+    -Task $Task
+$memoryCleanupCognee = Get-VibeCogneeCleanupWriteAction `
+    -Runtime $runtime `
+    -Task $Task `
+    -RequirementDocPath ([string]$requirement.requirement_doc_path) `
+    -ExecutionPlanPath ([string]$plan.execution_plan_path) `
+    -ExecutionManifestPath ([string]$execute.execution_manifest_path) `
+    -SessionRoot ([string]$skeleton.session_root)
 $memoryCleanupFold = New-VibeCleanupMemoryFold `
     -RequirementDocPath ([string]$requirement.requirement_doc_path) `
     -ExecutionPlanPath ([string]$plan.execution_plan_path) `
@@ -175,11 +213,13 @@ $memoryActivation = New-VibeMemoryActivationReport `
     -Runtime $runtime `
     -RunId $RunId `
     -SessionRoot ([string]$skeleton.session_root) `
-    -SkeletonDigestAction $memorySkeletonDigest `
-    -DeepInterviewReadAction $memoryDeepInterviewRead `
+    -SkeletonReadActions $skeletonMemoryReads `
+    -DeepInterviewReadActions @($memoryDeepInterviewRead) `
     -RequirementContextPack $requirementMemoryContext `
-    -ExecuteWriteAction $memoryExecuteWrite `
-    -CleanupDecisionAction $memoryCleanupDecision `
+    -XlPlanReadActions $xlPlanReadActions `
+    -PlanExecuteReadActions @($memoryPlanExecuteRead) `
+    -PlanExecuteWriteActions @($memoryExecuteWrite, $memoryExecuteRufloWrite) `
+    -CleanupWriteActions @($memoryCleanupDecision, $memoryCleanupCognee) `
     -CleanupFoldAction $memoryCleanupFold
 $deliveryAcceptanceReportPath = Join-Path $skeleton.session_root 'delivery-acceptance-report.json'
 $deliveryAcceptanceMarkdownPath = Join-Path $skeleton.session_root 'delivery-acceptance-report.md'
