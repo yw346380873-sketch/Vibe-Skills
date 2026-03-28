@@ -254,9 +254,9 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
             self.assertGreaterEqual(execute_receipt["specialist_dispatch_unit_count"], 1)
             self.assertIn("systematic-debugging", execute_receipt["specialist_skills"])
             self.assertEqual(execute_receipt["executed_unit_count"], execution_manifest["executed_unit_count"])
-            self.assertEqual("completed", execution_manifest["status"])
+            self.assertEqual("completed_with_failures", execution_manifest["status"])
             self.assertGreaterEqual(execution_manifest["successful_unit_count"], 2)
-            self.assertEqual(0, execution_manifest["failed_unit_count"])
+            self.assertGreaterEqual(execution_manifest["failed_unit_count"], 1)
             self.assertEqual("runtime", execution_manifest["proof_class"])
             self.assertTrue(Path(execution_manifest["plan_shadow"]["path"]).exists())
             self.assertEqual("vibe", execution_manifest["route_runtime_alignment"]["router_selected_skill"])
@@ -265,13 +265,21 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
             self.assertGreaterEqual(execution_manifest["specialist_accounting"]["recommendation_count"], 1)
             self.assertGreaterEqual(execution_manifest["specialist_accounting"]["dispatch_unit_count"], 1)
             self.assertIn("systematic-debugging", execution_manifest["specialist_accounting"]["specialist_skills"])
+            self.assertEqual("explicitly_degraded", execution_manifest["specialist_accounting"]["effective_execution_status"])
+            self.assertEqual(0, execution_manifest["specialist_accounting"]["executed_specialist_unit_count"])
+            self.assertGreaterEqual(
+                execution_manifest["specialist_accounting"]["degraded_specialist_unit_count"], 1
+            )
             self.assertGreaterEqual(execution_manifest["plan_shadow"]["specialist_dispatch_unit_count"], 1)
-            self.assertTrue(benchmark_proof["proof_passed"])
+            self.assertFalse(benchmark_proof["proof_passed"])
             self.assertGreaterEqual(benchmark_proof["executed_unit_count"], 2)
             self.assertEqual("runtime", benchmark_proof["proof_class"])
             self.assertTrue(Path(benchmark_proof["plan_shadow_path"]).exists())
             self.assertGreaterEqual(benchmark_proof["specialist_recommendation_count"], 1)
             self.assertGreaterEqual(benchmark_proof["specialist_dispatch_unit_count"], 1)
+            self.assertEqual(0, benchmark_proof["executed_specialist_unit_count"])
+            self.assertGreaterEqual(benchmark_proof["degraded_specialist_unit_count"], 1)
+            self.assertEqual("explicitly_degraded", benchmark_proof["specialist_execution_status"])
 
             cleanup_receipt = json.loads(resolve_artifact_path("cleanup_receipt").read_text(encoding="utf-8"))
             self.assertEqual("receipt_only", cleanup_receipt["cleanup_mode"])
@@ -280,10 +288,16 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
 
             for result_path in benchmark_proof["result_paths"]:
                 result = json.loads(Path(result_path).read_text(encoding="utf-8"))
-                self.assertEqual("completed", result["status"])
                 self.assertEqual(0, result["exit_code"])
                 self.assertTrue(Path(result["stdout_path"]).exists())
                 self.assertTrue(Path(result["stderr_path"]).exists())
+                if result["kind"] == "specialist_dispatch":
+                    self.assertEqual("degraded_non_authoritative", result["status"])
+                    self.assertFalse(bool(result["verification_passed"]))
+                    self.assertEqual("degraded_specialist_contract_receipt", result["execution_driver"])
+                else:
+                    self.assertEqual("completed", result["status"])
+                    self.assertTrue(bool(result["verification_passed"]))
 
     def test_resolve_vgo_python_command_spec_falls_back_to_python3(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:

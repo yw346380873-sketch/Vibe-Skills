@@ -22,6 +22,7 @@ function New-VibeDelegatedLaneSpec {
     param(
         [Parameter(Mandatory)] [string]$SessionRoot,
         [Parameter(Mandatory)] [string]$RunId,
+        [Parameter(Mandatory)] [string]$Mode,
         [Parameter(Mandatory)] [object]$HierarchyState,
         [Parameter(Mandatory)] [string]$RequirementPath,
         [Parameter(Mandatory)] [string]$PlanPath,
@@ -39,6 +40,8 @@ function New-VibeDelegatedLaneSpec {
         lane_kind = [string]($LaneEntry.lane_kind)
         lane_root = $laneRoot
         run_id = $RunId
+        mode = $Mode
+        governance_scope = 'child'
         root_run_id = [string]($HierarchyState.root_run_id)
         parent_run_id = $RunId
         parent_unit_id = [string]($LaneEntry.source_unit_id)
@@ -212,7 +215,12 @@ function Invoke-VibeDirectLaneEntry {
         [Parameter(Mandatory)] [string]$RepoRoot,
         [Parameter(Mandatory)] [string]$SessionRoot,
         [Parameter(Mandatory)] [hashtable]$Tokens,
-        [Parameter(Mandatory)] [int]$DefaultTimeoutSeconds
+        [Parameter(Mandatory)] [int]$DefaultTimeoutSeconds,
+        [Parameter(Mandatory)] [string]$Mode,
+        [Parameter(Mandatory)] [string]$RequirementPath,
+        [Parameter(Mandatory)] [string]$PlanPath,
+        [Parameter(Mandatory)] [object]$HierarchyState,
+        [Parameter(Mandatory)] [string]$RunId
     )
 
     switch ([string]$LaneEntry.lane_kind) {
@@ -240,6 +248,14 @@ function Invoke-VibeDirectLaneEntry {
                 -UnitId ("{0}-specialist" -f [string]$LaneEntry.lane_id) `
                 -Dispatch $LaneEntry.dispatch `
                 -SessionRoot $SessionRoot `
+                -RepoRoot $RepoRoot `
+                -RequirementDocPath $RequirementPath `
+                -ExecutionPlanPath $PlanPath `
+                -RunId $RunId `
+                -GovernanceScope ([string]$HierarchyState.governance_scope) `
+                -RootRunId ([string]$HierarchyState.root_run_id) `
+                -ParentRunId $(if ($null -eq $HierarchyState.parent_run_id) { '' } else { [string]$HierarchyState.parent_run_id }) `
+                -ParentUnitId $(if ($null -eq $HierarchyState.parent_unit_id) { '' } else { [string]$HierarchyState.parent_unit_id }) `
                 -WriteScope ([string]$LaneEntry.write_scope) `
                 -ReviewMode ([string]$LaneEntry.review_mode)
             return [pscustomobject]@{
@@ -287,6 +303,9 @@ function ConvertTo-VibeExecutedUnitReceipt {
         lane_receipt_path = if ($Outcome.lane_receipt_path) { [string]$Outcome.lane_receipt_path } else { $null }
         skill_id = if ([string]$Outcome.lane_entry.lane_kind -eq 'specialist_dispatch') { [string]$Outcome.lane_entry.dispatch.skill_id } else { $null }
         write_scope = [string]$Outcome.lane_entry.write_scope
+        execution_driver = if ($Outcome.lane_result -and $Outcome.lane_result.PSObject.Properties.Name -contains 'execution_driver') { [string]$Outcome.lane_result.execution_driver } else { $null }
+        live_native_execution = if ($Outcome.lane_result -and $Outcome.lane_result.PSObject.Properties.Name -contains 'live_native_execution') { [bool]$Outcome.lane_result.live_native_execution } else { $false }
+        degraded = if ($Outcome.lane_result -and $Outcome.lane_result.PSObject.Properties.Name -contains 'degraded') { [bool]$Outcome.lane_result.degraded } else { $false }
     }
 }
 
@@ -531,6 +550,7 @@ foreach ($topologyWave in @($executionTopology.waves)) {
                         $laneRuntime = New-VibeDelegatedLaneSpec `
                             -SessionRoot $sessionRoot `
                             -RunId $RunId `
+                            -Mode $Mode `
                             -HierarchyState $hierarchyState `
                             -RequirementPath $requirementPath `
                             -PlanPath $planPath `
@@ -564,6 +584,7 @@ foreach ($topologyWave in @($executionTopology.waves)) {
                             $laneRuntime = New-VibeDelegatedLaneSpec `
                                 -SessionRoot $sessionRoot `
                                 -RunId $RunId `
+                                -Mode $Mode `
                                 -HierarchyState $hierarchyState `
                                 -RequirementPath $requirementPath `
                                 -PlanPath $planPath `
@@ -580,7 +601,12 @@ foreach ($topologyWave in @($executionTopology.waves)) {
                                 -RepoRoot $runtime.repo_root `
                                 -SessionRoot $sessionRoot `
                                 -Tokens $tokens `
-                                -DefaultTimeoutSeconds ([int]$policy.scheduler.default_timeout_seconds)
+                                -DefaultTimeoutSeconds ([int]$policy.scheduler.default_timeout_seconds) `
+                                -Mode $Mode `
+                                -RequirementPath $requirementPath `
+                                -PlanPath $planPath `
+                                -HierarchyState $hierarchyState `
+                                -RunId $RunId
                         }
                         $stepOutcomes += $outcome
                         $serialExecutionOrder += if ($outcome.lane_result) { [string]$outcome.lane_result.unit_id } else { [string]$laneEntry.source_unit_id }
@@ -593,6 +619,7 @@ foreach ($topologyWave in @($executionTopology.waves)) {
                     $laneRuntime = New-VibeDelegatedLaneSpec `
                         -SessionRoot $sessionRoot `
                         -RunId $RunId `
+                        -Mode $Mode `
                         -HierarchyState $hierarchyState `
                         -RequirementPath $requirementPath `
                         -PlanPath $planPath `
@@ -609,7 +636,12 @@ foreach ($topologyWave in @($executionTopology.waves)) {
                         -RepoRoot $runtime.repo_root `
                         -SessionRoot $sessionRoot `
                         -Tokens $tokens `
-                        -DefaultTimeoutSeconds ([int]$policy.scheduler.default_timeout_seconds)
+                        -DefaultTimeoutSeconds ([int]$policy.scheduler.default_timeout_seconds) `
+                        -Mode $Mode `
+                        -RequirementPath $requirementPath `
+                        -PlanPath $planPath `
+                        -HierarchyState $hierarchyState `
+                        -RunId $RunId
                 }
                 $stepOutcomes += $outcome
                 $serialExecutionOrder += if ($outcome.lane_result) { [string]$outcome.lane_result.unit_id } else { [string]$laneEntry.source_unit_id }
@@ -652,6 +684,9 @@ foreach ($topologyWave in @($executionTopology.waves)) {
                     skill_id = [string]$unitReceipt.skill_id
                     result_path = [string]$unitReceipt.result_path
                     verification_passed = [bool]$unitReceipt.verification_passed
+                    execution_driver = [string]$unitReceipt.execution_driver
+                    live_native_execution = [bool]$unitReceipt.live_native_execution
+                    degraded = [bool]$unitReceipt.degraded
                     lane_receipt_path = if ($unitReceipt.lane_receipt_path) { [string]$unitReceipt.lane_receipt_path } else { $null }
                 }
             }
@@ -691,6 +726,10 @@ $effectiveUnitExecution = if ($parallelUnitsExecutedCount -gt 0 -and ($executedU
 }
 
 $baseStatus = if ($failedUnitCount -eq 0 -and $executedUnitCount -ge [int]$profile.expected_minimum_units) { 'completed' } elseif ($executedUnitCount -eq 0) { 'failed' } else { 'completed_with_failures' }
+$liveSpecialistUnits = @($executedSpecialistUnits | Where-Object { [bool]$_.live_native_execution })
+$degradedSpecialistUnits = @($executedSpecialistUnits | Where-Object { [bool]$_.degraded })
+$totalSpecialistDispatchOutcomeCount = @($executedSpecialistUnits).Count
+$effectiveSpecialistExecutionStatus = if (@($liveSpecialistUnits).Count -gt 0) { 'live_native_executed' } elseif (@($degradedSpecialistUnits).Count -gt 0) { 'explicitly_degraded' } else { 'none' }
 $executionManifest = [pscustomobject]@{
     stage = 'plan_execute'
     run_id = $RunId
@@ -766,12 +805,16 @@ $executionManifest = [pscustomobject]@{
         specialist_skills = @($specialistSkills)
         native_usage_required = [bool](@($specialistRecommendations | Where-Object { $_.native_usage_required }).Count -gt 0)
         execution_mode = if (@($approvedDispatch).Count -gt 0) { 'native_bounded_units' } else { [string]$executionTopology.specialist_execution_mode }
+        effective_execution_status = $effectiveSpecialistExecutionStatus
         dispatch_unit_count = [int]$planShadow.payload.specialist_dispatch_unit_count
         recommendations = @($specialistRecommendations)
         approved_dispatch_count = @($approvedDispatch).Count
         approved_dispatch = @($approvedDispatch)
-        executed_specialist_unit_count = @($executedSpecialistUnits).Count
-        executed_specialist_units = @($executedSpecialistUnits)
+        executed_specialist_unit_count = @($liveSpecialistUnits).Count
+        executed_specialist_units = @($liveSpecialistUnits)
+        degraded_specialist_unit_count = @($degradedSpecialistUnits).Count
+        degraded_specialist_units = @($degradedSpecialistUnits)
+        specialist_dispatch_outcomes = @($executedSpecialistUnits)
         local_suggestion_count = @($localSuggestions).Count
         local_specialist_suggestions = @($localSuggestions)
         escalation_required = [bool]$escalationRequired
@@ -803,7 +846,10 @@ $proofManifest = [pscustomobject]@{
     promotion_suitable = [string]$proofRegistry.promotion_suitability.runtime
     specialist_recommendation_count = @($specialistRecommendations).Count
     specialist_dispatch_unit_count = [int]$planShadow.payload.specialist_dispatch_unit_count
-    executed_specialist_unit_count = @($executedSpecialistUnits).Count
+    executed_specialist_unit_count = @($liveSpecialistUnits).Count
+    degraded_specialist_unit_count = @($degradedSpecialistUnits).Count
+    specialist_dispatch_outcome_count = $totalSpecialistDispatchOutcomeCount
+    specialist_execution_status = $effectiveSpecialistExecutionStatus
     delegated_lane_count = [int]$delegatedLaneCount
     review_receipt_count = [int]$reviewReceiptCount
     governance_scope = [string]$hierarchyState.governance_scope
@@ -827,7 +873,9 @@ $proofLines = @(
     ('- review_receipt_count: `{0}`' -f $reviewReceiptCount),
     ('- specialist_recommendation_count: `{0}`' -f @($specialistRecommendations).Count),
     ('- specialist_dispatch_unit_count: `{0}`' -f [int]$planShadow.payload.specialist_dispatch_unit_count),
-    ('- executed_specialist_unit_count: `{0}`' -f @($executedSpecialistUnits).Count),
+    ('- executed_specialist_unit_count: `{0}`' -f @($liveSpecialistUnits).Count),
+    ('- degraded_specialist_unit_count: `{0}`' -f @($degradedSpecialistUnits).Count),
+    ('- specialist_execution_status: `{0}`' -f $effectiveSpecialistExecutionStatus),
     ('- execution_manifest: `{0}`' -f $executionManifestPath),
     ('- execution_topology: `{0}`' -f $executionTopologyPath),
     ('- plan_shadow: `{0}`' -f $planShadow.path),
@@ -868,7 +916,10 @@ $receipt = [pscustomobject]@{
     review_receipt_count = [int]$reviewReceiptCount
     specialist_recommendation_count = @($specialistRecommendations).Count
     specialist_dispatch_unit_count = [int]$planShadow.payload.specialist_dispatch_unit_count
-    executed_specialist_unit_count = @($executedSpecialistUnits).Count
+    executed_specialist_unit_count = @($liveSpecialistUnits).Count
+    degraded_specialist_unit_count = @($degradedSpecialistUnits).Count
+    specialist_dispatch_outcome_count = $totalSpecialistDispatchOutcomeCount
+    specialist_execution_status = $effectiveSpecialistExecutionStatus
     specialist_skills = @($specialistSkills)
     local_specialist_suggestion_count = @($localSuggestions).Count
     escalation_required = [bool]$escalationRequired

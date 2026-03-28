@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
+import stat
 import subprocess
 import tempfile
 import unittest
@@ -40,6 +42,7 @@ def run_runtime(
     inherited_requirement_doc_path: Path | None = None,
     inherited_execution_plan_path: Path | None = None,
     approved_specialist_skill_ids: list[str] | None = None,
+    extra_env: dict[str, str] | None = None,
 ) -> dict[str, object]:
     shell = resolve_powershell()
     if shell is None:
@@ -95,6 +98,7 @@ def run_runtime(
         capture_output=True,
         text=True,
         check=True,
+        env={**os.environ, **(extra_env or {})},
     )
     stdout = completed.stdout.strip()
     if stdout in ("", "null"):
@@ -122,6 +126,57 @@ def collect_wave_units(execution_manifest: dict[str, object]) -> list[dict[str, 
 
 def load_unit_result(unit: dict[str, object]) -> dict[str, object]:
     return load_json(unit["result_path"])
+
+
+def create_fake_codex_command(directory: Path) -> Path:
+    suffix = ".cmd" if os.name == "nt" else ""
+    command_path = directory / f"codex{suffix}"
+    if os.name == "nt":
+        command_path.write_text(
+            "@echo off\r\n"
+            "setlocal EnableDelayedExpansion\r\n"
+            "set OUT=\r\n"
+            ":loop\r\n"
+            "if \"%~1\"==\"\" goto done\r\n"
+            "if \"%~1\"==\"-o\" (\r\n"
+            "  set OUT=%~2\r\n"
+            "  shift\r\n"
+            "  shift\r\n"
+            "  goto loop\r\n"
+            ")\r\n"
+            "shift\r\n"
+            "goto loop\r\n"
+            ":done\r\n"
+            "if \"%OUT%\"==\"\" exit /b 2\r\n"
+            "> \"%OUT%\" echo {\"status\":\"completed\",\"summary\":\"fake codex specialist executed\",\"verification_notes\":[\"fake native specialist executed\"],\"changed_files\":[],\"bounded_output_notes\":[\"fake codex adapter\"]}\r\n"
+            "echo fake codex ok\r\n"
+            "exit /b 0\r\n",
+            encoding="utf-8",
+        )
+    else:
+        command_path.write_text(
+            "#!/usr/bin/env sh\n"
+            "OUT=''\n"
+            "while [ \"$#\" -gt 0 ]; do\n"
+            "  case \"$1\" in\n"
+            "    -o)\n"
+            "      OUT=\"$2\"\n"
+            "      shift 2\n"
+            "      ;;\n"
+            "    *)\n"
+            "      shift\n"
+            "      ;;\n"
+            "  esac\n"
+            "done\n"
+            "if [ -z \"$OUT\" ]; then\n"
+            "  exit 2\n"
+            "fi\n"
+            "printf '%s' '{\"status\":\"completed\",\"summary\":\"fake codex specialist executed\",\"verification_notes\":[\"fake native specialist executed\"],\"changed_files\":[],\"bounded_output_notes\":[\"fake codex adapter\"]}' > \"$OUT\"\n"
+            "printf 'fake codex ok\\n'\n",
+            encoding="utf-8",
+        )
+        command_path.chmod(command_path.stat().st_mode | stat.S_IXUSR)
+    return command_path
 
 
 class NativeExecutionTopologyTests(unittest.TestCase):
@@ -156,11 +211,17 @@ class NativeExecutionTopologyTests(unittest.TestCase):
             for unit in executed_units:
                 with self.subTest(unit_id=unit.get("unit_id", "")):
                     result = load_unit_result(unit)
-                    self.assertEqual("completed", result["status"])
                     self.assertEqual(0, int(result["exit_code"]))
-                    self.assertTrue(bool(result["verification_passed"]))
                     self.assertTrue(Path(result["stdout_path"]).exists())
                     self.assertTrue(Path(result["stderr_path"]).exists())
+                    if result["kind"] == "specialist_dispatch":
+                        self.assertEqual("degraded_non_authoritative", result["status"])
+                        self.assertFalse(bool(result["verification_passed"]))
+                        self.assertTrue(bool(result["degraded"]))
+                        self.assertFalse(bool(result["live_native_execution"]))
+                    else:
+                        self.assertEqual("completed", result["status"])
+                        self.assertTrue(bool(result["verification_passed"]))
 
             serial_order = list(topology.get("serial_execution_order") or [])
             self.assertEqual(
@@ -253,20 +314,78 @@ class NativeExecutionTopologyTests(unittest.TestCase):
             self.assertIn("specialist_accounting", execution_manifest)
             specialist_accounting = execution_manifest["specialist_accounting"]
             self.assertEqual("native_bounded_units", specialist_accounting["execution_mode"])
+            self.assertEqual("explicitly_degraded", specialist_accounting["effective_execution_status"])
+            self.assertEqual(0, int(specialist_accounting["executed_specialist_unit_count"]))
+            self.assertGreaterEqual(int(specialist_accounting["degraded_specialist_unit_count"]), 1)
+            self.assertEqual("completed_with_failures", execution_manifest["status"])
+            self.assertGreaterEqual(int(execution_manifest["failed_unit_count"]), 1)
+
+            degraded_units = list(specialist_accounting["degraded_specialist_units"])
+            self.assertGreaterEqual(len(degraded_units), 1)
+            for unit in degraded_units:
+                with self.subTest(unit_id=unit.get("unit_id", "")):
+                    self.assertFalse(bool(unit["verification_passed"]))
+                    self.assertTrue(bool(unit["degraded"]))
+                    self.assertFalse(bool(unit["live_native_execution"]))
+                    self.assertTrue(Path(unit["result_path"]).exists())
+                    self.assertIn("skill_id", unit)
+                    self.assertNotEqual("", str(unit["skill_id"]).strip())
+                    result = load_json(unit["result_path"])
+                    self.assertEqual("degraded_non_authoritative", result["status"])
+                    self.assertEqual(0, int(result["exit_code"]))
+                    self.assertFalse(bool(result["verification_passed"]))
+                    self.assertEqual("degraded_specialist_contract_receipt", result["execution_driver"])
+                    self.assertTrue(bool(result["degraded"]))
+                    self.assertFalse(bool(result["live_native_execution"]))
+                    self.assertTrue(Path(result["stdout_path"]).exists())
+                    self.assertTrue(Path(result["stderr_path"]).exists())
+
+    def test_approved_specialist_dispatch_can_execute_live_native_lane_when_adapter_enabled(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            fake_codex = create_fake_codex_command(temp_path)
+            payload = run_runtime(
+                task="I have a failing test and stack trace. Debug systematically and execute specialist workflow.",
+                artifact_root=temp_path,
+                governance_scope="root",
+                extra_env={
+                    "VGO_ENABLE_NATIVE_SPECIALIST_EXECUTION": "1",
+                    "VGO_DISABLE_NATIVE_SPECIALIST_EXECUTION": "0",
+                    "VGO_CODEX_EXECUTABLE": str(fake_codex),
+                },
+            )
+            summary = payload["summary"]
+            execution_manifest = load_json(summary["artifacts"]["execution_manifest"])
+
+            specialist_accounting = execution_manifest["specialist_accounting"]
+            self.assertEqual("native_bounded_units", specialist_accounting["execution_mode"])
+            self.assertEqual("live_native_executed", specialist_accounting["effective_execution_status"])
             self.assertGreaterEqual(int(specialist_accounting["executed_specialist_unit_count"]), 1)
+            self.assertEqual(0, int(specialist_accounting["degraded_specialist_unit_count"]))
+            self.assertEqual("completed", execution_manifest["status"])
 
             executed_units = list(specialist_accounting["executed_specialist_units"])
             self.assertGreaterEqual(len(executed_units), 1)
             for unit in executed_units:
                 with self.subTest(unit_id=unit.get("unit_id", "")):
                     self.assertTrue(bool(unit["verification_passed"]))
+                    self.assertFalse(bool(unit["degraded"]))
+                    self.assertTrue(bool(unit["live_native_execution"]))
+                    self.assertEqual("codex_exec_native_specialist", unit["execution_driver"])
                     self.assertTrue(Path(unit["result_path"]).exists())
-                    self.assertIn("skill_id", unit)
-                    self.assertNotEqual("", str(unit["skill_id"]).strip())
                     result = load_json(unit["result_path"])
                     self.assertEqual("completed", result["status"])
                     self.assertEqual(0, int(result["exit_code"]))
                     self.assertTrue(bool(result["verification_passed"]))
+                    self.assertTrue(bool(result["live_native_execution"]))
+                    self.assertFalse(bool(result["degraded"]))
+                    self.assertEqual("codex_exec_native_specialist", result["execution_driver"])
+                    self.assertEqual("codex", result["host_adapter_id"])
+                    self.assertTrue(Path(result["response_json_path"]).exists())
+                    self.assertTrue(Path(result["prompt_path"]).exists())
+                    self.assertTrue(Path(result["schema_path"]).exists())
+                    self.assertTrue(Path(result["git_status_before_path"]).exists())
+                    self.assertTrue(Path(result["git_status_after_path"]).exists())
                     self.assertTrue(Path(result["stdout_path"]).exists())
                     self.assertTrue(Path(result["stderr_path"]).exists())
 
@@ -324,13 +443,18 @@ class NativeExecutionTopologyTests(unittest.TestCase):
                 int(specialist_accounting["executed_specialist_unit_count"]),
                 int(specialist_accounting["approved_dispatch_count"]),
             )
+            self.assertGreaterEqual(int(specialist_accounting["degraded_specialist_unit_count"]), 0)
 
-            executed_specialist_units = list(specialist_accounting["executed_specialist_units"])
-            for unit in executed_specialist_units:
+            specialist_outcomes = list(specialist_accounting["specialist_dispatch_outcomes"])
+            for unit in specialist_outcomes:
                 with self.subTest(unit_id=unit.get("unit_id", "")):
                     self.assertIn(str(unit["skill_id"]), approved_child_ids)
-                    self.assertTrue(bool(unit["verification_passed"]))
                     self.assertTrue(Path(unit["result_path"]).exists())
+                    result = load_json(unit["result_path"])
+                    self.assertIn(
+                        str(result["status"]),
+                        {"completed", "degraded_non_authoritative"},
+                    )
 
             escalation_request_path = specialist_accounting.get("escalation_request_path")
             if escalation_request_path:
@@ -339,7 +463,7 @@ class NativeExecutionTopologyTests(unittest.TestCase):
 
             child_session_root = Path(child_payload["session_root"])
             specialist_result_files = list(child_session_root.glob("execution-results/*specialist*.json"))
-            self.assertLessEqual(len(specialist_result_files), len(executed_specialist_units))
+            self.assertLessEqual(len(specialist_result_files), len(specialist_outcomes))
 
 
 if __name__ == "__main__":
