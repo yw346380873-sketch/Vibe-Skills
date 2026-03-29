@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
   "release": {
-    "version": "2.3.52",
-    "updated": "2026-03-29",
+    "version": "2.3.53",
+    "updated": "2026-03-30",
     "channel": "stable",
-    "notes": "Adds stage-aware memory activation to the main vibe runtime, wires governed Serena/ruflo/Cognee backend adapters into observable session artifacts, and keeps memory-scope boundaries explicit."
+    "notes": "Closes governed specialist dispatch and custom admission, hardens Windows PowerShell host resolution plus managed-host install guarantees, and tightens cleanup-truth safety wording."
   },
   "source_of_truth": {
     "canonical_root": ".",

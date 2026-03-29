@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory)] [string]$TargetRoot,
     [Parameter(Mandatory)] [string]$HostId,
     [ValidateSet('minimal', 'full')] [string]$Profile = 'full',
+    [switch]$RequireClosedReady,
     [switch]$AllowExternalSkillFallback
 )
 
@@ -11,6 +12,43 @@ $ErrorActionPreference = 'Stop'
 
 . (Join-Path $RepoRoot 'scripts\common\vibe-governance-helpers.ps1')
 . (Join-Path $RepoRoot 'scripts\common\Resolve-VgoAdapter.ps1')
+
+function Get-VgoPreferredPythonCommand {
+    foreach ($candidate in @('python', 'python3', 'py')) {
+        $command = Get-Command $candidate -ErrorAction SilentlyContinue
+        if ($null -ne $command) {
+            return [string]$command.Source
+        }
+    }
+    return $null
+}
+
+$pythonInstaller = Join-Path $RepoRoot 'scripts\install\install_vgo_adapter.py'
+$pythonCommand = Get-VgoPreferredPythonCommand
+if ((Test-Path -LiteralPath $pythonInstaller) -and -not [string]::IsNullOrWhiteSpace($pythonCommand)) {
+    $cmd = @($pythonCommand)
+    if ([System.IO.Path]::GetFileName($pythonCommand).ToLowerInvariant() -eq 'py') {
+        $cmd += '-3'
+    }
+    $cmd += @(
+        $pythonInstaller,
+        '--repo-root', $RepoRoot,
+        '--target-root', $TargetRoot,
+        '--host', $HostId,
+        '--profile', $Profile
+    )
+    if ($RequireClosedReady) {
+        $cmd += '--require-closed-ready'
+    }
+    if ($AllowExternalSkillFallback) {
+        $cmd += '--allow-external-skill-fallback'
+    }
+    & $cmd[0] @($cmd[1..($cmd.Count - 1)])
+    if ($LASTEXITCODE -ne 0) {
+        throw ("Python adapter installer failed with exit code {0}." -f $LASTEXITCODE)
+    }
+    return
+}
 
 function Copy-DirContent {
     param(
@@ -38,6 +76,303 @@ function Restore-SkillEntryPointIfNeeded {
     }
 
     Move-Item -LiteralPath $mirrorPath -Destination $skillMd -Force
+}
+
+function Get-VgoPlatformTag {
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
+        return 'windows'
+    }
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)) {
+        return 'macos'
+    }
+    return 'linux'
+}
+
+function Merge-JsonObject {
+    param(
+        [Parameter(Mandatory)] [string]$Path,
+        [Parameter(Mandatory)] [hashtable]$Patch
+    )
+
+    $existing = @{}
+    if (Test-Path -LiteralPath $Path) {
+        try {
+            $parsed = Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json -AsHashtable
+            if ($null -ne $parsed) {
+                $existing = $parsed
+            }
+        } catch {
+            $existing = @{}
+        }
+    }
+
+    $merged = @{}
+    foreach ($key in $existing.Keys) {
+        $merged[$key] = $existing[$key]
+    }
+    foreach ($key in $Patch.Keys) {
+        $value = $Patch[$key]
+        if ($merged.ContainsKey($key) -and $merged[$key] -is [hashtable] -and $value -is [hashtable]) {
+            $next = @{}
+            foreach ($nestedKey in $merged[$key].Keys) {
+                $next[$nestedKey] = $merged[$key][$nestedKey]
+            }
+            foreach ($nestedKey in $value.Keys) {
+                $next[$nestedKey] = $value[$nestedKey]
+            }
+            $merged[$key] = $next
+        } else {
+            $merged[$key] = $value
+        }
+    }
+
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Path) | Out-Null
+    $merged | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $Path -Encoding UTF8
+}
+
+function Get-VgoHostBridgeCommandEnvName {
+    param([string]$HostId)
+
+    switch ([string]$HostId) {
+        'claude-code' { return 'VGO_CLAUDE_CODE_SPECIALIST_BRIDGE_COMMAND' }
+        'cursor' { return 'VGO_CURSOR_SPECIALIST_BRIDGE_COMMAND' }
+        'windsurf' { return 'VGO_WINDSURF_SPECIALIST_BRIDGE_COMMAND' }
+        'openclaw' { return 'VGO_OPENCLAW_SPECIALIST_BRIDGE_COMMAND' }
+        'opencode' { return 'VGO_OPENCODE_SPECIALIST_BRIDGE_COMMAND' }
+        default { return $null }
+    }
+}
+
+function Resolve-VgoHostBridgeCommand {
+    param([string]$HostId)
+
+    $envName = Get-VgoHostBridgeCommandEnvName -HostId $HostId
+    if (-not [string]::IsNullOrWhiteSpace($envName)) {
+        $envValue = [Environment]::GetEnvironmentVariable($envName)
+        if (-not [string]::IsNullOrWhiteSpace($envValue)) {
+            $command = Get-Command $envValue -ErrorAction SilentlyContinue
+            if ($null -ne $command) {
+                return [pscustomobject]@{
+                    command = [string]$command.Source
+                    source = "env:$envName"
+                    env_name = $envName
+                }
+            }
+            if (Test-Path -LiteralPath $envValue) {
+                return [pscustomobject]@{
+                    command = [System.IO.Path]::GetFullPath($envValue)
+                    source = "env:$envName"
+                    env_name = $envName
+                }
+            }
+        }
+    }
+
+    $candidates = switch ([string]$HostId) {
+        'claude-code' { @('claude', 'claude-code') }
+        'cursor' { @('cursor-agent', 'cursor') }
+        'windsurf' { @('windsurf', 'codeium') }
+        'openclaw' { @('openclaw') }
+        'opencode' { @('opencode') }
+        default { @() }
+    }
+    foreach ($candidate in $candidates) {
+        $command = Get-Command $candidate -ErrorAction SilentlyContinue
+        if ($null -ne $command) {
+            return [pscustomobject]@{
+                command = [string]$command.Source
+                source = "path:$candidate"
+                env_name = $envName
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        command = $null
+        source = $null
+        env_name = $envName
+    }
+}
+
+function New-VgoHostSpecialistWrapper {
+    param(
+        [Parameter(Mandatory)] [string]$TargetRoot,
+        [Parameter(Mandatory)] [string]$HostId,
+        [string]$BridgeCommand,
+        [string]$BridgeEnvName
+    )
+
+    $toolsRoot = Join-Path $TargetRoot '.vibeskills\bin'
+    New-Item -ItemType Directory -Force -Path $toolsRoot | Out-Null
+
+    $wrapperPy = Join-Path $toolsRoot ("{0}-specialist-wrapper.py" -f $HostId)
+    $embeddedCommand = if ([string]::IsNullOrWhiteSpace($BridgeCommand)) { '' } else { $BridgeCommand }
+    $pythonScript = @"
+#!/usr/bin/env python3
+import os
+import subprocess
+import sys
+
+HOST_ID = $(ConvertTo-Json $HostId -Compress)
+TARGET_COMMAND = $(ConvertTo-Json $embeddedCommand -Compress)
+BRIDGE_ENV_NAME = $(ConvertTo-Json $BridgeEnvName -Compress)
+
+def main() -> int:
+    command = TARGET_COMMAND or os.environ.get(BRIDGE_ENV_NAME or "", "").strip()
+    if not command:
+        sys.stderr.write(f"host specialist bridge command unavailable for {HOST_ID}\n")
+        return 3
+    return subprocess.run([command, *sys.argv[1:]], check=False).returncode
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+"@
+    Set-Content -LiteralPath $wrapperPy -Value $pythonScript -Encoding UTF8
+
+    $platformTag = Get-VgoPlatformTag
+    if ($platformTag -eq 'windows') {
+        $launcherPath = Join-Path $toolsRoot ("{0}-specialist-wrapper.cmd" -f $HostId)
+        $cmdScript = @"
+@echo off
+setlocal
+set SCRIPT_DIR=%~dp0
+if exist "%LocalAppData%\Programs\Python\Python311\python.exe" (
+  set PY_CMD=%LocalAppData%\Programs\Python\Python311\python.exe
+) else if exist "%ProgramFiles%\Python311\python.exe" (
+  set PY_CMD=%ProgramFiles%\Python311\python.exe
+) else (
+  set PY_CMD=py -3
+)
+%PY_CMD% "%SCRIPT_DIR%$(Split-Path -Leaf $wrapperPy)" %*
+"@
+        Set-Content -LiteralPath $launcherPath -Value $cmdScript -Encoding ASCII
+    } else {
+        $launcherPath = Join-Path $toolsRoot ("{0}-specialist-wrapper.sh" -f $HostId)
+        $shScript = @"
+#!/usr/bin/env sh
+set -eu
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if command -v python3 >/dev/null 2>&1; then
+  PYTHON_BIN=python3
+elif command -v python >/dev/null 2>&1; then
+  PYTHON_BIN=python
+else
+  echo 'python runtime unavailable for host specialist wrapper' >&2
+  exit 127
+fi
+exec "$PYTHON_BIN" "$SCRIPT_DIR/$(Split-Path -Leaf $wrapperPy)" "$@"
+"@
+        Set-Content -LiteralPath $launcherPath -Value $shScript -Encoding UTF8
+        try {
+            chmod +x $launcherPath
+            chmod +x $wrapperPy
+        } catch {
+        }
+    }
+
+    return [pscustomobject]@{
+        platform = $platformTag
+        launcher_path = [System.IO.Path]::GetFullPath($launcherPath)
+        script_path = [System.IO.Path]::GetFullPath($wrapperPy)
+        ready = -not [string]::IsNullOrWhiteSpace($BridgeCommand)
+        bridge_command = $BridgeCommand
+    }
+}
+
+function Set-VgoManagedHostSettings {
+    param(
+        [Parameter(Mandatory)] [string]$TargetRoot,
+        [Parameter(Mandatory)] [string]$HostId,
+        [Parameter(Mandatory)] [pscustomobject]$WrapperInfo
+    )
+
+    $materialized = New-Object System.Collections.Generic.List[string]
+    if ($HostId -in @('cursor', 'claude-code')) {
+        $settingsPath = Join-Path $TargetRoot 'settings.json'
+        Merge-JsonObject -Path $settingsPath -Patch @{
+            vibeskills = @{
+                host_id = $HostId
+                managed = $true
+                commands_root = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'commands'))
+                specialist_wrapper = [string]$WrapperInfo.launcher_path
+            }
+        }
+        $materialized.Add([System.IO.Path]::GetFullPath($settingsPath)) | Out-Null
+    } elseif ($HostId -eq 'opencode') {
+        $settingsPath = Join-Path $TargetRoot 'opencode.json'
+        Merge-JsonObject -Path $settingsPath -Patch @{
+            vibeskills = @{
+                host_id = $HostId
+                managed = $true
+                commands_root = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'commands'))
+                command_root_compat = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'command'))
+                agents_root = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'agents'))
+                agent_root_compat = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'agent'))
+                specialist_wrapper = [string]$WrapperInfo.launcher_path
+            }
+        }
+        $materialized.Add([System.IO.Path]::GetFullPath($settingsPath)) | Out-Null
+    } elseif ($HostId -in @('openclaw', 'windsurf')) {
+        $settingsPath = Join-Path $TargetRoot '.vibeskills\host-settings.json'
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $settingsPath) | Out-Null
+        @{
+            host_id = $HostId
+            managed = $true
+            commands_root = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'commands'))
+            workflow_root = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'global_workflows'))
+            mcp_config = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'mcp_config.json'))
+            specialist_wrapper = [string]$WrapperInfo.launcher_path
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $settingsPath -Encoding UTF8
+        $materialized.Add([System.IO.Path]::GetFullPath($settingsPath)) | Out-Null
+    }
+
+    return @($materialized)
+}
+
+function Test-VgoClosedReadyRequiredForAdapter {
+    param([psobject]$Adapter)
+
+    return ([string]$Adapter.install_mode).ToLowerInvariant() -ne 'governed'
+}
+
+function Write-VgoHostClosure {
+    param(
+        [Parameter(Mandatory)] [string]$TargetRoot,
+        [Parameter(Mandatory)] [psobject]$Adapter
+    )
+
+    $bridgeResolution = Resolve-VgoHostBridgeCommand -HostId ([string]$Adapter.id)
+    $wrapperInfo = New-VgoHostSpecialistWrapper -TargetRoot $TargetRoot -HostId ([string]$Adapter.id) -BridgeCommand ([string]$bridgeResolution.command) -BridgeEnvName ([string]$bridgeResolution.env_name)
+    $settingsMaterialized = Set-VgoManagedHostSettings -TargetRoot $TargetRoot -HostId ([string]$Adapter.id) -WrapperInfo $wrapperInfo
+    $commandsRoot = Join-Path $TargetRoot 'commands'
+    $closureState = if ($wrapperInfo.ready) { 'closed_ready' } else { 'configured_offline_unready' }
+    $closure = [ordered]@{
+        schema_version = 1
+        host_id = [string]$Adapter.id
+        platform = Get-VgoPlatformTag
+        target_root = [System.IO.Path]::GetFullPath($TargetRoot)
+        install_mode = [string]$Adapter.install_mode
+        commands_root = [System.IO.Path]::GetFullPath($commandsRoot)
+        global_workflows_root = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'global_workflows'))
+        mcp_config_path = [System.IO.Path]::GetFullPath((Join-Path $TargetRoot 'mcp_config.json'))
+        host_closure_state = $closureState
+        commands_materialized = (Test-Path -LiteralPath $commandsRoot -PathType Container)
+        settings_materialized = @($settingsMaterialized)
+        specialist_wrapper = [ordered]@{
+            launcher_path = [string]$wrapperInfo.launcher_path
+            script_path = [string]$wrapperInfo.script_path
+            ready = [bool]$wrapperInfo.ready
+            bridge_command = [string]$bridgeResolution.command
+            bridge_source = [string]$bridgeResolution.source
+        }
+    }
+    $closurePath = Join-Path $TargetRoot '.vibeskills\host-closure.json'
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $closurePath) | Out-Null
+    $closure | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $closurePath -Encoding UTF8
+    return [pscustomobject]@{
+        path = [System.IO.Path]::GetFullPath($closurePath)
+        data = [pscustomobject]$closure
+    }
 }
 
 function Ensure-SkillPresent {
@@ -273,9 +608,21 @@ switch ([string]$adapter.install_mode) {
     default { throw "Unsupported adapter install mode: $($adapter.install_mode)" }
 }
 
+$closureReceipt = Write-VgoHostClosure -TargetRoot $TargetRoot -Adapter $adapter
+$requireClosedReadyEffective = [bool]($RequireClosedReady -and (Test-VgoClosedReadyRequiredForAdapter -Adapter $adapter))
+if ($requireClosedReadyEffective -and [string]$closureReceipt.data.host_closure_state -ne 'closed_ready') {
+    throw ("Host closure for '{0}' is not closed_ready (got '{1}'). Configure the host specialist bridge command first, then retry install." -f [string]$adapter.id, [string]$closureReceipt.data.host_closure_state)
+}
+
 [pscustomobject]@{
     host_id = [string]$adapter.id
     install_mode = [string]$adapter.install_mode
     target_root = [System.IO.Path]::GetFullPath($TargetRoot)
     external_fallback_used = @($result.external_fallback_used)
+    host_closure_path = [string]$closureReceipt.path
+    host_closure_state = [string]$closureReceipt.data.host_closure_state
+    settings_materialized = @($closureReceipt.data.settings_materialized)
+    specialist_wrapper_ready = [bool]$closureReceipt.data.specialist_wrapper.ready
+    require_closed_ready_requested = [bool]$RequireClosedReady
+    require_closed_ready_effective = $requireClosedReadyEffective
 } | ConvertTo-Json -Depth 10

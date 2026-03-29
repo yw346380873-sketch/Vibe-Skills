@@ -547,6 +547,16 @@ $packet = [pscustomobject]@{
         unattended = [bool]$unattended
         route_script_path = $routerScriptPath
     }
+    host_adapter = [pscustomobject]@{
+        requested_host_id = if ($runtime.host_adapter -and -not [string]::IsNullOrWhiteSpace([string]$runtime.host_adapter.requested_id)) { [string]$runtime.host_adapter.requested_id } else { $routerHostId }
+        effective_host_id = if ($runtime.host_adapter -and -not [string]::IsNullOrWhiteSpace([string]$runtime.host_adapter.id)) { [string]$runtime.host_adapter.id } else { $routerHostId }
+        status = if ($runtime.host_adapter -and $runtime.host_adapter.PSObject.Properties.Name -contains 'status') { [string]$runtime.host_adapter.status } else { $null }
+        install_mode = if ($runtime.host_adapter -and $runtime.host_adapter.PSObject.Properties.Name -contains 'install_mode') { [string]$runtime.host_adapter.install_mode } else { $null }
+        check_mode = if ($runtime.host_adapter -and $runtime.host_adapter.PSObject.Properties.Name -contains 'check_mode') { [string]$runtime.host_adapter.check_mode } else { $null }
+        bootstrap_mode = if ($runtime.host_adapter -and $runtime.host_adapter.PSObject.Properties.Name -contains 'bootstrap_mode') { [string]$runtime.host_adapter.bootstrap_mode } else { $null }
+        target_root = $routerTargetRoot
+        closure_path = if ($runtime.host_closure) { [string]$runtime.host_closure.path } else { $null }
+    }
     route_snapshot = [pscustomobject]@{
         selected_pack = if ($routeResult.selected) { [string]$routeResult.selected.pack_id } else { $null }
         selected_skill = $routerSelectedSkill

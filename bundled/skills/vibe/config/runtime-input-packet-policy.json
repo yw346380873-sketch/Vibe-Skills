@@ -10,6 +10,7 @@
   "required_fields": [
     "run_id",
     "governance_scope",
+    "host_adapter",
     "hierarchy",
     "task",
     "runtime_mode",

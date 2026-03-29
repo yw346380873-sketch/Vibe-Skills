@@ -193,7 +193,22 @@ switch ([string]$Adapter.bootstrap_mode) {
 
 Write-Host ''
 Write-Host 'One-shot setup completed.' -ForegroundColor Green
-Write-Host ('- Re-run deep doctor anytime with: pwsh -File "{0}" -Profile {1} -HostId {2} -TargetRoot "{3}" -Deep' -f $checkPath, $Profile, $HostId, $TargetRoot)
+$checkShellPath = Get-VgoPowerShellCommand
+$checkShellLeaf = [System.IO.Path]::GetFileName($checkShellPath).ToLowerInvariant()
+$checkCommandParts = @($checkShellLeaf, '-NoProfile')
+if ($checkShellLeaf -like 'powershell*') {
+    $checkCommandParts += @('-ExecutionPolicy', 'Bypass')
+}
+$checkCommandParts += @('-File', $checkPath, '-Profile', $Profile, '-HostId', $HostId, '-TargetRoot', $TargetRoot, '-Deep')
+$checkCommand = ($checkCommandParts | ForEach-Object {
+    $text = [string]$_
+    if ($text -match '\s') {
+        '"' + ($text -replace '"', '\"') + '"'
+    } else {
+        $text
+    }
+}) -join ' '
+Write-Host ('- Re-run deep doctor anytime with: {0}' -f $checkCommand)
 if ($Adapter.bootstrap_mode -eq 'governed') {
     Write-Host ('- MCP active file: {0}' -f (Join-Path $TargetRoot 'mcp\servers.active.json'))
 }

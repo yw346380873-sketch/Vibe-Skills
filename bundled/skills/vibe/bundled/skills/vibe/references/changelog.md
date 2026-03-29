@@ -1,5 +1,13 @@
 # VCO Changelog
 
+## v2.3.53 (2026-03-30)
+
+- Closed governed specialist dispatch with explicit custom-admission handling, and restored delegated-lane payload plus host-adapter metadata continuity across router admission, runtime packets, and specialist execution closure gates.
+- Hardened Windows PowerShell host resolution for install, check, and bootstrap surfaces, and tightened managed-host install guarantees across the current preview / runtime-core adapter lanes.
+- Tightened cleanup-truth wording and policy so public release claims and runtime cleanup semantics stay aligned with what the governed runtime can actually prove.
+- Detailed release notes: `docs/releases/v2.3.53.md`.
+
+
 ## v2.3.52 (2026-03-29)
 
 - Landed stage-aware memory activation inside the standard six-stage `vibe` runtime, including per-run memory activation reports and bounded context injection into governed artifacts.

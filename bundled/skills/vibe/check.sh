@@ -37,6 +37,53 @@ pick_python_for_adapter() {
   return 1
 }
 
+pick_powershell() {
+  local candidate resolved=""
+  for candidate in pwsh pwsh.exe powershell powershell.exe; do
+    if resolved="$(command -v "${candidate}" 2>/dev/null)"; then
+      if [[ -n "${resolved}" ]]; then
+        printf '%s' "${resolved}"
+        return 0
+      fi
+    fi
+  done
+  return 1
+}
+
+run_powershell_command() {
+  local command_text="$1"
+  shift
+  local shell_path=""
+  shell_path="$(pick_powershell || true)"
+  [[ -n "${shell_path}" ]] || return 127
+
+  local leaf="${shell_path##*/}"
+  leaf="$(printf '%s' "${leaf}" | tr '[:upper:]' '[:lower:]')"
+  local cmd=("${shell_path}" "-NoProfile")
+  if [[ "${leaf}" == "powershell" || "${leaf}" == "powershell.exe" ]]; then
+    cmd+=("-ExecutionPolicy" "Bypass")
+  fi
+  cmd+=("-Command" "${command_text}")
+  "${cmd[@]}" "$@"
+}
+
+run_powershell_file() {
+  local script_path="$1"
+  shift
+  local shell_path=""
+  shell_path="$(pick_powershell || true)"
+  [[ -n "${shell_path}" ]] || return 127
+
+  local leaf="${shell_path##*/}"
+  leaf="$(printf '%s' "${leaf}" | tr '[:upper:]' '[:lower:]')"
+  local cmd=("${shell_path}" "-NoProfile")
+  if [[ "${leaf}" == "powershell" || "${leaf}" == "powershell.exe" ]]; then
+    cmd+=("-ExecutionPolicy" "Bypass")
+  fi
+  cmd+=("-File" "${script_path}")
+  "${cmd[@]}" "$@"
+}
+
 adapter_query_for_host() {
   local host_id="$1"
   local property="$2"
@@ -404,8 +451,8 @@ else:
     print(value)
 PY
     return $?
-  elif command -v pwsh >/dev/null 2>&1; then
-    pwsh -NoProfile -Command '
+  elif pick_powershell >/dev/null 2>&1; then
+    run_powershell_command '
 param([string]$Path,[string]$Expr)
 $raw = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
 $value = $raw | ConvertFrom-Json
@@ -541,8 +588,8 @@ validate_runtime_receipt() {
       warn_note "vibe runtime freshness receipt unavailable because check.sh is not running from the canonical repo root."
       return
     fi
-    if ! command -v pwsh >/dev/null 2>&1; then
-      warn_note "vibe runtime freshness receipt unavailable because pwsh is not installed in this shell environment."
+    if ! pick_powershell >/dev/null 2>&1; then
+      warn_note "vibe runtime freshness receipt unavailable because pwsh is not installed and no compatible PowerShell host is available in this shell environment."
       return
     fi
     echo "[FAIL] vibe runtime freshness receipt -> $receipt_path"
@@ -653,11 +700,11 @@ run_runtime_freshness_gate() {
     echo "[OK] vibe installed runtime freshness gate"
     PASS=$((PASS+1))
   elif [[ $? -eq 127 ]]; then
-    if ! command -v pwsh >/dev/null 2>&1; then
-      warn_note 'runtime freshness gate skipped: neither Python runtime-neutral gate nor pwsh fallback is available.'
+    if ! pick_powershell >/dev/null 2>&1; then
+      warn_note 'runtime freshness gate skipped: neither Python runtime-neutral gate nor a PowerShell fallback is available.'
       return
     fi
-    if pwsh -NoProfile -File "$gate_path" -TargetRoot "$TARGET_ROOT"; then
+    if run_powershell_file "$gate_path" -TargetRoot "$TARGET_ROOT"; then
       echo "[OK] vibe installed runtime freshness gate"
       PASS=$((PASS+1))
     else
@@ -697,11 +744,11 @@ run_runtime_coherence_gate() {
     echo "[OK] vibe release/install/runtime coherence gate"
     PASS=$((PASS+1))
   elif [[ $? -eq 127 ]]; then
-    if ! command -v pwsh >/dev/null 2>&1; then
-      warn_note 'runtime coherence gate skipped: neither Python runtime-neutral gate nor pwsh fallback is available.'
+    if ! pick_powershell >/dev/null 2>&1; then
+      warn_note 'runtime coherence gate skipped: neither Python runtime-neutral gate nor a PowerShell fallback is available.'
       return
     fi
-    if pwsh -NoProfile -File "$gate_path" -TargetRoot "$TARGET_ROOT"; then
+    if run_powershell_file "$gate_path" -TargetRoot "$TARGET_ROOT"; then
       echo "[OK] vibe release/install/runtime coherence gate"
       PASS=$((PASS+1))
     else
@@ -741,6 +788,8 @@ fi
 if [[ "${ADAPTER_CHECK_MODE}" == "preview-guidance" ]]; then
   if [[ "${HOST_ID}" == "opencode" ]]; then
     warn_note "opencode preview keeps the real opencode.json host-managed; only skills, commands, agents, and an example config scaffold are verified"
+  elif [[ "${HOST_ID}" == "cursor" ]]; then
+    info_note "cursor preview now materializes managed commands, host-closure state, and a minimal settings surface; deeper host-native workflow remains preview-scoped"
   else
     info_note "${HOST_ID} preview hook/settings scaffold remains intentionally unavailable while the author works through compatibility issues; this is a current product boundary, not an install failure"
   fi
@@ -751,6 +800,22 @@ if [[ "${ADAPTER_CHECK_MODE}" == "runtime-core" ]]; then
   fi
   if [[ -f "${SCRIPT_DIR}/mcp/servers.template.json" ]]; then
     check_path "mcp_config.json" "${TARGET_ROOT}/mcp_config.json"
+  fi
+fi
+check_path "host closure manifest" "${TARGET_ROOT}/.vibeskills/host-closure.json"
+if [[ -f "${TARGET_ROOT}/.vibeskills/host-closure.json" ]]; then
+  closure_state="$(json_query_scalar_from_file "${TARGET_ROOT}/.vibeskills/host-closure.json" 'host_closure_state' 2>/dev/null || true)"
+  if [[ -n "${closure_state}" ]]; then
+    if [[ "${closure_state}" == "closed_ready" ]]; then
+      echo "[OK] host closure state -> ${closure_state}"
+      PASS=$((PASS+1))
+    else
+      warn_note "host closure state -> ${closure_state}"
+    fi
+  fi
+  wrapper_launcher="$(json_query_scalar_from_file "${TARGET_ROOT}/.vibeskills/host-closure.json" 'specialist_wrapper.launcher_path' 2>/dev/null || true)"
+  if [[ -n "${wrapper_launcher}" ]]; then
+    check_path "specialist wrapper launcher" "${wrapper_launcher}"
   fi
 fi
 if [[ "${ADAPTER_CHECK_MODE}" == "governed" ]]; then
@@ -851,10 +916,10 @@ if [[ "${DEEP}" == "true" ]]; then
       echo "[OK] vibe bootstrap doctor gate"
       PASS=$((PASS+1))
     elif [[ $? -eq 127 ]]; then
-      if ! command -v pwsh >/dev/null 2>&1; then
-        echo "[WARN] vibe bootstrap doctor gate skipped because neither the Python runtime-neutral doctor nor pwsh is available in this shell environment."
+      if ! pick_powershell >/dev/null 2>&1; then
+        echo "[WARN] vibe bootstrap doctor gate skipped because neither the Python runtime-neutral doctor nor a PowerShell host is available in this shell environment."
         WARN=$((WARN+1))
-      elif pwsh -NoProfile -File "${doctor_path}" -TargetRoot "${TARGET_ROOT}" -WriteArtifacts; then
+      elif run_powershell_file "${doctor_path}" -TargetRoot "${TARGET_ROOT}" -WriteArtifacts; then
         echo "[OK] vibe bootstrap doctor gate"
         PASS=$((PASS+1))
       else

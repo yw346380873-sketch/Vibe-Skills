@@ -501,6 +501,8 @@ function Invoke-AdapterSpecificChecks {
   if ([string]$Adapter.check_mode -eq 'preview-guidance') {
     if ([string]$Adapter.id -eq 'opencode') {
       Warn-Note -Message 'opencode preview keeps the real opencode.json host-managed; only skills, commands, agents, and an example config scaffold are verified'
+    } elseif ([string]$Adapter.id -eq 'cursor') {
+      Write-Host '[INFO] cursor preview now materializes managed commands, host-closure state, and a minimal settings surface; deeper host-native workflow remains preview-scoped' -ForegroundColor Cyan
     } else {
       Write-Host ("[INFO] {0} preview hook/settings scaffold remains intentionally unavailable while the author works through compatibility issues; this is a current product boundary, not an install failure" -f $Adapter.id) -ForegroundColor Cyan
     }
@@ -520,6 +522,28 @@ function Invoke-AdapterSpecificChecks {
     Check-Path -Label "plugins manifest" -Path (Join-Path $TargetRoot 'config\plugins-manifest.codex.json')
     Check-Path -Label "rules/common" -Path (Join-Path $TargetRoot 'rules\common\agents.md')
     Check-Path -Label "mcp template" -Path (Join-Path $TargetRoot 'mcp\servers.template.json')
+  }
+
+  $hostClosurePath = Join-Path $TargetRoot '.vibeskills\host-closure.json'
+  Check-Path -Label "host closure manifest" -Path $hostClosurePath
+  if (Test-Path -LiteralPath $hostClosurePath) {
+    $hostClosure = Get-JsonObject -Path $hostClosurePath -Label 'host closure manifest'
+    if ($null -ne $hostClosure) {
+      $closureState = if ($hostClosure.PSObject.Properties.Name -contains 'host_closure_state') { [string]$hostClosure.host_closure_state } else { '' }
+      if (-not [string]::IsNullOrWhiteSpace($closureState)) {
+        if ($closureState -eq 'closed_ready') {
+          Check-Condition -Label 'host closure state' -Condition $true
+        } else {
+          Warn-Note -Message ("host closure state -> {0}" -f $closureState)
+        }
+      }
+    }
+    if ($null -ne $hostClosure -and $hostClosure.PSObject.Properties.Name -contains 'specialist_wrapper' -and $null -ne $hostClosure.specialist_wrapper) {
+      $launcherPath = if ($hostClosure.specialist_wrapper.PSObject.Properties.Name -contains 'launcher_path') { [string]$hostClosure.specialist_wrapper.launcher_path } else { '' }
+      if (-not [string]::IsNullOrWhiteSpace($launcherPath)) {
+        Check-Path -Label "specialist wrapper launcher" -Path $launcherPath
+      }
+    }
   }
 
   Check-Path -Label "upstream lock" -Path (Join-Path $TargetRoot 'config\upstream-lock.json')

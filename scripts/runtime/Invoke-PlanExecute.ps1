@@ -5,6 +5,7 @@ param(
     [string]$RequirementDocPath = '',
     [string]$ExecutionPlanPath = '',
     [string]$RuntimeInputPacketPath = '',
+    [string]$ExecutionMemoryContextPath = '',
     [string]$ArtifactRoot = '',
     [AllowEmptyString()] [string]$GovernanceScope = '',
     [AllowEmptyString()] [string]$RootRunId = '',
@@ -137,6 +138,13 @@ function Wait-VibeDelegatedLaneProcess {
     }
 
     $payload = $payloadText | ConvertFrom-Json
+    if (-not ($payload.PSObject.Properties.Name -contains 'lane_receipt_path')) {
+        $payloadPath = Join-Path ([string]($Handle.lane_root)) 'lane-payload.json'
+        if (-not (Test-Path -LiteralPath $payloadPath)) {
+            throw ("Delegated lane payload missing lane_receipt_path and no lane-payload.json exists for {0}" -f ([string]($Handle.lane_id)))
+        }
+        $payload = Get-Content -LiteralPath $payloadPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    }
     $laneReceipt = Get-Content -LiteralPath ([string]($payload.lane_receipt_path)) -Raw -Encoding UTF8 | ConvertFrom-Json
     $laneResult = if ($payload.lane_result_path -and (Test-Path -LiteralPath ([string]($payload.lane_result_path)))) {
         Get-Content -LiteralPath ([string]($payload.lane_result_path)) -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -1096,6 +1104,7 @@ $executionManifest = [pscustomobject]@{
     execution_plan_path = $planPath
     execution_topology_path = $executionTopologyPath
     runtime_input_packet_path = $runtimeInputPath
+    execution_memory_context_path = if ([string]::IsNullOrWhiteSpace($ExecutionMemoryContextPath)) { $null } else { $ExecutionMemoryContextPath }
     generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
     planned_wave_count = @($profile.waves).Count
     planned_unit_count = $plannedUnitCount
@@ -1124,6 +1133,8 @@ $executionManifest = [pscustomobject]@{
         runtime_selected_skill = if ($runtimeInputPacket) { [string]$runtimeInputPacket.authority_flags.explicit_runtime_skill } else { 'vibe' }
         skill_mismatch = if ($runtimeInputPacket) { [bool]$runtimeInputPacket.divergence_shadow.skill_mismatch } else { $false }
         confirm_required = if ($runtimeInputPacket) { [bool]$runtimeInputPacket.route_snapshot.confirm_required } else { $false }
+        requested_host_adapter_id = if ($runtimeInputPacket -and $runtimeInputPacket.PSObject.Properties.Name -contains 'host_adapter' -and $runtimeInputPacket.host_adapter) { [string]$runtimeInputPacket.host_adapter.requested_host_id } else { $null }
+        effective_host_adapter_id = if ($runtimeInputPacket -and $runtimeInputPacket.PSObject.Properties.Name -contains 'host_adapter' -and $runtimeInputPacket.host_adapter) { [string]$runtimeInputPacket.host_adapter.effective_host_id } else { $null }
     }
     execution_topology = [pscustomobject]@{
         path = $executionTopologyPath
@@ -1177,6 +1188,8 @@ $executionManifest = [pscustomobject]@{
         approved_dispatch = @($approvedDispatch)
         auto_approved_dispatch_count = @($autoApprovedDispatch).Count
         auto_approved_dispatch = @($autoApprovedDispatch)
+        requested_host_adapter_id = if ($runtimeInputPacket -and $runtimeInputPacket.PSObject.Properties.Name -contains 'host_adapter' -and $runtimeInputPacket.host_adapter) { [string]$runtimeInputPacket.host_adapter.requested_host_id } else { $null }
+        effective_host_adapter_id = if ($runtimeInputPacket -and $runtimeInputPacket.PSObject.Properties.Name -contains 'host_adapter' -and $runtimeInputPacket.host_adapter) { [string]$runtimeInputPacket.host_adapter.effective_host_id } else { $null }
         phase_binding_counts = [pscustomobject]@{
             pre_execution = @($approvedDispatch | Where-Object { [string]$_.dispatch_phase -eq 'pre_execution' }).Count
             in_execution = @($approvedDispatch | Where-Object { [string]$_.dispatch_phase -eq 'in_execution' }).Count
@@ -1297,6 +1310,7 @@ $receipt = [pscustomobject]@{
     requirement_doc_path = $requirementPath
     execution_plan_path = $planPath
     runtime_input_packet_path = $runtimeInputPath
+    execution_memory_context_path = if ([string]::IsNullOrWhiteSpace($ExecutionMemoryContextPath)) { $null } else { $ExecutionMemoryContextPath }
     plan_shadow_path = $planShadow.path
     execution_manifest_path = $executionManifestPath
     benchmark_proof_manifest_path = $proofManifestPath

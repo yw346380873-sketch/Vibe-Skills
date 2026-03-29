@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import os
+import stat
 import shutil
 import tempfile
 from pathlib import Path
@@ -26,6 +28,32 @@ OPTIONAL_WORKFLOW = [
     "receiving-code-review",
     "verification-before-completion",
 ]
+HOST_BRIDGE_COMMAND_CANDIDATES = {
+    "claude-code": ["claude", "claude-code"],
+    "cursor": ["cursor-agent", "cursor"],
+    "windsurf": ["windsurf", "codeium"],
+    "openclaw": ["openclaw"],
+    "opencode": ["opencode"],
+}
+HOST_BRIDGE_COMMAND_ENV = {
+    "claude-code": "VGO_CLAUDE_CODE_SPECIALIST_BRIDGE_COMMAND",
+    "cursor": "VGO_CURSOR_SPECIALIST_BRIDGE_COMMAND",
+    "windsurf": "VGO_WINDSURF_SPECIALIST_BRIDGE_COMMAND",
+    "openclaw": "VGO_OPENCLAW_SPECIALIST_BRIDGE_COMMAND",
+    "opencode": "VGO_OPENCODE_SPECIALIST_BRIDGE_COMMAND",
+}
+
+
+def detect_platform_tag() -> str:
+    if os.name == "nt":
+        return "windows"
+    if sys_platform().startswith("darwin"):
+        return "macos"
+    return "linux"
+
+
+def sys_platform() -> str:
+    return os.sys.platform.lower()
 
 
 def load_json(path: Path):
@@ -35,6 +63,11 @@ def load_json(path: Path):
 
 def write_json(data):
     print(json.dumps(data, ensure_ascii=False, indent=2))
+
+
+def write_json_file(path: Path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def is_relative_to(path: Path, base: Path) -> bool:
@@ -96,6 +129,11 @@ def copy_file(src: Path, dst: Path):
         return
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dst)
+
+
+def ensure_executable(path: Path):
+    current = path.stat().st_mode
+    path.chmod(current | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
 def restore_skill_entrypoint_if_needed(skill_root: Path):
@@ -228,6 +266,238 @@ def resolve_adapter(repo_root: Path, host_id: str):
         if entry.get("id") == normalized:
             return entry
     raise SystemExit(f"Unsupported VGO host id: {host_id}")
+
+
+def resolve_target_root_for_adapter(adapter: dict, explicit_target_root: Path | None = None) -> Path:
+    if explicit_target_root is not None:
+        return explicit_target_root.resolve()
+
+    target_spec = adapter.get("default_target_root") or {}
+    env_name = target_spec.get("env") or ""
+    rel = target_spec.get("rel") or ""
+    env_value = os.environ.get(env_name, "").strip() if env_name else ""
+    if env_value:
+        return Path(env_value).expanduser().resolve()
+    if not rel:
+        raise SystemExit(f"Adapter '{adapter.get('id')}' does not define default_target_root.rel")
+    rel_path = Path(rel)
+    if rel_path.is_absolute():
+        return rel_path.resolve()
+    return (Path.home() / rel_path).expanduser().resolve()
+
+
+def load_specialist_policy(repo_root: Path):
+    return load_json(repo_root / "config" / "native-specialist-execution-policy.json")
+
+
+def resolve_specialist_policy_entry(repo_root: Path, host_id: str):
+    policy = load_specialist_policy(repo_root)
+    for entry in policy.get("adapters", []):
+        if entry.get("id") == host_id:
+            return entry
+    return None
+
+
+def resolve_bridge_command(host_id: str) -> tuple[str | None, str | None]:
+    env_name = HOST_BRIDGE_COMMAND_ENV.get(host_id)
+    if env_name:
+        env_value = os.environ.get(env_name, "").strip()
+        if env_value:
+            candidate = shutil.which(env_value)
+            if candidate:
+                return candidate, f"env:{env_name}"
+            path_candidate = Path(env_value).expanduser()
+            if path_candidate.exists():
+                return str(path_candidate.resolve()), f"env:{env_name}"
+
+    for candidate_name in HOST_BRIDGE_COMMAND_CANDIDATES.get(host_id, []):
+        resolved = shutil.which(candidate_name)
+        if resolved:
+            return resolved, f"path:{candidate_name}"
+
+    return None, None
+
+
+def materialize_host_specialist_wrapper(target_root: Path, host_id: str, bridge_command: str | None):
+    tools_root = target_root / ".vibeskills" / "bin"
+    tools_root.mkdir(parents=True, exist_ok=True)
+
+    wrapper_py = tools_root / f"{host_id}-specialist-wrapper.py"
+    embedded_command = json.dumps(bridge_command or "")
+    bridge_env_name = f"VGO_{host_id.upper().replace('-', '_')}_SPECIALIST_BRIDGE_COMMAND"
+    wrapper_py.write_text(
+        (
+            "#!/usr/bin/env python3\n"
+            "import os\n"
+            "import subprocess\n"
+            "import sys\n\n"
+            f"HOST_ID = {json.dumps(host_id)}\n"
+            f"TARGET_COMMAND = {embedded_command}\n\n"
+            "def main() -> int:\n"
+            f"    command = TARGET_COMMAND or os.environ.get({json.dumps(bridge_env_name)}, '').strip()\n"
+            "    if not command:\n"
+            "        sys.stderr.write(f'host specialist bridge command unavailable for {HOST_ID}\\n')\n"
+            "        return 3\n"
+            "    return subprocess.run([command, *sys.argv[1:]], check=False).returncode\n\n"
+            "if __name__ == '__main__':\n"
+            "    raise SystemExit(main())\n"
+        ),
+        encoding="utf-8",
+    )
+    ensure_executable(wrapper_py)
+
+    platform_tag = detect_platform_tag()
+    if platform_tag == "windows":
+        launcher = tools_root / f"{host_id}-specialist-wrapper.cmd"
+        launcher.write_text(
+            (
+                "@echo off\r\n"
+                "setlocal\r\n"
+                "set SCRIPT_DIR=%~dp0\r\n"
+                "if exist \"%LocalAppData%\\Programs\\Python\\Python311\\python.exe\" (\r\n"
+                "  set PY_CMD=%LocalAppData%\\Programs\\Python\\Python311\\python.exe\r\n"
+                ") else if exist \"%ProgramFiles%\\Python311\\python.exe\" (\r\n"
+                "  set PY_CMD=%ProgramFiles%\\Python311\\python.exe\r\n"
+                ") else (\r\n"
+                "  set PY_CMD=py -3\r\n"
+                ")\r\n"
+                "%PY_CMD% \"%SCRIPT_DIR%\\" + wrapper_py.name + "\" %*\r\n"
+            ),
+            encoding="utf-8",
+        )
+    else:
+        launcher = tools_root / f"{host_id}-specialist-wrapper.sh"
+        launcher.write_text(
+            (
+                "#!/usr/bin/env sh\n"
+                "set -eu\n"
+                "SCRIPT_DIR=$(CDPATH= cd -- \"$(dirname -- \"$0\")\" && pwd)\n"
+                "if command -v python3 >/dev/null 2>&1; then\n"
+                "  PYTHON_BIN=python3\n"
+                "elif command -v python >/dev/null 2>&1; then\n"
+                "  PYTHON_BIN=python\n"
+                "else\n"
+                "  echo 'python runtime unavailable for host specialist wrapper' >&2\n"
+                "  exit 127\n"
+                "fi\n"
+                f"exec \"$PYTHON_BIN\" \"$SCRIPT_DIR/{wrapper_py.name}\" \"$@\"\n"
+            ),
+            encoding="utf-8",
+        )
+        ensure_executable(launcher)
+
+    return {
+        "platform": platform_tag,
+        "launcher_path": str(launcher.resolve()),
+        "script_path": str(wrapper_py.resolve()),
+        "ready": bool(bridge_command),
+        "bridge_command": bridge_command,
+    }
+
+
+def merge_json_object(path: Path, patch: dict):
+    existing = {}
+    if path.exists():
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            existing = {}
+    merged = dict(existing)
+    for key, value in patch.items():
+        if isinstance(value, dict) and isinstance(existing.get(key), dict):
+            next_value = dict(existing[key])
+            next_value.update(value)
+            merged[key] = next_value
+        else:
+            merged[key] = value
+    write_json_file(path, merged)
+
+
+def materialize_host_settings(target_root: Path, adapter: dict, wrapper_info: dict):
+    host_id = adapter["id"]
+    materialized = []
+    if host_id in {"cursor", "claude-code"}:
+        settings_path = target_root / "settings.json"
+        merge_json_object(
+            settings_path,
+            {
+                "vibeskills": {
+                    "host_id": host_id,
+                    "managed": True,
+                    "commands_root": str((target_root / "commands").resolve()),
+                    "specialist_wrapper": wrapper_info["launcher_path"],
+                }
+            },
+        )
+        materialized.append(str(settings_path.resolve()))
+    elif host_id == "opencode":
+        settings_path = target_root / "opencode.json"
+        merge_json_object(
+            settings_path,
+            {
+                "vibeskills": {
+                    "host_id": host_id,
+                    "managed": True,
+                    "commands_root": str((target_root / "commands").resolve()),
+                    "command_root_compat": str((target_root / "command").resolve()),
+                    "agents_root": str((target_root / "agents").resolve()),
+                    "agent_root_compat": str((target_root / "agent").resolve()),
+                    "specialist_wrapper": wrapper_info["launcher_path"],
+                }
+            },
+        )
+        materialized.append(str(settings_path.resolve()))
+    elif host_id in {"openclaw", "windsurf"}:
+        settings_path = target_root / ".vibeskills" / "host-settings.json"
+        write_json_file(
+            settings_path,
+            {
+                "host_id": host_id,
+                "managed": True,
+                "commands_root": str((target_root / "commands").resolve()),
+                "workflow_root": str((target_root / "global_workflows").resolve()),
+                "mcp_config": str((target_root / "mcp_config.json").resolve()),
+                "specialist_wrapper": wrapper_info["launcher_path"],
+            },
+        )
+        materialized.append(str(settings_path.resolve()))
+    return materialized
+
+
+def materialize_host_closure(repo_root: Path, target_root: Path, adapter: dict):
+    host_id = adapter["id"]
+    bridge_command, bridge_source = resolve_bridge_command(host_id)
+    wrapper_info = materialize_host_specialist_wrapper(target_root, host_id, bridge_command)
+    settings_materialized = materialize_host_settings(target_root, adapter, wrapper_info)
+    commands_root = target_root / "commands"
+    closure_state = "closed_ready" if wrapper_info["ready"] else "configured_offline_unready"
+    closure = {
+        "schema_version": 1,
+        "host_id": host_id,
+        "platform": detect_platform_tag(),
+        "target_root": str(target_root.resolve()),
+        "install_mode": adapter["install_mode"],
+        "commands_root": str(commands_root.resolve()),
+        "global_workflows_root": str((target_root / "global_workflows").resolve()),
+        "mcp_config_path": str((target_root / "mcp_config.json").resolve()),
+        "host_closure_state": closure_state,
+        "commands_materialized": commands_root.exists(),
+        "settings_materialized": settings_materialized,
+        "specialist_wrapper": {
+            "launcher_path": wrapper_info["launcher_path"],
+            "script_path": wrapper_info["script_path"],
+            "ready": wrapper_info["ready"],
+            "bridge_command": bridge_command,
+            "bridge_source": bridge_source,
+        },
+    }
+    closure_path = target_root / ".vibeskills" / "host-closure.json"
+    write_json_file(closure_path, closure)
+    return closure_path, closure
+
+
+def is_closed_ready_required(adapter: dict) -> bool:
+    return (adapter.get("install_mode") or "").strip().lower() != "governed"
 
 
 def sync_vibe_canonical(repo_root: Path, target_root: Path, target_rel: str):
@@ -379,6 +649,7 @@ def main():
     parser.add_argument("--host", required=True)
     parser.add_argument("--profile", choices=("minimal", "full"), default="full")
     parser.add_argument("--allow-external-skill-fallback", action="store_true")
+    parser.add_argument("--require-closed-ready", action="store_true")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
@@ -401,12 +672,28 @@ def main():
     else:
         raise SystemExit(f"Unsupported adapter install mode: {mode}")
 
+    closure_path, closure = materialize_host_closure(repo_root, target_root, adapter)
+    require_closed_ready_effective = bool(args.require_closed_ready and is_closed_ready_required(adapter))
+    if require_closed_ready_effective and closure["host_closure_state"] != "closed_ready":
+        raise SystemExit(
+            "Host closure for "
+            f"'{adapter['id']}' is not closed_ready "
+            f"(got '{closure['host_closure_state']}'). "
+            "Configure the host specialist bridge command first, then retry install."
+        )
+
     write_json(
         {
             "host_id": adapter["id"],
             "install_mode": mode,
             "target_root": str(target_root),
             "external_fallback_used": external_used,
+            "host_closure_path": str(closure_path),
+            "host_closure_state": closure["host_closure_state"],
+            "settings_materialized": closure["settings_materialized"],
+            "specialist_wrapper_ready": bool(closure["specialist_wrapper"]["ready"]),
+            "require_closed_ready_requested": bool(args.require_closed_ready),
+            "require_closed_ready_effective": require_closed_ready_effective,
         }
     )
 

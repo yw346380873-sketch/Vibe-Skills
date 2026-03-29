@@ -222,6 +222,36 @@ pick_python() {
   return 1
 }
 
+pick_powershell() {
+  local candidate resolved=""
+  for candidate in pwsh pwsh.exe powershell powershell.exe; do
+    if resolved="$(command -v "${candidate}" 2>/dev/null)"; then
+      if [[ -n "${resolved}" ]]; then
+        printf '%s' "${resolved}"
+        return 0
+      fi
+    fi
+  done
+  return 1
+}
+
+run_powershell_file() {
+  local script_path="$1"
+  shift
+  local shell_path=""
+  shell_path="$(pick_powershell || true)"
+  [[ -n "${shell_path}" ]] || return 127
+
+  local leaf="${shell_path##*/}"
+  leaf="$(printf '%s' "${leaf}" | tr '[:upper:]' '[:lower:]')"
+  local cmd=("${shell_path}" "-NoProfile")
+  if [[ "${leaf}" == "powershell" || "${leaf}" == "powershell.exe" ]]; then
+    cmd+=("-ExecutionPolicy" "Bypass")
+  fi
+  cmd+=("-File" "${script_path}")
+  "${cmd[@]}" "$@"
+}
+
 adapter_query() {
   local property="$1"
   local python_bin=""
@@ -319,7 +349,7 @@ materialize_mcp_profile_with_python() {
   local python_bin
 
   if ! python_bin="$(pick_python)"; then
-    echo "[FAIL] Python is required to materialize the MCP active profile when pwsh is unavailable." >&2
+    echo "[FAIL] Python is required to materialize the MCP active profile when no PowerShell host is available." >&2
     exit 1
   fi
 
@@ -425,8 +455,8 @@ if [[ "${ADAPTER_BOOTSTRAP_MODE}" == "governed" ]]; then
   fi
   if [[ -n "${resolved_openai_api_key}" ]]; then
     echo "[2/5] Seeding OPENAI settings into target settings.json..."
-    if command -v pwsh >/dev/null 2>&1; then
-      pwsh -NoProfile -File "${PERSIST_OPENAI_PS1}" -CodexRoot "${TARGET_ROOT}" -BaseUrl "${OPENAI_BASE_URL}" -ApiKey "${resolved_openai_api_key}"
+    if pick_powershell >/dev/null 2>&1; then
+      run_powershell_file "${PERSIST_OPENAI_PS1}" -CodexRoot "${TARGET_ROOT}" -BaseUrl "${OPENAI_BASE_URL}" -ApiKey "${resolved_openai_api_key}"
     else
       seed_settings_env_with_python "${TARGET_ROOT}" "openai" "${OPENAI_BASE_URL}" "${resolved_openai_api_key}"
     fi
@@ -439,8 +469,8 @@ if [[ "${ADAPTER_BOOTSTRAP_MODE}" == "governed" ]]; then
   echo "[3/5] Built-in AI governance now supports only OpenAI-compatible provider wiring; no secondary provider seeding is performed."
 
   echo "[4/5] Materializing MCP profile..."
-  if command -v pwsh >/dev/null 2>&1; then
-    pwsh -NoProfile -File "${MATERIALIZE_PS1}" -TargetRoot "${TARGET_ROOT}" -Force >/dev/null
+  if pick_powershell >/dev/null 2>&1; then
+    run_powershell_file "${MATERIALIZE_PS1}" -TargetRoot "${TARGET_ROOT}" -Force >/dev/null
   else
     materialize_mcp_profile_with_python "${REPO_ROOT}" "${TARGET_ROOT}" "${PROFILE}"
   fi
@@ -473,10 +503,10 @@ if [[ "${ADAPTER_BOOTSTRAP_MODE}" == "governed" ]]; then
   echo "- MCP active file: ${TARGET_ROOT}/mcp/servers.active.json"
 fi
 echo "- Doctor artifacts: ${REPO_ROOT}/outputs/verify"
-if ! command -v pwsh >/dev/null 2>&1; then
+if ! pick_powershell >/dev/null 2>&1; then
   if ! command -v python3 >/dev/null 2>&1 && ! command -v python >/dev/null 2>&1; then
-    echo "[WARN] Neither pwsh nor Python is available. Deep authoritative doctor coverage remains unavailable in this shell environment."
+    echo "[WARN] Neither a PowerShell host nor Python is available. Deep authoritative doctor coverage remains unavailable in this shell environment."
   else
-    echo "[INFO] pwsh is not installed, but the shell runtime-neutral verification path was used where supported."
+    echo "[INFO] No PowerShell host was found, but the shell runtime-neutral verification path was used where supported."
   fi
 fi
