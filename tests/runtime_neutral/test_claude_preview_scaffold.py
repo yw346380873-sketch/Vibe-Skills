@@ -113,11 +113,14 @@ class ClaudePreviewScaffoldTests(unittest.TestCase):
 
         settings_path = self.target_root / 'settings.json'
         closure_path = self.target_root / '.vibeskills' / 'host-closure.json'
+        host_settings_path = self.target_root / '.vibeskills' / 'host-settings.json'
         settings = json.loads(settings_path.read_text(encoding='utf-8'))
         self.assertEqual(self.existing_settings['env'], settings['env'])
         self.assertEqual(self.existing_settings['model'], settings['model'])
-        self.assertEqual('claude-code', settings['vibeskills']['host_id'])
+        self.assertNotIn('vibeskills', settings)
         self.assertTrue(closure_path.exists())
+        self.assertTrue(host_settings_path.exists())
+        self.assertFalse((self.target_root / 'commands').exists())
         self.assertEqual('preview-guidance', payload['install_mode'])
         self.assertEqual(str(closure_path), payload['host_closure_path'])
 
@@ -150,7 +153,9 @@ class ClaudePreviewScaffoldTests(unittest.TestCase):
         settings = json.loads((self.target_root / 'settings.json').read_text(encoding='utf-8'))
         self.assertEqual(self.existing_settings['env'], settings['env'])
         self.assertEqual(self.existing_settings['model'], settings['model'])
-        self.assertEqual('claude-code', settings['vibeskills']['host_id'])
+        self.assertNotIn('vibeskills', settings)
+        self.assertTrue((self.target_root / '.vibeskills' / 'host-settings.json').exists())
+        self.assertFalse((self.target_root / 'commands').exists())
 
 
 if __name__ == '__main__':

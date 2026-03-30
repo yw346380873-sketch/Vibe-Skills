@@ -182,9 +182,48 @@ class UnifiedUninstallTests(unittest.TestCase):
         _, payload = self.run_python_uninstall(host="cursor")
 
         self.assertFalse((self.target_root / ".vibeskills").exists())
+        remaining = json.loads(settings_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            {
+                "editor.fontSize": 14,
+                "vibeskills": {"managed": True, "host_id": "cursor"},
+            },
+            remaining,
+        )
+        self.assertIn("host-closure", payload["ownership_source"])
+        self.assertNotIn("settings.json", payload["mutated_json_paths"])
+
+    def test_planner_mutates_shared_json_when_ledger_marks_it_owned(self) -> None:
+        ledger_path = self.target_root / ".vibeskills" / "install-ledger.json"
+        settings_path = self.target_root / "settings.json"
+        write_json(
+            ledger_path,
+            {
+                "schema_version": 1,
+                "host_id": "cursor",
+                "target_root": str(self.target_root.resolve()),
+                "install_mode": "preview-guidance",
+                "profile": "full",
+                "created_paths": [],
+                "managed_json_paths": ["settings.json"],
+                "generated_from_template_if_absent": [],
+                "specialist_wrapper_paths": [],
+                "runtime_root": "skills/vibe",
+                "canonical_vibe_root": "skills/vibe",
+            },
+        )
+        write_json(
+            settings_path,
+            {
+                "editor.fontSize": 14,
+                "vibeskills": {"managed": True, "host_id": "cursor"},
+            },
+        )
+
+        _, payload = self.run_python_uninstall(host="cursor")
+
         mutated = json.loads(settings_path.read_text(encoding="utf-8"))
         self.assertEqual({"editor.fontSize": 14}, mutated)
-        self.assertIn("host-closure", payload["ownership_source"])
         self.assertIn("settings.json", payload["mutated_json_paths"])
 
     def test_planner_uses_legacy_owned_only_fallback_for_repo_managed_surfaces(self) -> None:
@@ -215,7 +254,7 @@ class UnifiedUninstallTests(unittest.TestCase):
         _, payload = self.run_python_uninstall(host="cursor")
 
         self.assertTrue(settings_path.exists())
-        self.assertTrue(payload["warnings"])
+        self.assertFalse(payload["warnings"])
 
     def test_receipt_and_empty_directory_purge_are_written(self) -> None:
         managed_file = self.target_root / "commands" / "vibe.md"

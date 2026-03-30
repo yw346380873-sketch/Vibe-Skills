@@ -31,16 +31,16 @@ Copy these into the target root:
 
 If the target is `windsurf`, also note:
 
-- mirror `commands/` into `global_workflows/` if you want parity with the scripted result
-- copy `mcp/servers.template.json` to `mcp_config.json` when it is missing
+- if you need exact parity with the current scripted result, prefer rerunning `install.* --host windsurf`
+- the current public contract uses `.vibeskills/host-settings.json` and `.vibeskills/host-closure.json` as the host sidecars instead of `mcp_config.json` / `global_workflows/`
 
 If the target is `opencode`, switch to the OpenCode preview payload:
 
 - `skills/`
-- `commands/*.md`
-- `command/*.md`
-- `agents/*.md`
-- `agent/*.md`
+- `.vibeskills/host-settings.json`
+- `.vibeskills/host-closure.json`
+- `.vibeskills/install-ledger.json`
+- `.vibeskills/bin/*-specialist-wrapper.*`
 - `opencode.json.example`
 
 Then use [`opencode-path.en.md`](./opencode-path.en.md) for the preview-adapter follow-up steps.
@@ -70,7 +70,7 @@ Then use [`opencode-path.en.md`](./opencode-path.en.md) for the preview-adapter 
 
 ### Windsurf
 
-- confirm `mcp_config.json` and `global_workflows/` under `~/.codeium/windsurf`
+- confirm `.vibeskills/host-settings.json` and `.vibeskills/host-closure.json` under `~/.codeium/windsurf`
 - finish host-local configuration inside Windsurf itself
 
 ### OpenClaw

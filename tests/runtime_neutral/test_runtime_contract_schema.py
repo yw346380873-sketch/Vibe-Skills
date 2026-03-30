@@ -12,6 +12,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_COMMON = REPO_ROOT / "scripts" / "runtime" / "VibeRuntime.Common.ps1"
+EXECUTION_COMMON = REPO_ROOT / "scripts" / "runtime" / "VibeExecution.Common.ps1"
 RUNTIME_ENTRY = REPO_ROOT / "scripts" / "runtime" / "invoke-vibe-runtime.ps1"
 SPECIALIST_TASK = "I have a failing test and a stack trace. Help me debug systematically before proposing fixes."
 
@@ -111,7 +112,7 @@ class RuntimeContractSchemaTests(unittest.TestCase):
         self.assertEqual("cursor", payload["requested_host_id"])
         self.assertEqual("windsurf", payload["effective_host_id"])
 
-    def test_runtime_projection_maps_status_modes_and_closure(self) -> None:
+    def test_runtime_projection_maps_status_modes_closure_and_host_settings(self) -> None:
         payload = run_ps_json(
             "& { "
             f". {_ps_single_quote(str(RUNTIME_COMMON))}; "
@@ -124,7 +125,8 @@ class RuntimeContractSchemaTests(unittest.TestCase):
             "check_mode = 'audit'; "
             "bootstrap_mode = 'bounded' "
             "}; "
-            "host_closure = [pscustomobject]@{ path = '/tmp/host-closure.json' } "
+            "host_closure = [pscustomobject]@{ path = '/tmp/host-closure.json' }; "
+            "host_settings = [pscustomobject]@{ path = '/tmp/host-settings.json' } "
             "}; "
             "$result = New-VibeRuntimeHostAdapterProjection "
             "-Runtime $runtime "
@@ -141,6 +143,7 @@ class RuntimeContractSchemaTests(unittest.TestCase):
         self.assertEqual("bounded", payload["bootstrap_mode"])
         self.assertEqual("/tmp/openclaw-home", payload["target_root"])
         self.assertEqual("/tmp/host-closure.json", payload["closure_path"])
+        self.assertEqual("/tmp/host-settings.json", payload["host_settings_path"])
 
     def test_runtime_packet_alignment_helper_reads_frozen_projection(self) -> None:
         payload = run_ps_json(
@@ -155,6 +158,34 @@ class RuntimeContractSchemaTests(unittest.TestCase):
 
         self.assertEqual("openclaw", payload["requested_host_id"])
         self.assertEqual("windsurf", payload["effective_host_id"])
+
+    def test_bridge_resolution_can_use_host_settings_sidecar(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            launcher = temp_path / "openclaw-wrapper.sh"
+            launcher.write_text("#!/usr/bin/env sh\nexit 0\n", encoding="utf-8")
+
+            payload = run_ps_json(
+                "& { "
+                f". {_ps_single_quote(str(EXECUTION_COMMON))}; "
+                "$adapter = [pscustomobject]@{ id = 'openclaw'; bridge_executable_env = ''; bridge_command = '' }; "
+                "$runtime = [pscustomobject]@{ "
+                "host_settings = [pscustomobject]@{ "
+                f"path = {_ps_single_quote(str(temp_path / '.vibeskills' / 'host-settings.json'))}; "
+                "data = [pscustomobject]@{ "
+                "specialist_wrapper = [pscustomobject]@{ "
+                f"launcher_path = {_ps_single_quote(str(launcher))}; "
+                "ready = $true "
+                "} "
+                "} "
+                "} "
+                "}; "
+                "$result = Resolve-VibeBridgeExecutable -Adapter $adapter -Runtime $runtime; "
+                "$result | ConvertTo-Json -Depth 10 }"
+            )
+
+        self.assertEqual(str(launcher), payload["command_path"])
+        self.assertEqual("native_specialist_bridge_ready", payload["reason"])
 
     def test_hierarchy_projection_preserves_root_and_child_fields(self) -> None:
         payload = run_ps_json(

@@ -13,7 +13,7 @@ INSTALLER = REPO_ROOT / "scripts" / "install" / "install_vgo_adapter.py"
 
 
 class CursorManagedPreviewTests(unittest.TestCase):
-    def test_python_installer_materializes_cursor_host_closure_and_settings_surface(self) -> None:
+    def test_python_installer_materializes_cursor_host_closure_and_sidecar_only_surface(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:
             target_root = Path(tempdir)
             result = subprocess.run(
@@ -35,21 +35,23 @@ class CursorManagedPreviewTests(unittest.TestCase):
             )
             payload = json.loads(result.stdout)
             closure_path = target_root / ".vibeskills" / "host-closure.json"
-            settings_path = target_root / "settings.json"
+            host_settings_path = target_root / ".vibeskills" / "host-settings.json"
 
             self.assertEqual("cursor", payload["host_id"])
             self.assertEqual("preview-guidance", payload["install_mode"])
             self.assertTrue(closure_path.exists())
-            self.assertTrue(settings_path.exists())
-            self.assertTrue((target_root / "commands" / "vibe.md").exists())
+            self.assertTrue(host_settings_path.exists())
+            self.assertTrue((target_root / "skills" / "vibe" / "SKILL.md").exists())
+            self.assertFalse((target_root / "settings.json").exists())
+            self.assertFalse((target_root / "commands").exists())
 
             closure = json.loads(closure_path.read_text(encoding="utf-8"))
-            settings = json.loads(settings_path.read_text(encoding="utf-8"))
+            host_settings = json.loads(host_settings_path.read_text(encoding="utf-8"))
 
             self.assertEqual("cursor", closure["host_id"])
             self.assertEqual(str(target_root.resolve()), closure["target_root"])
-            self.assertIn("vibeskills", settings)
-            self.assertEqual("cursor", settings["vibeskills"]["host_id"])
+            self.assertEqual("cursor", host_settings["host_id"])
+            self.assertEqual(str((target_root / "skills").resolve()), host_settings["skills_root"])
             self.assertIn("specialist_wrapper_ready", payload)
             self.assertIsInstance(payload["specialist_wrapper_ready"], bool)
 

@@ -84,7 +84,7 @@
 - 运行 `--host windsurf`
 - 明确说明当前提供支持的安装与使用路径
 - 默认宿主根目录是 `~/.codeium/windsurf`
-- 当前仓库只负责共享安装内容，以及按需物化 `mcp_config.json` 与 `global_workflows/`
+- 当前仓库只负责共享安装内容，以及 `.vibeskills/host-settings.json` / `.vibeskills/host-closure.json` 这类 sidecar 状态
 - Windsurf 宿主本地设置仍由用户在宿主侧完成
 
 ## 规则 11：OpenClaw 按“支持的安装与使用路径”口径描述
@@ -104,7 +104,7 @@
 - 运行 `--host opencode`
 - 明确说明当前提供支持的安装与使用路径
 - 默认目标根目录是 `OPENCODE_HOME`，否则是 `~/.config/opencode`
-- direct install/check 会写入 skills、command/agent wrappers 与 `opencode.json.example`
+- direct install/check 会写入 skills、`.vibeskills/*` sidecar 与 `opencode.json.example`
 - 真实 `opencode.json`、provider 凭据、plugin 安装和 MCP 信任仍由宿主侧本地完成
 
 ## 规则 13：AI 治理在线配置要优先说真实推荐键名

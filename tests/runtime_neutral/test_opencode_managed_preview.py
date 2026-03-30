@@ -43,15 +43,16 @@ class OpenCodeManagedPreviewTests(unittest.TestCase):
             self.assertTrue(closure_path.exists())
             self.assertFalse(settings_path.exists())
             self.assertTrue(example_path.exists())
-            self.assertTrue((target_root / "commands" / "vibe.md").exists())
-            self.assertTrue((target_root / "command" / "vibe.md").exists())
-            self.assertTrue((target_root / "agents").exists())
-            self.assertTrue((target_root / "agent").exists())
+            self.assertTrue((target_root / ".vibeskills" / "host-settings.json").exists())
+            self.assertFalse((target_root / "commands").exists())
+            self.assertFalse((target_root / "command").exists())
+            self.assertFalse((target_root / "agents").exists())
+            self.assertFalse((target_root / "agent").exists())
             closure = json.loads(closure_path.read_text(encoding="utf-8"))
-            self.assertEqual([], closure["settings_materialized"])
-            self.assertEqual("not-present", payload["legacy_opencode_config_cleanup"]["status"])
+            self.assertEqual([str((target_root / ".vibeskills" / "host-settings.json").resolve())], closure["settings_materialized"])
+            self.assertIsNone(payload["legacy_opencode_config_cleanup"])
 
-    def test_python_installer_repairs_legacy_vibe_node_without_touching_user_keys(self) -> None:
+    def test_python_installer_leaves_existing_opencode_config_untouched(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:
             target_root = Path(tempdir)
             settings_path = target_root / "opencode.json"
@@ -98,11 +99,10 @@ class OpenCodeManagedPreviewTests(unittest.TestCase):
             )
 
             payload = json.loads(result.stdout)
-            repaired = json.loads(settings_path.read_text(encoding="utf-8"))
-            self.assertNotIn("vibeskills", repaired)
-            self.assertIn("mcp", repaired)
-            self.assertEqual("removed-owned-node", payload["legacy_opencode_config_cleanup"]["status"])
-            self.assertEqual(["$schema", "mcp"], payload["legacy_opencode_config_cleanup"]["preserved_keys"])
+            preserved = json.loads(settings_path.read_text(encoding="utf-8"))
+            self.assertIn("vibeskills", preserved)
+            self.assertIn("mcp", preserved)
+            self.assertIsNone(payload["legacy_opencode_config_cleanup"])
 
 
 if __name__ == "__main__":

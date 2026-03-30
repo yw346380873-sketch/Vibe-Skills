@@ -787,20 +787,16 @@ if [[ "${ADAPTER_CHECK_MODE}" == "governed" ]]; then
 fi
 if [[ "${ADAPTER_CHECK_MODE}" == "preview-guidance" ]]; then
   if [[ "${HOST_ID}" == "opencode" ]]; then
-    warn_note "opencode preview keeps the real opencode.json host-managed; only skills, commands, agents, and an example config scaffold are verified"
-  elif [[ "${HOST_ID}" == "cursor" ]]; then
-    info_note "cursor preview now materializes managed commands, host-closure state, and a minimal settings surface; deeper host-native workflow remains preview-scoped"
+    info_note "opencode preview now runs as skills-only activation; the real opencode.json stays untouched and sidecar state is verified"
   else
-    info_note "${HOST_ID} preview hook/settings scaffold remains intentionally unavailable while the author works through compatibility issues; this is a current product boundary, not an install failure"
+    info_note "${HOST_ID} preview now runs as skills-only activation; host-native config files stay untouched and sidecar state is verified"
   fi
 fi
 if [[ "${ADAPTER_CHECK_MODE}" == "runtime-core" ]]; then
-  if [[ -d "${SCRIPT_DIR}/commands" ]]; then
-    check_path "global workflows" "${TARGET_ROOT}/global_workflows"
-  fi
-  if [[ -f "${SCRIPT_DIR}/mcp/servers.template.json" ]]; then
-    check_path "mcp_config.json" "${TARGET_ROOT}/mcp_config.json"
-  fi
+  info_note "${HOST_ID} runtime-core now verifies skill-native activation and sidecar state only; host-native workflow/config files are intentionally absent"
+fi
+if [[ "${HOST_ID}" == "claude-code" || "${HOST_ID}" == "cursor" || "${HOST_ID}" == "windsurf" || "${HOST_ID}" == "openclaw" || "${HOST_ID}" == "opencode" ]]; then
+  check_path "host settings sidecar" "${TARGET_ROOT}/.vibeskills/host-settings.json"
 fi
 check_path "host closure manifest" "${TARGET_ROOT}/.vibeskills/host-closure.json"
 if [[ -f "${TARGET_ROOT}/.vibeskills/host-closure.json" ]]; then

@@ -74,40 +74,34 @@ class InstalledRuntimeUninstallTests(unittest.TestCase):
         target_root = self.root / "claude-root"
         self.install_host("claude-code", target_root)
         settings_path = target_root / "settings.json"
-        settings = json.loads(settings_path.read_text(encoding="utf-8"))
-        settings["user.keep"] = True
-        settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
         sentinel = target_root / "commands" / "user.md"
+        sentinel.parent.mkdir(parents=True, exist_ok=True)
         sentinel.write_text("user\n", encoding="utf-8")
 
         self.uninstall_host("claude-code", target_root)
 
         self.assertFalse((target_root / ".vibeskills").exists())
         self.assertTrue(sentinel.exists())
-        if settings_path.exists():
-            remaining = json.loads(settings_path.read_text(encoding="utf-8"))
-            self.assertNotIn("vibeskills", remaining)
-            self.assertTrue(remaining["user.keep"])
+        self.assertFalse(settings_path.exists())
 
     def test_cursor_uninstall_removes_vibe_managed_surface(self) -> None:
         target_root = self.root / "cursor-root"
         self.install_host("cursor", target_root)
         sentinel = target_root / "commands" / "user.md"
+        sentinel.parent.mkdir(parents=True, exist_ok=True)
         sentinel.write_text("user\n", encoding="utf-8")
 
         self.uninstall_host("cursor", target_root)
 
         self.assertFalse((target_root / ".vibeskills").exists())
         self.assertTrue(sentinel.exists())
-        settings_path = target_root / "settings.json"
-        if settings_path.exists():
-            remaining = json.loads(settings_path.read_text(encoding="utf-8"))
-            self.assertNotIn("vibeskills", remaining)
+        self.assertFalse((target_root / "settings.json").exists())
 
     def test_windsurf_uninstall_removes_runtime_core_preview_host_payload(self) -> None:
         target_root = self.root / "windsurf-root"
         self.install_host("windsurf", target_root)
         sentinel = target_root / "commands" / "user.md"
+        sentinel.parent.mkdir(parents=True, exist_ok=True)
         sentinel.write_text("user\n", encoding="utf-8")
 
         self.uninstall_host("windsurf", target_root)
@@ -120,6 +114,7 @@ class InstalledRuntimeUninstallTests(unittest.TestCase):
         target_root = self.root / "openclaw-root"
         self.install_host("openclaw", target_root)
         sentinel = target_root / "commands" / "user.md"
+        sentinel.parent.mkdir(parents=True, exist_ok=True)
         sentinel.write_text("user\n", encoding="utf-8")
 
         self.uninstall_host("openclaw", target_root)
@@ -148,6 +143,7 @@ class InstalledRuntimeUninstallTests(unittest.TestCase):
             encoding="utf-8",
         )
         sentinel = target_root / "commands" / "user.md"
+        sentinel.parent.mkdir(parents=True, exist_ok=True)
         sentinel.write_text("user\n", encoding="utf-8")
 
         self.uninstall_host("opencode", target_root)
@@ -157,10 +153,10 @@ class InstalledRuntimeUninstallTests(unittest.TestCase):
         self.assertFalse((target_root / "agents" / "vibe-plan.md").exists())
         self.assertFalse((target_root / "opencode.json.example").exists())
         self.assertTrue(sentinel.exists())
-        if settings_path.exists():
-            remaining = json.loads(settings_path.read_text(encoding="utf-8"))
-            self.assertNotIn("vibeskills", remaining)
-            self.assertTrue(remaining["user.keep"])
+        self.assertTrue(settings_path.exists())
+        remaining = json.loads(settings_path.read_text(encoding="utf-8"))
+        self.assertIn("vibeskills", remaining)
+        self.assertTrue(remaining["user.keep"])
 
 
 if __name__ == "__main__":
