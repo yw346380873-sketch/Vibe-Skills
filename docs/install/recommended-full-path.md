@@ -142,7 +142,7 @@ git checkout vX.Y.Z
 ### Windsurf
 
 - 默认根目录是 `~/.codeium/windsurf`
-- repo 当前只负责 shared runtime payload，以及按需物化 `mcp_config.json` 与 `global_workflows/`
+- repo 当前只负责 shared runtime payload，以及 `.vibeskills/host-settings.json` / `.vibeskills/host-closure.json` 这类 sidecar 状态
 - Windsurf 宿主自身的本地设置仍按 Windsurf 自身方式管理
 
 ### OpenClaw
@@ -154,6 +154,6 @@ git checkout vX.Y.Z
 ### OpenCode
 
 - 默认目标根目录是 `OPENCODE_HOME`，否则是 `~/.config/opencode`
-- direct install/check 会写入 skills、command/agent wrappers 与 `opencode.json.example`
+- direct install/check 会写入 skills、`.vibeskills/*` sidecar 与 `opencode.json.example`
 - 真实 `opencode.json`、provider 凭据、plugin 安装和 MCP 信任仍按宿主自身方式管理
 - 如需项目内隔离安装，使用 `--target-root ./.opencode`

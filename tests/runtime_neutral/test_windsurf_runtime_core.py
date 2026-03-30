@@ -62,10 +62,11 @@ class WindsurfRuntimeCoreTests(unittest.TestCase):
             self.assertIn("host_closure_path", payload)
             self.assertTrue((target_root / "skills" / "vibe" / "SKILL.md").exists())
             self.assertTrue((target_root / "skills" / "brainstorming" / "SKILL.md").exists())
-            self.assertTrue((target_root / "commands" / "vibe.md").exists())
-            self.assertTrue((target_root / "global_workflows" / "vibe.md").exists())
-            self.assertTrue((target_root / "mcp_config.json").exists())
+            self.assertTrue((target_root / ".vibeskills" / "host-settings.json").exists())
             self.assertTrue((target_root / ".vibeskills" / "host-closure.json").exists())
+            self.assertFalse((target_root / "commands").exists())
+            self.assertFalse((target_root / "global_workflows").exists())
+            self.assertFalse((target_root / "mcp_config.json").exists())
             self.assertFalse((target_root / "settings.json").exists())
             self.assertFalse((target_root / "config" / "plugins-manifest.codex.json").exists())
 
@@ -90,10 +91,11 @@ class WindsurfRuntimeCoreTests(unittest.TestCase):
             self.assertIn("Host   : windsurf", install_result.stdout)
             self.assertIn("Mode   : runtime-core", install_result.stdout)
             self.assertTrue((target_root / "skills" / "vibe" / "SKILL.md").exists())
-            self.assertTrue((target_root / "commands" / "vibe.md").exists())
-            self.assertTrue((target_root / "global_workflows" / "vibe.md").exists())
-            self.assertTrue((target_root / "mcp_config.json").exists())
+            self.assertTrue((target_root / ".vibeskills" / "host-settings.json").exists())
             self.assertTrue((target_root / ".vibeskills" / "host-closure.json").exists())
+            self.assertFalse((target_root / "commands").exists())
+            self.assertFalse((target_root / "global_workflows").exists())
+            self.assertFalse((target_root / "mcp_config.json").exists())
             self.assertFalse((target_root / "settings.json").exists())
 
             check_result = subprocess.run(
@@ -114,6 +116,7 @@ class WindsurfRuntimeCoreTests(unittest.TestCase):
             self.assertIn("Host: windsurf", check_result.stdout)
             self.assertIn("[OK] host closure manifest", check_result.stdout)
             self.assertNotIn("[FAIL] settings.json", check_result.stdout)
+            self.assertNotIn("[FAIL] mcp_config.json", check_result.stdout)
 
 
 if __name__ == "__main__":

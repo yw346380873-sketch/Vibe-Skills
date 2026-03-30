@@ -359,11 +359,6 @@ def plan_uninstall(repo_root: Path, target_root: Path, adapter: dict) -> dict[st
     managed_json_paths = parse_managed_json_paths(ledger.get("managed_json_paths") if isinstance(ledger, dict) else None, target_root)
     merged_files = parse_merged_files(ledger.get("merged_files") if isinstance(ledger, dict) else None, target_root)
 
-    if host_id in {"claude-code", "cursor"}:
-        managed_json_paths.setdefault("settings.json", {"managed_key": "vibeskills", "created_if_absent": False})
-    if host_id == "opencode":
-        managed_json_paths.setdefault("opencode.json", {"managed_key": "vibeskills", "created_if_absent": False})
-
     return {
         "managed_files": {entry for entry in managed_files if entry and not any(entry == deleted or entry.startswith(f"{deleted}/") for deleted in deleted_dirs)},
         "deleted_dirs": deleted_dirs,

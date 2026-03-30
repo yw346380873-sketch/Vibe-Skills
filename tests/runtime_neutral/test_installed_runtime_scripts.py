@@ -318,7 +318,8 @@ class InstalledRuntimeScriptsTests(unittest.TestCase):
         self.assertIn("Host                  : openclaw", bootstrap_result.stdout)
         self.assertIn("One-shot setup completed.", bootstrap_result.stdout)
         self.assertTrue((installed_root / "SKILL.md").exists())
-        self.assertTrue((self.target_root / "mcp_config.json").exists())
+        self.assertTrue((self.target_root / ".vibeskills" / "host-settings.json").exists())
+        self.assertFalse((self.target_root / "mcp_config.json").exists())
 
     def test_shell_install_prunes_stale_managed_entries_without_recursive_dir_wipe(self) -> None:
         self.install_shell_runtime()
@@ -342,7 +343,7 @@ class InstalledRuntimeScriptsTests(unittest.TestCase):
         install_script = (self.target_root / "skills" / "vibe" / "install.sh").read_text(encoding="utf-8")
         self.assertNotIn("rm -rf", install_script)
 
-    def test_shell_install_repairs_legacy_opencode_config_without_touching_user_settings(self) -> None:
+    def test_shell_install_preserves_existing_opencode_config_without_mutation(self) -> None:
         self.target_root.mkdir(parents=True, exist_ok=True)
         settings_path = self.target_root / "opencode.json"
         settings_path.write_text(
@@ -386,10 +387,116 @@ class InstalledRuntimeScriptsTests(unittest.TestCase):
         )
 
         self.assertIn("Install done.", result.stdout)
-        repaired = json.loads(settings_path.read_text(encoding="utf-8"))
-        self.assertNotIn("vibeskills", repaired)
-        self.assertIn("mcp", repaired)
+        preserved = json.loads(settings_path.read_text(encoding="utf-8"))
+        self.assertIn("vibeskills", preserved)
+        self.assertIn("mcp", preserved)
         self.assertTrue((self.target_root / "opencode.json.example").exists())
+
+    def test_powershell_fallback_install_writes_sidecars_and_ledger_for_openclaw(self) -> None:
+        powershell = resolve_powershell()
+        if powershell is None:
+            self.skipTest("PowerShell executable not available in PATH")
+
+        target_root = self.root / "pwsh-fallback-openclaw"
+        target_root.mkdir(parents=True, exist_ok=True)
+        env = self.strict_install_env(powershell=powershell)
+
+        result = subprocess.run(
+            [
+                powershell,
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(REPO_ROOT / "install.ps1"),
+                "-HostId",
+                "openclaw",
+                "-Profile",
+                "full",
+                "-TargetRoot",
+                str(target_root),
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+            env=env,
+        )
+
+        host_settings_path = target_root / ".vibeskills" / "host-settings.json"
+        closure_path = target_root / ".vibeskills" / "host-closure.json"
+        ledger_path = target_root / ".vibeskills" / "install-ledger.json"
+        self.assertIn("Installation complete.", result.stdout)
+        self.assertTrue(host_settings_path.exists())
+        self.assertTrue(closure_path.exists())
+        self.assertTrue(ledger_path.exists())
+        self.assertFalse((target_root / "mcp_config.json").exists())
+        self.assertFalse((target_root / "global_workflows").exists())
+
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+        self.assertEqual("openclaw", ledger["host_id"])
+        self.assertEqual("runtime-core", ledger["install_mode"])
+        self.assertIn(str(host_settings_path.resolve()), ledger["managed_json_paths"])
+        self.assertNotIn(str((target_root / "mcp_config.json").resolve()), ledger["managed_json_paths"])
+        self.assertTrue(ledger["specialist_wrapper_paths"])
+
+    def test_powershell_fallback_install_preserves_existing_opencode_config_without_mutation(self) -> None:
+        powershell = resolve_powershell()
+        if powershell is None:
+            self.skipTest("PowerShell executable not available in PATH")
+
+        target_root = self.root / "pwsh-fallback-opencode"
+        target_root.mkdir(parents=True, exist_ok=True)
+        settings_path = target_root / "opencode.json"
+        original = {
+            "$schema": "https://opencode.ai/config.json",
+            "mcp": {
+                "playwright": {
+                    "enabled": True,
+                    "type": "local",
+                    "command": ["npx", "@playwright/mcp@latest"],
+                }
+            },
+            "vibeskills": {
+                "host_id": "opencode",
+                "managed": True,
+                "commands_root": str((target_root / "commands").resolve()),
+                "agents_root": str((target_root / "agents").resolve()),
+            },
+        }
+        settings_path.write_text(json.dumps(original, indent=2) + "\n", encoding="utf-8")
+
+        env = self.strict_install_env(powershell=powershell)
+        result = subprocess.run(
+            [
+                powershell,
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(REPO_ROOT / "install.ps1"),
+                "-HostId",
+                "opencode",
+                "-Profile",
+                "full",
+                "-TargetRoot",
+                str(target_root),
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+            env=env,
+        )
+
+        ledger_path = target_root / ".vibeskills" / "install-ledger.json"
+        self.assertIn("Installation complete.", result.stdout)
+        self.assertEqual(original, json.loads(settings_path.read_text(encoding="utf-8")))
+        self.assertTrue((target_root / "opencode.json.example").exists())
+        self.assertTrue(ledger_path.exists())
+
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+        self.assertEqual("opencode", ledger["host_id"])
+        self.assertNotIn(str(settings_path.resolve()), ledger["managed_json_paths"])
+        self.assertIn(str((target_root / ".vibeskills" / "host-settings.json").resolve()), ledger["managed_json_paths"])
 
     def test_shell_install_require_closed_ready_fails_without_bridge_command(self) -> None:
         for host_id, _env_name in STRICT_READY_HOSTS:
