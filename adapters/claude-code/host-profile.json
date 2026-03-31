@@ -1,37 +1,39 @@
 {
   "adapter_id": "claude-code",
   "host_name": "Claude Code",
-  "status": "preview",
-  "runtime_role": "host-adapter-preview",
+  "status": "supported-with-constraints",
+  "runtime_role": "host-adapter-supported",
   "source_evidence": [
     "config/settings.template.claude.json",
     "scripts/bootstrap/scaffold-claude-preview.ps1",
+    "scripts/install/install_vgo_adapter.py",
     "install.ps1",
-    "check.ps1"
+    "check.ps1",
+    "check.sh",
+    "tests/runtime_neutral/test_claude_preview_scaffold.py"
   ],
   "settings_surface": {
     "path": "~/.claude/settings.json",
     "managed_by_repo": true,
-    "notes": "The repository now preserves existing Claude settings while adding a minimal vibeskills-managed surface and host-closure metadata. Hook installation remains preview-scoped."
+    "notes": "The repository preserves existing Claude settings while adding a bounded vibeskills-managed stanza, a managed PreToolUse hook entry, and a managed write-guard hook script."
   },
   "host_managed_surfaces": [
     "plugin enablement",
-    "hook installation",
     "MCP registration",
     "provider credentials",
-    "broader Claude host behavior outside the managed vibeskills surface"
+    "broader Claude host behavior outside the managed vibeskills + write-guard surface"
   ],
   "capabilities": {
     "fs.read": "expected",
     "fs.write": "expected",
     "shell.exec": "expected",
     "mcp.client": "supported-with-constraints",
-    "settings.materialize": "preview-managed",
+    "settings.materialize": "managed-with-constraints",
     "plugin.provision": "manual-host-managed",
     "agent.spawn": "expected",
     "route.provider_call": "supported-with-constraints",
     "route.offline_fallback": "expected",
-    "release.verify": "preview-guidance"
+    "release.verify": "supported-with-constraints"
   },
   "degrade_contract": {
     "missing_plugins": "degraded-but-supported",

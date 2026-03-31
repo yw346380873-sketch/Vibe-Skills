@@ -16,7 +16,7 @@ The current public surface supports six hosts:
 Within that scope:
 
 - `codex`: governed path
-- `claude-code`: preview guidance
+- `claude-code`: supported install-and-use path with bounded managed closure
 - `cursor`: preview guidance
 - `windsurf`: preview runtime-core
 - `openclaw`: `preview` / `runtime-core-preview` / `runtime-core`
@@ -51,14 +51,15 @@ bash ./check.sh --host claude-code --profile full --deep
 
 What you get:
 
-- preview-guidance payload
-- preview health check
+- bounded managed `vibeskills` + write-guard hook surface
+- incremental merge and verification against the real `~/.claude/settings.json`
+- supported-with-constraints health check
 
 What you do not get:
 
 - full closure
 - overwrite of the real `~/.claude/settings.json`
-- automatic hooks
+- automatic takeover of broader Claude plugin / MCP / credential surfaces
 
 ## Cursor
 
@@ -152,6 +153,6 @@ Next actions:
 ## Boundaries That Must Hold During Cold Start
 
 - `HostId` / `--host` decides host semantics
-- hooks remain frozen across the current public surface; that is not an install failure
+- hooks are not uniform across the current public surface: Codex/Cursor keep hooks frozen, while Claude has a bounded managed write-guard hook surface
 - if local provider fields are not configured, the environment must not be described as online-ready
 - do not ask users to paste secrets into chat

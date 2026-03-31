@@ -3,15 +3,15 @@
   "lane_id": "host-claude-code",
   "lane_kind": "host-adapter",
   "host_id": "claude-code",
-  "stability": "preview",
+  "stability": "supported-with-constraints",
   "source_release": {
     "version": "2.3.55",
     "updated": "2026-03-30"
   },
-  "summary": "Claude Code host adapter preview. The repo can now scaffold preview artifacts and run preview health checks, but still does not claim full governed closure.",
+  "summary": "Claude Code host adapter lane with bounded managed closure. The repo can write and verify a managed Claude settings + hook surface, while still keeping broader host behavior outside repo ownership.",
   "runtime_ownership": {
     "owner": "host_managed",
-    "notes": "This lane must not claim official runtime closure. It only exposes configuration artifacts and truthful readiness boundaries."
+    "notes": "This lane must not claim official runtime closure. It owns only the bounded vibeskills-managed Claude settings and write-guard hook surface plus truthful readiness boundaries."
   },
   "entrypoints": {
     "install_primary": "install.ps1 --host claude-code",
@@ -21,10 +21,12 @@
   },
   "capability_promises": [
     {
-      "id": "claude_code_settings_template_exists",
+      "id": "claude_code_managed_settings_surface_exists",
       "promise_level": "promised",
       "evidence_paths": [
-        "config/settings.template.claude.json"
+        "scripts/install/install_vgo_adapter.py",
+        "adapters/claude-code/host-profile.json",
+        "tests/runtime_neutral/test_claude_preview_scaffold.py"
       ]
     },
     {
@@ -36,11 +38,12 @@
       ]
     },
     {
-      "id": "claude_preview_scaffold_exists",
+      "id": "claude_code_managed_hook_surface_exists",
       "promise_level": "promised",
       "evidence_paths": [
-        "scripts/bootstrap/scaffold-claude-preview.ps1",
-        "scripts/bootstrap/scaffold-claude-preview.sh"
+        "hooks/write-guard.js",
+        "check.sh",
+        "tests/runtime_neutral/test_claude_preview_scaffold.py"
       ]
     }
   ],
@@ -65,7 +68,7 @@
     "host_support": {
       "truth_source": "docs/universalization/host-capability-matrix.md",
       "interpretation": "host_matrix_rating",
-      "rating": "preview"
+      "rating": "supported-with-constraints"
     }
   }
 }

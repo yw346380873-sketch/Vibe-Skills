@@ -29,6 +29,7 @@ This document only maps that truth into the install entrypoints.
 ## Lane Applicability
 
 - `official-runtime` and `host-codex` inherit this platform matrix directly.
-- `host-claude-code`, `host-cursor`, and `host-opencode` use shared entrypoints as preview-scaffold lanes, but do not claim governed install closure.
+- `host-claude-code` uses shared entrypoints as a `managed-with-constraints` lane: it can write and verify a bounded Claude managed surface, but does not claim official-runtime closure.
+- `host-cursor` and `host-opencode` use shared entrypoints as preview-scaffold lanes, but do not claim governed install closure.
 - `host-windsurf` and `host-openclaw` use shared entrypoints as `runtime-core-preview` lanes, with truthful runtime-core-only boundaries on host-native surfaces.
 - `core` remains contract-only and does not claim a host-native install lane.

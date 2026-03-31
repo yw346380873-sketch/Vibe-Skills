@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-03-25",
+  "updated_at": "2026-03-31",
   "policy": "replay-host-capability-matrix",
   "sources": {
     "execution_program": "docs/plans/2026-03-13-universal-vibeskills-execution-program.md",
@@ -34,8 +34,8 @@
     {
       "adapter_id": "claude-code",
       "host_profile": "adapters/claude-code/host-profile.json",
-      "expected_status": "preview",
-      "expected_runtime_role": "host-adapter-preview",
+      "expected_status": "supported-with-constraints",
+      "expected_runtime_role": "host-adapter-supported",
       "platform_contracts": [
         "adapters/claude-code/platform-windows.json",
         "adapters/claude-code/platform-linux.json",
@@ -56,8 +56,8 @@
     {
       "adapter_id": "opencode",
       "host_profile": "adapters/opencode/host-profile.json",
-      "expected_status": "not-yet-proven",
-      "expected_runtime_role": "future-host-adapter",
+      "expected_status": "preview",
+      "expected_runtime_role": "host-adapter-preview",
       "platform_contracts": []
     },
     {
@@ -131,10 +131,18 @@
       "lane_id": "claude-code/linux",
       "adapter_id": "claude-code",
       "platform": "linux",
-      "expected_platform_status": "not-yet-proven",
+      "expected_platform_status": "supported-with-constraints",
       "platform_contract": "adapters/claude-code/platform-linux.json",
+      "promotion_bundle": {
+        "manifest": "references/proof-bundles/claude-code-managed-closure-candidate/manifest.json",
+        "current_evidence_state": "linux-proof-frozen-windows-macos-pending"
+      },
       "closure_truth": {
-        "authoritative_lane": false
+        "authoritative_lane": false,
+        "notes": [
+          "Linux is proven only for the bounded managed Claude settings and hook closure on a real local host.",
+          "This lane is not official-runtime closure and does not imply Windows or macOS parity."
+        ]
       }
     },
     {

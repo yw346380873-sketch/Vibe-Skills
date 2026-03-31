@@ -2,10 +2,10 @@
   "manifest_kind": "vibeskills-distribution-manifest",
   "manifest_version": 1,
   "package_id": "vibeskills-claude-code",
-  "package_name": "VibeSkills for Claude Code (Preview)",
-  "status": "preview",
-  "runtime_role": "host-adapter-preview",
-  "summary": "Claude Code may consume VibeSkills contracts and guidance, but this repository does not currently provide a governed install/check closure lane equivalent to the Codex official runtime.",
+  "package_name": "VibeSkills for Claude Code",
+  "status": "supported-with-constraints",
+  "runtime_role": "host-adapter-supported",
+  "summary": "Claude Code now has a bounded managed install/check lane that writes and verifies a Claude settings + hook surface, but it still does not become the Codex official runtime or full platform-parity lane.",
   "source_release": {
     "version": "2.3.55",
     "updated": "2026-03-30"
@@ -14,10 +14,12 @@
     "docs/universalization/host-capability-matrix.md",
     "docs/universalization/platform-parity-contract.md",
     "adapters/claude-code/host-profile.json",
+    "adapters/claude-code/closure.json",
     "adapters/claude-code/platform-windows.json",
     "adapters/claude-code/platform-linux.json",
     "adapters/claude-code/platform-macos.json",
-    "README.md"
+    "README.md",
+    "tests/runtime_neutral/test_claude_preview_scaffold.py"
   ],
   "host_adapter_ref": "adapters/claude-code/host-profile.json",
   "platform_contracts": [
@@ -27,17 +29,21 @@
   ],
   "install_entrypoints": {
     "repo_provided": [
-      "config/settings.template.claude.json"
+      "install.ps1 --host claude-code",
+      "install.sh --host claude-code",
+      "settings.json managed vibeskills stanza",
+      "settings.json managed Claude PreToolUse hook entry",
+      "hooks/write-guard.js"
     ],
     "host_managed": [
       "plugin enablement",
-      "hook execution environment",
       "MCP registration",
-      "provider credentials"
+      "provider credentials",
+      "broader Claude host behavior outside the managed vibeskills + write-guard surface"
     ],
     "notes": [
-      "Template availability is not a governed install lane.",
-      "Do not market this as 'full' or 'authoritative' until replay-backed proof exists."
+      "The repo preserves existing Claude settings while merging a bounded managed surface.",
+      "Do not market this as Codex-equivalent official-runtime ownership or full platform parity."
     ]
   },
   "degrade_states": {
@@ -46,7 +52,7 @@
     "missing_provider_credentials": "degraded-but-supported"
   },
   "anti_overclaim": [
-    "Preview means proof bundle is incomplete.",
-    "Claude Code is not claimed to be platform-parity with Codex in this repository."
+    "Supported-with-constraints still means host-managed plugins, MCP, credentials, and broader Claude behavior remain outside repo ownership.",
+    "Claude Code is not claimed to be platform-parity with Codex or an official-runtime lane in this repository."
   ]
 }

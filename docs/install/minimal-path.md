@@ -36,7 +36,7 @@
 
 ### Claude Code / OpenCode / Generic Host
 
-- Claude Code：此仓库当前是 `preview`（模板与指导存在，但没有与 Codex 等价的 repo-governed install/check 闭环）
+- Claude Code：此仓库当前是 `supported-with-constraints`（已经有受约束的 settings + hook 安装/检查闭环，但仍不是 Codex 官方 runtime，也不能宣传为满血等价）
 - OpenCode：此仓库当前也是 `preview`，但有独立的 direct `install/check` 入口和专门安装说明
 - Generic Host：`advisory-only`（只能消费契约与文档，不做运行时承诺）
 

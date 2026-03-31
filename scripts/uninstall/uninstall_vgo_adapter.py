@@ -23,6 +23,24 @@ def write_json_file(path: Path, data: object):
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def should_remove_claude_pretooluse_hook_entry(
+    entry: dict,
+    *,
+    managed_hook_command: str,
+    managed_hook_description: str,
+) -> bool:
+    entry_hooks = entry.get("hooks")
+    entry_command = ""
+    if isinstance(entry_hooks, list) and entry_hooks:
+        first_hook = entry_hooks[0]
+        if isinstance(first_hook, dict):
+            entry_command = str(first_hook.get("command") or "").strip()
+    if managed_hook_command:
+        return bool(entry_command) and entry_command == managed_hook_command
+    description = str(entry.get("description") or "").strip()
+    return bool(managed_hook_description) and not entry_command and description == managed_hook_description
+
+
 def normalize_relpath(value: str | Path | None) -> str | None:
     if value is None:
         return None
@@ -236,59 +254,6 @@ def parse_merged_files(values: object, target_root: Path) -> dict[str, dict[str,
     return merged
 
 
-def collect_host_sidecar_paths(
-    target_root: Path,
-    ledger: dict | None,
-    closure: dict | None,
-) -> set[str]:
-    sidecar_root = target_root / ".vibeskills"
-    managed: set[str] = set()
-    if not sidecar_root.exists():
-        return managed
-
-    for marker in ("host-settings.json", "host-closure.json", "install-ledger.json"):
-        marker_path = sidecar_root / marker
-        if marker_path.exists():
-            managed.add(f".vibeskills/{marker}")
-
-    if isinstance(ledger, dict):
-        managed.update(parse_path_list(ledger.get("specialist_wrapper_paths"), target_root))
-
-    if isinstance(closure, dict):
-        wrapper = closure.get("specialist_wrapper")
-        if isinstance(wrapper, dict):
-            for field in ("launcher_path", "script_path"):
-                rel = relativize_to_target(wrapper.get(field), target_root)
-                if rel:
-                    managed.add(rel)
-
-    return {entry for entry in managed if entry}
-
-
-def sidecar_has_workspace_project(target_root: Path) -> bool:
-    return (target_root / ".vibeskills" / "project.json").exists()
-
-
-def sidecar_has_workspace_runtime_artifacts(target_root: Path) -> bool:
-    sidecar_root = target_root / ".vibeskills"
-    if not sidecar_root.exists():
-        return False
-    for runtime_root in ("docs", "outputs"):
-        if (sidecar_root / runtime_root).exists():
-            return True
-    return False
-
-
-def sidecar_has_host_markers(target_root: Path) -> bool:
-    sidecar_root = target_root / ".vibeskills"
-    if not sidecar_root.exists():
-        return False
-    for marker in ("host-settings.json", "host-closure.json", "install-ledger.json"):
-        if (sidecar_root / marker).exists():
-            return True
-    return (sidecar_root / "bin").exists()
-
-
 def remove_vibeskills_node(
     path: Path,
     *,
@@ -310,6 +275,38 @@ def remove_vibeskills_node(
         return
 
     next_payload = dict(payload)
+    managed_node = payload.get("vibeskills")
+    managed_hook_command = ""
+    managed_hook_description = ""
+    if isinstance(managed_node, dict):
+        managed_hook_command = str(managed_node.get("managed_hook_command") or "").strip()
+        managed_hook_description = str(managed_node.get("managed_hook_description") or "").strip()
+
+    hooks = next_payload.get("hooks")
+    if isinstance(hooks, dict) and "PreToolUse" in hooks:
+        pre_tool_use = hooks.get("PreToolUse")
+        if isinstance(pre_tool_use, list):
+            filtered_pre_tool_use = []
+            for entry in pre_tool_use:
+                if not isinstance(entry, dict):
+                    filtered_pre_tool_use.append(entry)
+                    continue
+                if should_remove_claude_pretooluse_hook_entry(
+                    entry,
+                    managed_hook_command=managed_hook_command,
+                    managed_hook_description=managed_hook_description,
+                ):
+                    continue
+                filtered_pre_tool_use.append(entry)
+            if filtered_pre_tool_use:
+                hooks["PreToolUse"] = filtered_pre_tool_use
+            else:
+                del hooks["PreToolUse"]
+            if hooks:
+                next_payload["hooks"] = hooks
+            else:
+                next_payload.pop("hooks", None)
+
     del next_payload["vibeskills"]
     mutated_json_paths.append(relpath)
 
@@ -376,6 +373,7 @@ def plan_uninstall(repo_root: Path, target_root: Path, adapter: dict) -> dict[st
         for rel in sorted(parse_path_list(ledger.get("created_paths"), target_root)):
             candidate = target_root / rel
             if rel == ".vibeskills" and candidate.exists():
+                deleted_dirs.add(rel)
                 continue
             if candidate.exists() and candidate.is_dir() and not candidate.is_symlink():
                 continue
@@ -392,14 +390,7 @@ def plan_uninstall(repo_root: Path, target_root: Path, adapter: dict) -> dict[st
     if closure is not None:
         ownership_source.append("host-closure")
 
-    managed_files.update(collect_host_sidecar_paths(target_root, ledger, closure))
-
-    workspace_sidecar_boundary_present = (
-        sidecar_has_workspace_project(target_root)
-        or sidecar_has_workspace_runtime_artifacts(target_root)
-    )
-
-    if sidecar_has_host_markers(target_root) and not workspace_sidecar_boundary_present:
+    if ownership_source and (target_root / ".vibeskills").exists():
         deleted_dirs.add(".vibeskills")
 
     if not ownership_source:

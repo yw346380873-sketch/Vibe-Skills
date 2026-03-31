@@ -136,8 +136,8 @@ git checkout vX.Y.Z
 ### Claude Code
 
 - this host has a supported install-and-use path
-- it does not overwrite the real `~/.claude/settings.json`
-- hooks remain frozen; that is not an install failure
+- it preserves the real `~/.claude/settings.json` while merging a bounded managed `vibeskills` + write-guard hook surface
+- broader Claude plugins, MCP registration, credentials, and host behavior still remain host-managed
 - for the built-in governance-advice path, prefer `VCO_INTENT_ADVICE_API_KEY` + optional `VCO_INTENT_ADVICE_BASE_URL` + `VCO_INTENT_ADVICE_MODEL`; configure `VCO_VECTOR_DIFF_*` only when you also want vector-diff embeddings
 
 ### Cursor

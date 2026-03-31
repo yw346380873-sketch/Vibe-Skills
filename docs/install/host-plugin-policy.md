@@ -38,8 +38,8 @@
 
 - 提供支持的安装与使用路径
 - 不靠“补一堆宿主插件”来完成接入
-- 不覆盖真实 `~/.claude/settings.json`
-- hook 当前冻结；这不是安装失败
+- 会在保留真实 `~/.claude/settings.json` 的前提下，增量合并受约束的 `vibeskills` 与 write-guard hook 面
+- plugin enablement、MCP 注册、凭据与更广的 Claude 行为仍由宿主侧管理
 
 ## Cursor
 
@@ -78,5 +78,5 @@
 - `openclaw` 提供支持的安装与使用路径，默认根目录是 `OPENCLAW_HOME` 或 `~/.openclaw`
 - `opencode` 提供支持的安装与使用路径，默认根目录是 `OPENCODE_HOME` 或 `~/.config/opencode`
 - `opencode` 走 direct install/check，且不接管真实 `opencode.json`
-- hooks 在当前公开支持面里统一冻结；这不是用户安装失败
+- hooks 在当前公开支持面里不是一刀切：Codex/Cursor 仍冻结，Claude 已有受约束的受管 write-guard hook 面
 - provider 的 `url` / `apikey` / `model` 由用户在本地配置，不要要求用户贴到聊天里

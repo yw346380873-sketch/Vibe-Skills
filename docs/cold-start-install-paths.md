@@ -16,7 +16,7 @@
 其中：
 
 - `codex`：governed 正式路径
-- `claude-code`：preview guidance
+- `claude-code`：supported install-and-use path with bounded managed closure
 - `cursor`：preview guidance
 - `windsurf`：preview runtime-core
 - `openclaw`：`preview` / `runtime-core-preview` / `runtime-core`
@@ -56,14 +56,15 @@ bash ./check.sh --host claude-code --profile full --deep
 
 你会得到：
 
-- preview guidance payload
-- preview health check
+- bounded managed `vibeskills` + write-guard hook surface
+- install/check 对真实 `~/.claude/settings.json` 的增量合并与校验
+- supported-with-constraints health check
 
 你不会得到：
 
 - full closure
 - 覆盖真实 `~/.claude/settings.json`
-- hook 自动安装
+- Claude 宿主更广泛插件 / MCP / 凭据面的自动代管
 
 ## Cursor
 
@@ -157,6 +158,6 @@ bash ./check.sh --host opencode
 ## 冷启动阶段必须守住的边界
 
 - `HostId` / `--host` 决定宿主语义
-- hook 当前在公开支持面里统一冻结；这不是安装失败
+- hook 当前在公开支持面里不是统一冻结：Codex/Cursor 仍冻结，Claude 已有受约束的受管 write-guard hook 面
 - 本地 provider 字段没配好时，不能说环境已 online ready
 - 不要要求用户把密钥贴到聊天里

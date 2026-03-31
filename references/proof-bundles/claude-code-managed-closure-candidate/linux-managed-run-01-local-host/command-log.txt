@@ -1,0 +1,5 @@
+bash ./install.sh --host claude-code --profile full --target-root <proof-target-root>
+bash ./check.sh --host claude-code --profile full --target-root <proof-target-root> --deep
+pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify/vibe-bootstrap-doctor-gate.ps1 -TargetRoot <proof-target-root> -WriteArtifacts
+python3 ./scripts/verify/runtime_neutral/coherence_gate.py --target-root <proof-target-root> --write-artifacts
+claude --version

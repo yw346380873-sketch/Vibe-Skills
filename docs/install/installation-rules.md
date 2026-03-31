@@ -76,9 +76,9 @@
 
 - 运行 `--host claude-code`
 - 明确说明当前提供支持的安装与使用路径
-- hook 当前冻结；这不是安装失败
-- 不要声称安装器会额外写入 Claude Code 的宿主 settings 文件
-- 引导用户自己补 `~/.claude/settings.json` 的 `env`
+- 明确说明安装器会在保留现有 `~/.claude/settings.json` 内容的前提下，补入受约束的 `vibeskills` 节点、受管的 `PreToolUse` hook 条目，以及受管的 `hooks/write-guard.js`
+- 不要宣传成 official runtime、Codex 满血等价或跨平台 proof 已闭环
+- 引导用户继续把 `env`、plugin enablement、MCP 注册和 provider credentials 放在 Claude 宿主侧本地维护
 
 ## 规则 9：Cursor 也按“支持的安装与使用路径”口径描述
 

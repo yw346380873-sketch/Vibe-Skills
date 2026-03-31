@@ -37,7 +37,7 @@ According to `docs/universalization/platform-parity-contract.md`:
 
 ### Claude Code / OpenCode / Generic Host
 
-- Claude Code: `preview` in the current repository, with templates and guidance but without a Codex-equivalent repo-governed install/check closure
+- Claude Code: `supported-with-constraints` in the current repository, with a bounded managed settings + hook install/check surface, but still without Codex official-runtime ownership or full parity claims
 - OpenCode: `preview` in the current repository, with direct install/check entrypoints and a dedicated install path
 - Generic Host: `advisory-only`, meaning contract and document consumption only, with no runtime promise
 

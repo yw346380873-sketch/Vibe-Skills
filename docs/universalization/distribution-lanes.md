@@ -30,7 +30,7 @@ Dist manifests may point to these assets, but must not replace them.
 | `official-runtime` | Tier-1 official runtime in the canonical repo | yes | bounded by baseline docs + gates |
 | `core` | universal contracts and schemas only | none | contract-only |
 | `host-codex` | strongest host adapter lane | governed-with-constraints | supported-with-constraints |
-| `host-claude-code` | preview host adapter lane | preview-scaffold via shared entrypoints | preview only |
+| `host-claude-code` | supported host adapter lane with bounded Claude managed closure | managed-with-constraints via shared entrypoints | supported-with-constraints |
 | `host-opencode` | preview host adapter lane | preview-scaffold via shared entrypoints | preview only |
 | `host-cursor` | preview host adapter lane | preview-scaffold via shared entrypoints | preview only |
 | `host-windsurf` | preview host adapter lane using documented Windsurf root | runtime-core-preview via shared entrypoints | preview only |
@@ -49,6 +49,10 @@ Dist manifests may point to these assets, but must not replace them.
 
 - the repo may install bounded host-native payload such as wrapper files or example config
 - the repo still does not claim final host settings ownership or replay-backed platform parity
+`managed-with-constraints` means:
+
+- the repo may write and verify a bounded host-native managed surface such as a merged settings stanza and a managed hook entry
+- the repo still does not claim official-runtime ownership, replay-backed platform parity, or broader host-native behavior outside that managed surface
 `runtime-core-preview` means:
 
 - the repo can install canonical runtime-core payload into a documented host root such as `~/.codeium/windsurf` or `~/.openclaw`

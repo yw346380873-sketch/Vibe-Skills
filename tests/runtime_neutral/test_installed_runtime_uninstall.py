@@ -74,6 +74,8 @@ class InstalledRuntimeUninstallTests(unittest.TestCase):
         target_root = self.root / "claude-root"
         self.install_host("claude-code", target_root)
         settings_path = target_root / "settings.json"
+        settings = json.loads(settings_path.read_text(encoding="utf-8"))
+        self.assertIn("vibeskills", settings)
         sentinel = target_root / "commands" / "user.md"
         sentinel.parent.mkdir(parents=True, exist_ok=True)
         sentinel.write_text("user\n", encoding="utf-8")
@@ -83,6 +85,133 @@ class InstalledRuntimeUninstallTests(unittest.TestCase):
         self.assertFalse((target_root / ".vibeskills").exists())
         self.assertTrue(sentinel.exists())
         self.assertFalse(settings_path.exists())
+
+    def test_claude_code_uninstall_preserves_preexisting_settings(self) -> None:
+        target_root = self.root / "claude-root-preserve"
+        settings_path = target_root / "settings.json"
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text(
+            json.dumps(
+                {
+                    "env": {"ANTHROPIC_API_KEY": "secret"},
+                    "model": "claude-sonnet-4-6",
+                },
+                ensure_ascii=False,
+                indent=2,
+            ) + "\n",
+            encoding="utf-8",
+        )
+
+        self.install_host("claude-code", target_root)
+        self.uninstall_host("claude-code", target_root)
+
+        self.assertTrue(settings_path.exists())
+        mutated = json.loads(settings_path.read_text(encoding="utf-8"))
+        self.assertEqual({"ANTHROPIC_API_KEY": "secret"}, mutated["env"])
+        self.assertEqual("claude-sonnet-4-6", mutated["model"])
+        self.assertNotIn("vibeskills", mutated)
+        self.assertNotIn("hooks", mutated)
+
+    def test_claude_code_install_preserves_user_pretooluse_hook_with_same_description(self) -> None:
+        target_root = self.root / "claude-root-user-hook-install"
+        settings_path = target_root / "settings.json"
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        user_hook_command = "node /user/keep-write-guard.js"
+        settings_path.write_text(
+            json.dumps(
+                {
+                    "hooks": {
+                        "PreToolUse": [
+                            {
+                                "matcher": "Write",
+                                "hooks": [
+                                    {
+                                        "type": "command",
+                                        "command": user_hook_command,
+                                    }
+                                ],
+                                "description": "VibeSkills managed write guard",
+                            }
+                        ]
+                    }
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        self.install_host("claude-code", target_root)
+
+        settings = json.loads(settings_path.read_text(encoding="utf-8"))
+        pre_tool_use = settings["hooks"]["PreToolUse"]
+        commands = [
+            str(entry["hooks"][0]["command"])
+            for entry in pre_tool_use
+            if isinstance(entry, dict)
+            and isinstance(entry.get("hooks"), list)
+            and entry["hooks"]
+            and isinstance(entry["hooks"][0], dict)
+        ]
+        self.assertIn(user_hook_command, commands)
+        self.assertIn(
+            f"node {(target_root / 'hooks' / 'write-guard.js').resolve()}",
+            commands,
+        )
+
+    def test_claude_code_uninstall_preserves_user_pretooluse_hook_with_same_description(self) -> None:
+        target_root = self.root / "claude-root-user-hook-uninstall"
+        settings_path = target_root / "settings.json"
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        user_hook_command = "node /user/keep-write-guard.js"
+        settings_path.write_text(
+            json.dumps(
+                {
+                    "hooks": {
+                        "PreToolUse": [
+                            {
+                                "matcher": "Write",
+                                "hooks": [
+                                    {
+                                        "type": "command",
+                                        "command": user_hook_command,
+                                    }
+                                ],
+                                "description": "VibeSkills managed write guard",
+                            }
+                        ]
+                    }
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        self.install_host("claude-code", target_root)
+        self.uninstall_host("claude-code", target_root)
+
+        mutated = json.loads(settings_path.read_text(encoding="utf-8"))
+        pre_tool_use = mutated["hooks"]["PreToolUse"]
+        self.assertEqual(1, len(pre_tool_use))
+        self.assertEqual(user_hook_command, pre_tool_use[0]["hooks"][0]["command"])
+        self.assertNotIn("vibeskills", mutated)
+
+    def test_claude_code_uninstall_preserves_unowned_vibeskills_sidecar(self) -> None:
+        target_root = self.root / "claude-root-unowned-sidecar"
+        sidecar_root = target_root / ".vibeskills"
+        note_path = sidecar_root / "user-note.txt"
+        note_path.parent.mkdir(parents=True, exist_ok=True)
+        note_path.write_text("keep me\n", encoding="utf-8")
+
+        payload = self.uninstall_host("claude-code", target_root)
+
+        self.assertTrue(sidecar_root.exists())
+        self.assertTrue(note_path.exists())
+        self.assertEqual(["legacy"], payload["ownership_source"])
+        self.assertNotIn(".vibeskills", payload["deleted_paths"])
 
     def test_cursor_uninstall_removes_vibe_managed_surface(self) -> None:
         target_root = self.root / "cursor-root"

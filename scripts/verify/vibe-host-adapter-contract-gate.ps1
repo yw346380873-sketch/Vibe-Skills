@@ -58,6 +58,17 @@ if (Test-Path -LiteralPath $codexProfilePath) {
     }
 }
 
+$claudeProfilePath = Join-Path $adapterRoot 'claude-code/host-profile.json'
+if (Test-Path -LiteralPath $claudeProfilePath) {
+    $claude = Get-Content -LiteralPath $claudeProfilePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($claude.status -ne 'supported-with-constraints') {
+        $failures += "claude-code must now be supported-with-constraints"
+    }
+    if ($claude.runtime_role -ne 'host-adapter-supported') {
+        $failures += "claude-code runtime_role must be host-adapter-supported"
+    }
+}
+
 $openCodeProfilePath = Join-Path $adapterRoot 'opencode/host-profile.json'
 if (Test-Path -LiteralPath $openCodeProfilePath) {
     $opencode = Get-Content -LiteralPath $openCodeProfilePath -Raw -Encoding UTF8 | ConvertFrom-Json

@@ -136,8 +136,8 @@ git checkout vX.Y.Z
 ### Claude Code
 
 - 当前提供支持的安装与使用路径
-- 不覆盖真实 `~/.claude/settings.json`
-- hook 当前冻结；这不是安装失败
+- 会在保留真实 `~/.claude/settings.json` 的前提下，增量合并受约束的 `vibeskills` 与 write-guard hook 面
+- 更广的 Claude 插件、MCP 注册、凭据和宿主行为仍由宿主侧管理
 - 如需 AI 治理 advice 的常见配套路径，优先使用 `VCO_INTENT_ADVICE_API_KEY` + 可选 `VCO_INTENT_ADVICE_BASE_URL` + `VCO_INTENT_ADVICE_MODEL`
 
 ### Cursor

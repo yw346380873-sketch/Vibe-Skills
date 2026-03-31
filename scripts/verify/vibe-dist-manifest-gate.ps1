@@ -195,7 +195,7 @@ $results.dist.required_manifests = @($requiredManifests | ForEach-Object { $_.pa
 $requiredPublicManifests = @(
     [pscustomobject]@{ package_id = 'vibeskills-core'; path = 'dist/manifests/vibeskills-core.json'; expected_status = 'supported-with-constraints' },
     [pscustomobject]@{ package_id = 'vibeskills-codex'; path = 'dist/manifests/vibeskills-codex.json'; expected_status = 'supported-with-constraints' },
-    [pscustomobject]@{ package_id = 'vibeskills-claude-code'; path = 'dist/manifests/vibeskills-claude-code.json'; expected_status = 'preview' },
+    [pscustomobject]@{ package_id = 'vibeskills-claude-code'; path = 'dist/manifests/vibeskills-claude-code.json'; expected_status = 'supported-with-constraints' },
     [pscustomobject]@{ package_id = 'vibeskills-cursor'; path = 'dist/manifests/vibeskills-cursor.json'; expected_status = 'preview' },
     [pscustomobject]@{ package_id = 'vibeskills-windsurf'; path = 'dist/manifests/vibeskills-windsurf.json'; expected_status = 'preview' },
     [pscustomobject]@{ package_id = 'vibeskills-openclaw'; path = 'dist/manifests/vibeskills-openclaw.json'; expected_status = 'preview' },
@@ -355,7 +355,7 @@ Add-Assertion -Collection $assertions -Condition (Test-ContentPattern -Path $doc
 
 $hostClaudeRow = Find-MarkdownTableRow -Path $docsHostCapabilityMatrix -RowStartsWith '| Claude Code |'
 Add-Assertion -Collection $assertions -Condition ($null -ne $hostClaudeRow) -Message '[truth] host capability row for Claude Code exists'
-Add-Assertion -Collection $assertions -Condition (Test-ContentPattern -Path $docsHostCapabilityMatrix -Pattern '| Claude Code | `preview` |') -Message '[truth] Claude Code host status remains preview in host capability matrix'
+Add-Assertion -Collection $assertions -Condition (Test-ContentPattern -Path $docsHostCapabilityMatrix -Pattern '| Claude Code | `supported-with-constraints` |') -Message '[truth] Claude Code host status remains supported-with-constraints in host capability matrix'
 
 $hostCursorRow = Find-MarkdownTableRow -Path $docsHostCapabilityMatrix -RowStartsWith '| Cursor |'
 Add-Assertion -Collection $assertions -Condition ($null -ne $hostCursorRow) -Message '[truth] host capability row for Cursor exists'

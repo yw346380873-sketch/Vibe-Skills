@@ -68,9 +68,9 @@ Linux / macOS without `pwsh` still gets the full shipped content and the active 
 
 当前额外边界：
 
-- hook 由于兼容性问题已冻结
-- `codex` / `claude-code` / `windsurf` 当前都不会由 one-shot 安装 hook
-- `claude-code` 当前也不再写 `settings.vibe.preview.json`
+- Codex hook 由于兼容性问题仍冻结
+- `codex` / `windsurf` 当前不会由 one-shot 安装 hook；Claude 走受约束的 settings + write-guard hook 增量写入
+- `claude-code` 当前也不再写 `settings.vibe.preview.json`，而是直接合并真实 `settings.json`
 - `windsurf` 当前只能按 preview runtime-core 描述，不代表宿主登录、账号、provider 或插件闭环
 
 ## Operator Notes
@@ -152,7 +152,7 @@ bash ./check.sh --profile full --deep
 
 6. 如果 `OPENAI_API_KEY` 仍是 `placeholder` 或 `missing`，先在本地配置 key，不要在聊天里粘贴。
 7. 如果 `VCO_RUCNLPIR_MODEL` 仍是 `placeholder` 或 `missing`，补上治理层实际要调用的模型名。
-8. 如果是 Claude Code，打开 `~/.claude/settings.json`，只补充缺失的 `env` 字段；当前版本不会再生成 `settings.vibe.preview.json`。
+8. 如果是 Claude Code，打开 `~/.claude/settings.json`，只补充缺失的 `env` 字段；安装器会保留原文件并增量写入受约束的 `vibeskills` 与 write-guard hook 面。
 9. 如果 `manual_action_required` 的 MCP server 是 `stdio` 模式，先安装对应命令行依赖，再在 host 中注册。
 
 当前 `full` profile 最重要的人工补齐项是：
@@ -161,7 +161,7 @@ bash ./check.sh --profile full --deep
 - 你实际要在线使用的 provider secrets，尤其是 `OPENAI_API_KEY`
 - 内置治理 advice 要使用的模型名，即 `VCO_RUCNLPIR_MODEL`
 
-但默认策略不是“让用户自己折腾 hook 面”。当前 hook 由于兼容性问题被冻结，不在安装支持范围内。
+但默认策略也不是“让用户自己手工拼装受管 hook 面”。当前 Claude 路径已经能由安装器增量写入受管 write-guard hook；更广的 Claude host hook 行为仍不在仓库承诺范围内。
 
 推荐：
 

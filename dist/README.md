@@ -27,7 +27,7 @@
 
 - `dist/manifests/vibeskills-core.json`：跨宿主可消费的 core contract（**不**做运行时承诺）
 - `dist/manifests/vibeskills-codex.json`：Codex lane（当前最强、但仍有 host-managed 与降级边界）
-- `dist/manifests/vibeskills-claude-code.json`：Claude Code lane（preview，不可宣传为 full）
+- `dist/manifests/vibeskills-claude-code.json`：Claude Code lane（`supported-with-constraints`，但不可宣传为 official runtime / full）
 - `dist/manifests/vibeskills-opencode.json`：OpenCode lane（preview，仍保留 host-managed 边界与 proof blocker）
 - `dist/manifests/vibeskills-generic.json`：Generic lane（advisory-only，只能消费契约）
 

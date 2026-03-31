@@ -30,7 +30,7 @@ def embedded_registry():
             },
             {
                 "id": "claude-code",
-                "status": "preview",
+                "status": "supported-with-constraints",
                 "install_mode": "preview-guidance",
                 "check_mode": "preview-guidance",
                 "bootstrap_mode": "preview-guidance",
