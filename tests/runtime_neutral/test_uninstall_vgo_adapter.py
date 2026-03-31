@@ -309,6 +309,21 @@ class UnifiedUninstallTests(unittest.TestCase):
         self.assertTrue((self.target_root / ".vibeskills").exists())
         self.assertNotIn(".vibeskills", payload["deleted_paths"])
 
+    def test_workspace_outputs_runtime_artifacts_without_project_descriptor_are_not_deleted_by_host_uninstall(self) -> None:
+        host_settings_path = self.target_root / ".vibeskills" / "host-settings.json"
+        output_path = self.target_root / ".vibeskills" / "outputs" / "runtime" / "proof.json"
+        host_settings_path.parent.mkdir(parents=True, exist_ok=True)
+        write_json(host_settings_path, {"schema_version": 1})
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text("{}\n", encoding="utf-8")
+
+        _, payload = self.run_python_uninstall(host="cursor")
+
+        self.assertFalse(host_settings_path.exists())
+        self.assertTrue(output_path.exists())
+        self.assertTrue((self.target_root / ".vibeskills").exists())
+        self.assertNotIn(".vibeskills", payload["deleted_paths"])
+
     def test_shared_json_parse_failure_warns_without_deleting(self) -> None:
         settings_path = self.target_root / "settings.json"
         settings_path.write_text("{not-json}\n", encoding="utf-8")
