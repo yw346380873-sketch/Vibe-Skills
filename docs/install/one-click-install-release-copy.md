@@ -90,14 +90,14 @@
 
 如果你本机已经装了 PowerShell 7，也可以把 `powershell.exe` 换成 `pwsh`。
 
-常见默认根目录：
+常见默认目标根目录：
 
-- `codex` -> `~/.codex`
-- `claude-code` -> `~/.claude`
-- `cursor` -> `~/.cursor`
-- `windsurf` -> `~/.codeium/windsurf`
-- `openclaw` -> `~/.openclaw`
-- `opencode` -> `~/.config/opencode`
+- `codex` -> `CODEX_HOME` 或 `~/.vibeskills/targets/codex`
+- `claude-code` -> `CLAUDE_HOME` 或 `~/.vibeskills/targets/claude-code`
+- `cursor` -> `CURSOR_HOME` 或 `~/.vibeskills/targets/cursor`
+- `windsurf` -> `WINDSURF_HOME` 或 `~/.vibeskills/targets/windsurf`
+- `openclaw` -> `OPENCLAW_HOME` 或 `~/.vibeskills/targets/openclaw`
+- `opencode` -> `OPENCODE_HOME` 或 `~/.vibeskills/targets/opencode`
 
 结果说明：
 

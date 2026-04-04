@@ -54,10 +54,10 @@ class OpenCodeManagedPreviewTests(unittest.TestCase):
             self.assertFalse(settings_path.exists())
             self.assertTrue(example_path.exists())
             self.assertTrue((target_root / ".vibeskills" / "host-settings.json").exists())
-            self.assertFalse((target_root / "commands").exists())
-            self.assertFalse((target_root / "command").exists())
-            self.assertFalse((target_root / "agents").exists())
-            self.assertFalse((target_root / "agent").exists())
+            self.assertTrue((target_root / "commands" / "vibe.md").exists())
+            self.assertTrue((target_root / "command" / "vibe.md").exists())
+            self.assertTrue((target_root / "agents" / "vibe-plan.md").exists())
+            self.assertTrue((target_root / "agent" / "vibe-plan.md").exists())
             closure = json.loads(closure_path.read_text(encoding="utf-8"))
             self.assertEqual([str((target_root / ".vibeskills" / "host-settings.json").resolve())], closure["settings_materialized"])
             self.assertIsNone(payload["legacy_opencode_config_cleanup"])
@@ -97,7 +97,7 @@ class OpenCodeManagedPreviewTests(unittest.TestCase):
             self.assertIn("mcp", preserved)
             self.assertIsNone(payload["legacy_opencode_config_cleanup"])
 
-    def test_shell_install_and_check_use_sidecar_only_opencode_preview_contract(self) -> None:
+    def test_shell_install_and_check_materialize_opencode_preview_wrappers_without_touching_real_config(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:
             target_root = Path(tempdir)
             settings_path = target_root / "opencode.json"
@@ -151,8 +151,8 @@ class OpenCodeManagedPreviewTests(unittest.TestCase):
             self.assertNotIn("[FAIL] opencode command/", check_result.stdout)
             self.assertNotIn("[FAIL] opencode agent/", check_result.stdout)
             self.assertEqual(original, json.loads(settings_path.read_text(encoding="utf-8")))
-            self.assertFalse((target_root / "commands").exists())
-            self.assertFalse((target_root / "agents").exists())
+            self.assertTrue((target_root / "commands" / "vibe.md").exists())
+            self.assertTrue((target_root / "agents" / "vibe-plan.md").exists())
             self.assertTrue((target_root / ".vibeskills" / "host-settings.json").exists())
 
 

@@ -84,32 +84,33 @@ In that setup:
 
 ### Codex
 
-- target root: `~/.codex`
+- target root: `CODEX_HOME` or `~/.vibeskills/targets/codex`
 - common location: `~/.codex/settings.json` -> `env`
 
 ### Claude Code
 
-- target root: `~/.claude`
+- target root: `CLAUDE_HOME` or `~/.vibeskills/targets/claude-code`
 - common location: `~/.claude/settings.json` -> `env`
 
 ### Cursor
 
-- target root: `~/.cursor`
+- target root: `CURSOR_HOME` or `~/.vibeskills/targets/cursor`
 - common location: `~/.cursor/settings.json` -> `env`
 
 ### Windsurf
 
-- target root: `~/.codeium/windsurf`
+- target root: `WINDSURF_HOME` or `~/.vibeskills/targets/windsurf`
 - if the host does not use `<target-root>/settings.json`, set local environment variables before running the check
 
 ### OpenClaw
 
-- target root: `OPENCLAW_HOME` or `~/.openclaw`
+- target root: `OPENCLAW_HOME` or `~/.vibeskills/targets/openclaw`
 - if the host does not use `<target-root>/settings.json`, set local environment variables before running the check
 
 ### OpenCode
 
-- target root: `OPENCODE_HOME` or `~/.config/opencode`
+- target root: `OPENCODE_HOME` or `~/.vibeskills/targets/opencode`
+- the real host config directory remains `~/.config/opencode`
 - if the host does not use `<target-root>/settings.json`, set local environment variables before running the check
 
 ## Quick-check commands
@@ -130,14 +131,14 @@ If PowerShell 7 is already installed on your machine, you can use `pwsh` instead
 python3 ./scripts/verify/runtime_neutral/router_ai_connectivity_probe.py --target-root "<target host root>" --write-artifacts
 ```
 
-Common default roots:
+Common default target roots:
 
-- `codex` -> `~/.codex`
-- `claude-code` -> `~/.claude`
-- `cursor` -> `~/.cursor`
-- `windsurf` -> `~/.codeium/windsurf`
-- `openclaw` -> `~/.openclaw`
-- `opencode` -> `~/.config/opencode`
+- `codex` -> `CODEX_HOME` or `~/.vibeskills/targets/codex`
+- `claude-code` -> `CLAUDE_HOME` or `~/.vibeskills/targets/claude-code`
+- `cursor` -> `CURSOR_HOME` or `~/.vibeskills/targets/cursor`
+- `windsurf` -> `WINDSURF_HOME` or `~/.vibeskills/targets/windsurf`
+- `openclaw` -> `OPENCLAW_HOME` or `~/.vibeskills/targets/openclaw`
+- `opencode` -> `OPENCODE_HOME` or `~/.vibeskills/targets/opencode`
 
 ## How to read the result
 

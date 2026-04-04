@@ -23,8 +23,8 @@ def test_resolve_target_root_spec_projects_registry_target_root_semantics() -> N
 
     assert normalized == 'windsurf'
     assert spec['env'] == 'WINDSURF_HOME'
-    assert spec['rel'] == '.codeium/windsurf'
-    assert spec['kind'] == 'host-home'
+    assert spec['rel'] == '.vibeskills/targets/windsurf'
+    assert spec['kind'] == 'isolated-home'
     assert spec['install_mode'] == 'runtime-core'
 
 

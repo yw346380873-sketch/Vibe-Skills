@@ -22,12 +22,12 @@ Copy these into the target root:
 
 ## Default Host Roots
 
-- `codex` -> `~/.codex`
-- `claude-code` -> `~/.claude`
-- `cursor` -> `~/.cursor`
-- `windsurf` -> `~/.codeium/windsurf`
-- `openclaw` -> `OPENCLAW_HOME` or `~/.openclaw`
-- `opencode` -> `OPENCODE_HOME` or `~/.config/opencode`
+- `codex` -> `CODEX_HOME` or `~/.vibeskills/targets/codex`
+- `claude-code` -> `CLAUDE_HOME` or `~/.vibeskills/targets/claude-code`
+- `cursor` -> `CURSOR_HOME` or `~/.vibeskills/targets/cursor`
+- `windsurf` -> `WINDSURF_HOME` or `~/.vibeskills/targets/windsurf`
+- `openclaw` -> `OPENCLAW_HOME` or `~/.vibeskills/targets/openclaw`
+- `opencode` -> `OPENCODE_HOME` or `~/.vibeskills/targets/opencode`
 
 If the target is `windsurf`, also note:
 
@@ -72,18 +72,19 @@ Then use [`opencode-path.en.md`](./opencode-path.en.md) for the preview-adapter 
 
 ### Windsurf
 
-- confirm `.vibeskills/host-settings.json` and `.vibeskills/host-closure.json` under `~/.codeium/windsurf`
+- confirm `.vibeskills/host-settings.json` and `.vibeskills/host-closure.json` under `WINDSURF_HOME` or `~/.vibeskills/targets/windsurf`
 - finish host-local configuration inside Windsurf itself
 
 ### OpenClaw
 
-- confirm the runtime-core payload under `OPENCLAW_HOME` or `~/.openclaw`
+- confirm the runtime-core payload under `OPENCLAW_HOME` or `~/.vibeskills/targets/openclaw`
 - use the attach / copy / bundle guidance when you want parity with the scripted path
 - finish host-local configuration inside OpenClaw itself
 
 ### OpenCode
 
-- confirm the preview payload under `OPENCODE_HOME` or `~/.config/opencode`
+- confirm the preview payload under `OPENCODE_HOME` or `~/.vibeskills/targets/opencode`
+- the real `~/.config/opencode/opencode.json` remains host-managed
 - keep the real `opencode.json`, provider credentials, plugin installation, and MCP trust host-managed
 - use `./.opencode` when you want a project-local isolated target
 

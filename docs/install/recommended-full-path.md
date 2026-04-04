@@ -7,7 +7,7 @@
 > - [`openclaw-path.md`](./openclaw-path.md)
 > - [`opencode-path.md`](./opencode-path.md)
 
-这份文档汇总当前六个公开宿主对应的安装命令、默认根目录与 host-mode 说明。
+这份文档汇总当前六个公开宿主对应的安装命令、默认目标根目录与 host-mode 说明。
 
 Linux / macOS 公共前置条件：
 
@@ -17,14 +17,14 @@ Linux / macOS 公共前置条件：
 
 ## 支持宿主与默认路径
 
-| 宿主 | 默认命令面 | 默认根目录 | 当前口径 |
+| 宿主 | 默认命令面 | 默认目标根目录 | 当前口径 |
 | --- | --- | --- | --- |
-| `codex` | one-shot setup + check | `~/.codex` | strongest governed lane |
-| `claude-code` | one-shot setup + check | `~/.claude` | supported install/use path with bounded managed closure |
-| `cursor` | one-shot setup + check | `~/.cursor` | preview-guidance path |
-| `windsurf` | one-shot setup + check | `~/.codeium/windsurf` | runtime-core path |
-| `openclaw` | one-shot setup + check | `OPENCLAW_HOME` 或 `~/.openclaw` | preview runtime-core adapter path |
-| `opencode` | direct install + check（更薄）或 one-shot wrapper | `OPENCODE_HOME` 或 `~/.config/opencode` | preview-guidance adapter path |
+| `codex` | one-shot setup + check | `CODEX_HOME` 或 `~/.vibeskills/targets/codex` | strongest governed lane |
+| `claude-code` | one-shot setup + check | `CLAUDE_HOME` 或 `~/.vibeskills/targets/claude-code` | supported install/use path with bounded managed closure |
+| `cursor` | one-shot setup + check | `CURSOR_HOME` 或 `~/.vibeskills/targets/cursor` | preview-guidance path |
+| `windsurf` | one-shot setup + check | `WINDSURF_HOME` 或 `~/.vibeskills/targets/windsurf` | runtime-core path |
+| `openclaw` | one-shot setup + check | `OPENCLAW_HOME` 或 `~/.vibeskills/targets/openclaw` | preview runtime-core adapter path |
+| `opencode` | direct install + check（更薄）或 one-shot wrapper | `OPENCODE_HOME` 或 `~/.vibeskills/targets/opencode` | preview-guidance adapter path |
 
 `TargetRoot` 只是路径。
 `HostId` / `--host` 才决定宿主语义。
@@ -161,19 +161,20 @@ git checkout vX.Y.Z
 
 ### Windsurf
 
-- 默认根目录是 `~/.codeium/windsurf`
+- 默认目标根目录是 `WINDSURF_HOME`，否则是 `~/.vibeskills/targets/windsurf`
 - repo 当前只负责 shared runtime payload，以及 `.vibeskills/host-settings.json` / `.vibeskills/host-closure.json` 这类 sidecar 状态
 - Windsurf 宿主自身的本地设置仍按 Windsurf 自身方式管理
 
 ### OpenClaw
 
-- 默认目标根目录是 `OPENCLAW_HOME` 或 `~/.openclaw`
+- 默认目标根目录是 `OPENCLAW_HOME` 或 `~/.vibeskills/targets/openclaw`
 - 宿主专页会展开 attach / copy / bundle 等细节
 - OpenClaw 宿主自身的本地配置仍按 OpenClaw 自身方式管理
 
 ### OpenCode
 
-- 默认目标根目录是 `OPENCODE_HOME`，否则是 `~/.config/opencode`
+- 默认目标根目录是 `OPENCODE_HOME`，否则是 `~/.vibeskills/targets/opencode`
+- 真实宿主配置目录 `~/.config/opencode` 仍由 OpenCode 自身管理
 - direct install/check 与 one-shot wrapper 都保持 host-managed 边界
 - 真实 `opencode.json`、provider 凭据、plugin 安装和 MCP 信任仍按宿主自身方式管理
 - 如需项目内隔离安装，使用 `--target-root ./.opencode`

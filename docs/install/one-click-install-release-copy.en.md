@@ -91,14 +91,14 @@ If you want to quickly confirm whether the router AI governance advice path is c
 
 If PowerShell 7 is already installed on your machine, you can replace `powershell.exe` with `pwsh`.
 
-Common default roots:
+Common default target roots:
 
-- `codex` -> `~/.codex`
-- `claude-code` -> `~/.claude`
-- `cursor` -> `~/.cursor`
-- `windsurf` -> `~/.codeium/windsurf`
-- `openclaw` -> `~/.openclaw`
-- `opencode` -> `~/.config/opencode`
+- `codex` -> `CODEX_HOME` or `~/.vibeskills/targets/codex`
+- `claude-code` -> `CLAUDE_HOME` or `~/.vibeskills/targets/claude-code`
+- `cursor` -> `CURSOR_HOME` or `~/.vibeskills/targets/cursor`
+- `windsurf` -> `WINDSURF_HOME` or `~/.vibeskills/targets/windsurf`
+- `openclaw` -> `OPENCLAW_HOME` or `~/.vibeskills/targets/openclaw`
+- `opencode` -> `OPENCODE_HOME` or `~/.vibeskills/targets/opencode`
 
 Result hints:
 

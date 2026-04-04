@@ -28,9 +28,9 @@ def test_adapter_sdk_descriptors_match_registry_default_target_roots() -> None:
 def test_descriptor_loader_supports_registry_aliases() -> None:
     descriptor = load_descriptor('claude')
     assert descriptor.id == 'claude-code'
-    assert descriptor.default_target_root == '.claude'
+    assert descriptor.default_target_root == '.vibeskills/targets/claude-code'
     assert descriptor.default_target_root_env == 'CLAUDE_HOME'
-    assert descriptor.default_target_root_kind == 'host-home'
+    assert descriptor.default_target_root_kind == 'isolated-home'
 
 
 def test_target_root_resolver_uses_env_when_available() -> None:
@@ -42,4 +42,4 @@ def test_target_root_resolver_uses_env_when_available() -> None:
 def test_target_root_resolver_falls_back_to_home_relative_path() -> None:
     descriptor = load_descriptor('opencode')
     resolved = resolve_default_target_root(descriptor, env={}, home='/home/tester')
-    assert resolved == '/home/tester/.config/opencode'
+    assert resolved == '/home/tester/.vibeskills/targets/opencode'

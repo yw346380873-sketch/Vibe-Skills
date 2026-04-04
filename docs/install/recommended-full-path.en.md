@@ -7,7 +7,7 @@
 > - [`openclaw-path.en.md`](./openclaw-path.en.md)
 > - [`opencode-path.en.md`](./opencode-path.en.md)
 
-This document summarizes the install commands, default roots, and current host-mode wording for the six public hosts.
+This document summarizes the install commands, default target roots, and current host-mode wording for the six public hosts.
 
 Public Linux / macOS prerequisites:
 
@@ -19,12 +19,12 @@ Public Linux / macOS prerequisites:
 
 | Host | Default command surface | Default root | Current wording |
 | --- | --- | --- | --- |
-| `codex` | one-shot setup + check | `~/.codex` | strongest governed lane |
-| `claude-code` | one-shot setup + check | `~/.claude` | supported install/use path with bounded managed closure |
-| `cursor` | one-shot setup + check | `~/.cursor` | preview-guidance path |
-| `windsurf` | one-shot setup + check | `~/.codeium/windsurf` | runtime-core path |
-| `openclaw` | one-shot setup + check | `OPENCLAW_HOME` or `~/.openclaw` | preview runtime-core adapter path |
-| `opencode` | direct install + check (thinner) or one-shot wrapper | `OPENCODE_HOME` or `~/.config/opencode` | preview-guidance adapter path |
+| `codex` | one-shot setup + check | `CODEX_HOME` or `~/.vibeskills/targets/codex` | strongest governed lane |
+| `claude-code` | one-shot setup + check | `CLAUDE_HOME` or `~/.vibeskills/targets/claude-code` | supported install/use path with bounded managed closure |
+| `cursor` | one-shot setup + check | `CURSOR_HOME` or `~/.vibeskills/targets/cursor` | preview-guidance path |
+| `windsurf` | one-shot setup + check | `WINDSURF_HOME` or `~/.vibeskills/targets/windsurf` | runtime-core path |
+| `openclaw` | one-shot setup + check | `OPENCLAW_HOME` or `~/.vibeskills/targets/openclaw` | preview runtime-core adapter path |
+| `opencode` | direct install + check (thinner) or one-shot wrapper | `OPENCODE_HOME` or `~/.vibeskills/targets/opencode` | preview-guidance adapter path |
 
 `TargetRoot` is only a path.
 `HostId` / `--host` decides host semantics.
@@ -161,19 +161,20 @@ git checkout vX.Y.Z
 
 ### Windsurf
 
-- the default root is `~/.codeium/windsurf`
+- the default target root is `WINDSURF_HOME`, otherwise `~/.vibeskills/targets/windsurf`
 - the repo currently owns only shared runtime payload plus sidecar state such as `.vibeskills/host-settings.json` and `.vibeskills/host-closure.json`
 - Windsurf-native local settings remain managed on the Windsurf side
 
 ### OpenClaw
 
-- the default target root is `OPENCLAW_HOME` or `~/.openclaw`
+- the default target root is `OPENCLAW_HOME` or `~/.vibeskills/targets/openclaw`
 - the dedicated host guide expands attach / copy / bundle details
 - OpenClaw-local configuration remains managed on the OpenClaw side
 
 ### OpenCode
 
-- the default target root is `OPENCODE_HOME`, otherwise `~/.config/opencode`
+- the default target root is `OPENCODE_HOME`, otherwise `~/.vibeskills/targets/opencode`
+- the real host config directory `~/.config/opencode` remains host-managed
 - both direct install/check and the one-shot wrapper keep host-managed boundaries intact
 - the real `opencode.json`, provider credentials, plugin installation, and MCP trust remain host-managed
 - use `--target-root ./.opencode` when you want project-local isolation

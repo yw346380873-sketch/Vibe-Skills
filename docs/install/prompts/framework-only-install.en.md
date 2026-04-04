@@ -20,7 +20,7 @@ Rules:
    - Windows: `pwsh -NoProfile -File .\install.ps1 -HostId opencode -Profile minimal` and `pwsh -NoProfile -File .\check.ps1 -HostId opencode -Profile minimal`
    - Linux / macOS: `bash ./install.sh --host opencode --profile minimal` and `bash ./check.sh --host opencode --profile minimal`
    - if I explicitly ask to keep the same wrapper across hosts, `scripts/bootstrap/one-shot-setup.* --host opencode --profile minimal` is also acceptable; do not describe one-shot as unsupported for `opencode`
-5. For host wording, default roots, and truth-first boundaries, follow `docs/install/minimal-path.en.md` and `docs/install/installation-rules.en.md` instead of restating a second version here.
+5. For host wording, default target roots, and truth-first boundaries, follow `docs/install/minimal-path.en.md` and `docs/install/installation-rules.en.md` instead of restating a second version here.
 6. Never ask me to paste secrets, URLs, or model names into chat.
 7. If I later want AI-governance online capability, you must recommend the real key names first:
    - built-in intent advice: `VCO_INTENT_ADVICE_API_KEY`, optional `VCO_INTENT_ADVICE_BASE_URL`, plus `VCO_INTENT_ADVICE_MODEL`

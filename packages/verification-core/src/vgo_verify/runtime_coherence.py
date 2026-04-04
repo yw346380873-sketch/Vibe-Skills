@@ -31,7 +31,7 @@ def evaluate(repo_root: Path, target_root: Path) -> dict[str, Any]:
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Runtime-neutral release/install/runtime coherence gate.")
-    parser.add_argument("--target-root", default=str(Path.home() / ".codex"))
+    parser.add_argument("--target-root", default=str(Path.home() / ".vibeskills" / "targets" / "codex"))
     parser.add_argument("--write-artifacts", action="store_true")
     return parser.parse_args(argv)
 

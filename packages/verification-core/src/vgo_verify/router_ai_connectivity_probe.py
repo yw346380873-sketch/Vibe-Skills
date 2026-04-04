@@ -197,7 +197,7 @@ def write_artifacts(repo_root: Path, artifact: dict[str, Any], output_directory:
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Runtime-neutral Router AI advice connectivity probe.")
     parser.add_argument("--repo-root")
-    parser.add_argument("--target-root", default=str(Path.home() / ".codex"))
+    parser.add_argument("--target-root", default=str(Path.home() / ".vibeskills" / "targets" / "codex"))
     parser.add_argument("--grade", default="M")
     parser.add_argument("--task-type", default="coding")
     parser.add_argument("--route-mode", default="legacy_fallback")

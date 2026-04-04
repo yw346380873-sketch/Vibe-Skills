@@ -89,32 +89,33 @@
 
 ### Codex
 
-- 目标根目录：`~/.codex`
+- 目标根目录：`CODEX_HOME` 或 `~/.vibeskills/targets/codex`
 - 常见位置：`~/.codex/settings.json` 的 `env`
 
 ### Claude Code
 
-- 目标根目录：`~/.claude`
+- 目标根目录：`CLAUDE_HOME` 或 `~/.vibeskills/targets/claude-code`
 - 常见位置：`~/.claude/settings.json` 的 `env`
 
 ### Cursor
 
-- 目标根目录：`~/.cursor`
+- 目标根目录：`CURSOR_HOME` 或 `~/.vibeskills/targets/cursor`
 - 常见位置：`~/.cursor/settings.json` 的 `env`
 
 ### Windsurf
 
-- 目标根目录：`~/.codeium/windsurf`
+- 目标根目录：`WINDSURF_HOME` 或 `~/.vibeskills/targets/windsurf`
 - 如果宿主侧没有直接使用 `<target-root>/settings.json`，就在本地环境变量里配置再做检查
 
 ### OpenClaw
 
-- 目标根目录：`OPENCLAW_HOME` 或 `~/.openclaw`
+- 目标根目录：`OPENCLAW_HOME` 或 `~/.vibeskills/targets/openclaw`
 - 如果宿主侧没有直接使用 `<target-root>/settings.json`，就在本地环境变量里配置再做检查
 
 ### OpenCode
 
-- 目标根目录：`OPENCODE_HOME` 或 `~/.config/opencode`
+- 目标根目录：`OPENCODE_HOME` 或 `~/.vibeskills/targets/opencode`
+- 真实宿主配置目录仍是 `~/.config/opencode`
 - 如果宿主侧没有直接使用 `<target-root>/settings.json`，就在本地环境变量里配置再做检查
 
 ## 快速检查命令
@@ -135,14 +136,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify\vibe-ro
 python3 ./scripts/verify/runtime_neutral/router_ai_connectivity_probe.py --target-root "<目标宿主根目录>" --write-artifacts
 ```
 
-常见默认根目录：
+常见默认目标根目录：
 
-- `codex` -> `~/.codex`
-- `claude-code` -> `~/.claude`
-- `cursor` -> `~/.cursor`
-- `windsurf` -> `~/.codeium/windsurf`
-- `openclaw` -> `~/.openclaw`
-- `opencode` -> `~/.config/opencode`
+- `codex` -> `CODEX_HOME` 或 `~/.vibeskills/targets/codex`
+- `claude-code` -> `CLAUDE_HOME` 或 `~/.vibeskills/targets/claude-code`
+- `cursor` -> `CURSOR_HOME` 或 `~/.vibeskills/targets/cursor`
+- `windsurf` -> `WINDSURF_HOME` 或 `~/.vibeskills/targets/windsurf`
+- `openclaw` -> `OPENCLAW_HOME` 或 `~/.vibeskills/targets/openclaw`
+- `opencode` -> `OPENCODE_HOME` 或 `~/.vibeskills/targets/opencode`
 
 ## 结果怎么看
 

@@ -439,6 +439,12 @@ def main(argv: list[str] | None = None):
             install_opencode_guidance_payload(
                 repo_root,
                 target_root,
+                copy_tree_fn=lambda src, dst: copy_tree(
+                    src,
+                    dst,
+                    track_created_path=track_created_path,
+                    record_owned_tree_root=record_owned_tree_root,
+                ),
                 copy_file_fn=lambda src, dst: copy_file(src, dst, track_created_path=track_created_path),
             )
         elif adapter["id"] == "claude-code":

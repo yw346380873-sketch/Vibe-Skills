@@ -410,11 +410,29 @@ def install_opencode_guidance_payload(
     repo_root: Path,
     target_root: Path,
     *,
+    copy_tree_fn: Callable[[Path, Path], None],
     copy_file_fn: Callable[[Path, Path], None],
 ) -> None:
+    commands_root = repo_root / "config" / "opencode" / "commands"
+    agents_root = repo_root / "config" / "opencode" / "agents"
     example_config = repo_root / "config" / "opencode" / "opencode.json.example"
-    if example_config.exists():
-        copy_file_fn(example_config, target_root / "opencode.json.example")
+    if not commands_root.exists():
+        raise FileNotFoundError(
+            f"Missing required OpenCode command scaffold directory: {commands_root}"
+        )
+    if not agents_root.exists():
+        raise FileNotFoundError(
+            f"Missing required OpenCode agent scaffold directory: {agents_root}"
+        )
+    if not example_config.exists():
+        raise FileNotFoundError(
+            f"Missing required OpenCode preview scaffold: {example_config}"
+        )
+    copy_tree_fn(commands_root, target_root / "commands")
+    copy_tree_fn(commands_root, target_root / "command")
+    copy_tree_fn(agents_root, target_root / "agents")
+    copy_tree_fn(agents_root, target_root / "agent")
+    copy_file_fn(example_config, target_root / "opencode.json.example")
 
 
 def install_runtime_core_mode_payload(
