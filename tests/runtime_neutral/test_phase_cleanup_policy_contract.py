@@ -28,6 +28,9 @@ def test_document_cleanup_scenarios_keep_source_trees_for_gate_execution() -> No
         assert (scenario_dir / 'metadata.json').exists(), scenario_dir.name
         source_root = scenario_dir / 'source'
         assert source_root.exists() and source_root.is_dir(), scenario_dir.name
+        tmp_root = source_root / '.tmp'
+        assert tmp_root.exists() and tmp_root.is_dir(), scenario_dir.name
+        assert any(path.is_file() for path in tmp_root.rglob('*')), scenario_dir.name
         assert any(path.is_file() for path in source_root.rglob('*')), scenario_dir.name
 
 
