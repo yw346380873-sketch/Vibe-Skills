@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+PYTHON_HELPERS = REPO_ROOT / "scripts" / "common" / "python_helpers.sh"
 
 
 class ShellEntrypointCompatibilityTests(unittest.TestCase):
@@ -18,12 +19,16 @@ class ShellEntrypointCompatibilityTests(unittest.TestCase):
             self.assertNotIn("mapfile", content, relpath)
 
     def test_install_entrypoints_declare_python_310_floor(self) -> None:
+        helper_content = PYTHON_HELPERS.read_text(encoding="utf-8")
+        self.assertIn("PYTHON_MIN_MAJOR=3", helper_content)
+        self.assertIn("PYTHON_MIN_MINOR=10", helper_content)
+        self.assertIn("requires Python ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR}+", helper_content)
+        self.assertIn("python3 --version", helper_content)
         for relpath in ("install.sh", "check.sh", "scripts/bootstrap/one-shot-setup.sh"):
             content = (REPO_ROOT / relpath).read_text(encoding="utf-8")
             self.assertIn("PYTHON_MIN_MAJOR=3", content, relpath)
             self.assertIn("PYTHON_MIN_MINOR=10", content, relpath)
-            self.assertIn("requires Python ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR}+", content, relpath)
-            self.assertIn("python3 --version", content, relpath)
+            self.assertIn("scripts/common/python_helpers.sh", content, relpath)
 
     def test_check_sh_rejects_python_below_floor_before_helper_dispatch(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:

@@ -10,6 +10,7 @@ PYTEST_INI = REPO_ROOT / "pytest.ini"
 WORKFLOW = REPO_ROOT / ".github" / "workflows" / "vco-gates.yml"
 TARGETS_FILE = REPO_ROOT / "config" / "python-validation-targets.txt"
 CONFTEST = REPO_ROOT / "tests" / "conftest.py"
+PYTHON_HELPERS = REPO_ROOT / "scripts" / "common" / "python_helpers.sh"
 TIMESFM_OUTPUT_ROOT = REPO_ROOT / "bundled" / "skills" / "timesfm-forecasting" / "examples"
 EXPECTED_PYTHON_VALIDATION_TARGETS = [
     "tests/contract/test_repo_layout_contract.py",
@@ -38,11 +39,21 @@ class PythonValidationContractTests(unittest.TestCase):
         text = WORKFLOW.read_text(encoding="utf-8-sig")
 
         self.assertIn("actions/setup-python@v5", text)
-        self.assertIn("python -B -m pytest -q", text)
+        self.assertIn("scripts/common/python_helpers.sh --print-supported-python", text)
+        self.assertIn('"${python_bin}" -B -m pytest -q', text)
         self.assertIn("config/python-validation-targets.txt", text)
         self.assertIn('if [ "${#targets[@]}" -eq 0 ]; then', text)
         self.assertIn("canonical python validation target list is empty", text)
         self.assertIn("ubuntu-latest", text)
+
+    def test_shared_shell_python_helper_keeps_python_resolution_policy_canonical(self) -> None:
+        self.assertTrue(PYTHON_HELPERS.exists(), "shared shell Python helper should exist")
+
+        text = PYTHON_HELPERS.read_text(encoding="utf-8")
+        self.assertIn("for candidate in python3 python; do", text)
+        self.assertIn("--print-supported-python", text)
+        self.assertIn("requires Python ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR}+", text)
+        self.assertIn("python3 --version", text)
 
     def test_python_validation_targets_cover_critical_invariants(self) -> None:
         self.assertTrue(TARGETS_FILE.exists(), "canonical Python validation target list should exist")

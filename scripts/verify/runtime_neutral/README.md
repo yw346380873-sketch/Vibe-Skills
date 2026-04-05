@@ -37,13 +37,14 @@ Windows PowerShell remains the baseline authority lane during the migration.
 
 Run the direct Python checks:
 
-```powershell
-python tests/runtime_neutral/test_freshness_gate.py
-python tests/runtime_neutral/test_bootstrap_doctor.py
-python tests/runtime_neutral/test_coherence_gate.py
-python tests/runtime_neutral/test_workflow_acceptance_runner.py
-python tests/runtime_neutral/test_runtime_delivery_acceptance.py
-python tests/runtime_neutral/test_release_truth_gate.py
+```bash
+PYTHON_BIN="$(bash scripts/common/python_helpers.sh --print-supported-python 'Runtime-neutral verification core')"
+"${PYTHON_BIN}" tests/runtime_neutral/test_freshness_gate.py
+"${PYTHON_BIN}" tests/runtime_neutral/test_bootstrap_doctor.py
+"${PYTHON_BIN}" tests/runtime_neutral/test_coherence_gate.py
+"${PYTHON_BIN}" tests/runtime_neutral/test_workflow_acceptance_runner.py
+"${PYTHON_BIN}" tests/runtime_neutral/test_runtime_delivery_acceptance.py
+"${PYTHON_BIN}" tests/runtime_neutral/test_release_truth_gate.py
 ```
 
 Run the shell wrapper syntax checks:

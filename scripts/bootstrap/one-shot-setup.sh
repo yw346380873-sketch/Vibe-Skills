@@ -14,6 +14,7 @@ PYTHON_MIN_MINOR=10
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 ADAPTER_QUERY_PY="${REPO_ROOT}/scripts/common/adapter_registry_query.py"
+PYTHON_HELPERS_SH="${REPO_ROOT}/scripts/common/python_helpers.sh"
 INSTALL_SH="${REPO_ROOT}/install.sh"
 CHECK_SH="${REPO_ROOT}/check.sh"
 MATERIALIZE_PS1="${REPO_ROOT}/scripts/setup/materialize-codex-mcp-profile.ps1"
@@ -38,66 +39,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-python_version_of() {
-  local candidate="$1"
-  "${candidate}" - <<'PY'
-import sys
-print(f"{sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]}")
-PY
-}
-
-python_meets_minimum() {
-  local candidate="$1"
-  local version major minor patch
-  version="$(python_version_of "${candidate}" 2>/dev/null || true)"
-  [[ -n "${version}" ]] || return 1
-  IFS='.' read -r major minor patch <<EOF
-${version}
-EOF
-  [[ -n "${major}" && -n "${minor}" ]] || return 1
-  if (( major > PYTHON_MIN_MAJOR )); then
-    return 0
-  fi
-  if (( major == PYTHON_MIN_MAJOR && minor >= PYTHON_MIN_MINOR )); then
-    return 0
-  fi
-  return 1
-}
-
-pick_supported_python() {
-  local candidate resolved=""
-  for candidate in python3 python; do
-    if ! resolved="$(command -v "${candidate}" 2>/dev/null)"; then
-      continue
-    fi
-    if [[ -n "${resolved}" ]] && python_meets_minimum "${resolved}"; then
-      printf '%s' "${resolved}"
-      return 0
-    fi
-  done
-  return 1
-}
-
-print_python_requirement_error() {
-  local context="$1"
-  local candidate resolved version found_any="false"
-  echo "[FAIL] ${context} requires Python ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR}+." >&2
-  for candidate in python3 python; do
-    if resolved="$(command -v "${candidate}" 2>/dev/null)"; then
-      found_any="true"
-      version="$(python_version_of "${resolved}" 2>/dev/null || echo unknown)"
-      echo "[FAIL] Detected ${candidate} -> ${resolved} (${version})" >&2
-    fi
-  done
-  if [[ "${found_any}" != "true" ]]; then
-    echo "[FAIL] No usable python3/python executable was found in PATH." >&2
-  fi
-  if [[ "$(uname -s 2>/dev/null)" == "Darwin" ]]; then
-    echo "[FAIL] macOS often provides zsh plus an old/missing system Python. Install a modern Python 3.10+ and ensure 'python3 --version' reports >= ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR} before rerunning." >&2
-  else
-    echo "[FAIL] Install a modern Python 3.10+ and ensure 'python3 --version' reports >= ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR} before rerunning." >&2
-  fi
-}
+source "${PYTHON_HELPERS_SH}"
 
 is_interactive_shell() {
   [[ -t 0 && -t 1 ]]
