@@ -31,7 +31,7 @@ def build_release_bundle(distribution_manifest_path: Path | str, output_dir: Pat
         'runtime_core_payload_roles': dict(distribution_manifest.get('runtime_core_payload_roles') or {}),
         'governance_runtime_roles': dict(distribution_manifest.get('governance_runtime_roles') or {}),
         'ownership': {
-            'semantic_owner': 'tools/release/build_release_bundle.py',
+            'semantic_owner': 'scripts/release/build_release_bundle.py',
             'generated_outputs_only': True,
         },
     }

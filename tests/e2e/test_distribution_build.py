@@ -6,8 +6,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-ASSEMBLER_PATH = ROOT / 'tools' / 'build' / 'assemble_distribution.py'
-BUNDLE_PATH = ROOT / 'tools' / 'release' / 'build_release_bundle.py'
+ASSEMBLER_PATH = ROOT / 'scripts' / 'build' / 'assemble_distribution.py'
+BUNDLE_PATH = ROOT / 'scripts' / 'release' / 'build_release_bundle.py'
 
 
 def _load_module(module_name: str, module_path: Path):

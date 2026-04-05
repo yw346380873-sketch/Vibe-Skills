@@ -109,7 +109,7 @@ def assemble_distribution(output_dir: Path | str, *, host_id: str, profile: str 
             'output_root': str(target_dir),
         },
         'ownership': {
-            'semantic_owner': 'tools/build/assemble_distribution.py',
+            'semantic_owner': 'scripts/build/assemble_distribution.py',
             'generated_outputs_only': True,
         },
     }

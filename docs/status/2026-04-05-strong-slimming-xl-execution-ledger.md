@@ -15,6 +15,7 @@ Scope: `docs/archive/**`, `bundled/skills/**`, wave disposition for `scripts/ver
 | 6 | `references/fixtures/**`, `references/proof-bundles/**` | `audit_only` | current families are still policy-, test-, or manifest-backed; no evidence-backed delete wave exists without breaking contracts |
 | 7 | `config/**` and other behavior-bearing canonical sources | `audit_only` | canonical config and contracts remain protected because slimming payoff is lower than contract risk in this pass |
 | 8 | root polish and cleanup | `implemented_partially` | navigation and ledger surfaces were refreshed; final cleanup and node audit are executed separately at phase end |
+| 9 | root `tools/**` | `implemented` | converged helper materializers into `scripts/build/**` and `scripts/release/**`; active call sites and semantic-owner references were retargeted in the same wave |
 
 ## Retention Rules Applied
 

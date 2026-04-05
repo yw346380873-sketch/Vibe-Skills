@@ -49,7 +49,7 @@ class ReleaseCutOperatorTests(unittest.TestCase):
     def _write_fixture(self) -> None:
         self._write("scripts/common/vibe-governance-helpers.ps1", (REPO_ROOT / "scripts/common/vibe-governance-helpers.ps1").read_text(encoding="utf-8"))
         self._write("scripts/governance/release-cut.ps1", (REPO_ROOT / "scripts/governance/release-cut.ps1").read_text(encoding="utf-8"))
-        self._write("tools/build/sync_dist_release_manifests.py", (REPO_ROOT / "tools/build/sync_dist_release_manifests.py").read_text(encoding="utf-8"))
+        self._write("scripts/build/sync_dist_release_manifests.py", (REPO_ROOT / "scripts/build/sync_dist_release_manifests.py").read_text(encoding="utf-8"))
         self._write(
             "scripts/governance/sync-bundled-vibe.ps1",
             textwrap.dedent(

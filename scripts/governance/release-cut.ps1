@@ -110,7 +110,7 @@ function Get-DistManifestOutputRelativePaths {
 function Sync-DistManifestOutputs {
     param([Parameter(Mandatory)] [string]$RepoRoot)
 
-    $toolPath = Join-Path $RepoRoot 'tools/build/sync_dist_release_manifests.py'
+    $toolPath = Join-Path $RepoRoot 'scripts/build/sync_dist_release_manifests.py'
     if (-not (Test-Path -LiteralPath $toolPath)) {
         throw "distribution manifest sync tool missing: $toolPath"
     }

@@ -59,7 +59,6 @@ These are not fully protected in principle, but they are poor strategic slimming
 - `vendor/**`
 - `benchmarks/**`
 - `third_party/**`
-- `tools/**`
 
 If they are touched at all, it should be because of a contract simplification, not because the program needs an easy deletion count.
 
@@ -108,3 +107,4 @@ Future slimming PRs should be rejected or split if they:
 
 - This file is a guardrail, not a prohibition on all change.
 - It exists to keep the slimming program focused on real maintainership wins rather than easy but low-value deletions.
+- Root `tools/` was converged in the 2026-04-05 root-slimming wave; the surviving build/release materializers now live under `scripts/build/**` and `scripts/release/**`.

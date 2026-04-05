@@ -14,6 +14,7 @@
 ## Directory Roles
 
 - `scripts/governance/`: rollout, release, audit, policy probes
+- `scripts/build/`, `scripts/release/`: generated manifest and release-bundle materializers that were converged from the former root `tools/`
 - `scripts/verify/`: executable gates and proof-producing checks
 - `scripts/common/`: shared primitives and execution-context helpers
 - `scripts/router/`: routing helpers and probes

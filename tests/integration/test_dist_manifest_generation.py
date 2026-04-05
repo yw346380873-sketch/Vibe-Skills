@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SYNC_TOOL_PATH = REPO_ROOT / "tools" / "build" / "sync_dist_release_manifests.py"
+SYNC_TOOL_PATH = REPO_ROOT / "scripts" / "build" / "sync_dist_release_manifests.py"
 SOURCE_CONFIG_PATH = REPO_ROOT / "config" / "distribution-manifest-sources.json"
 ADAPTER_REGISTRY_PATH = REPO_ROOT / "config" / "adapter-registry.json"
 
