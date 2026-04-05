@@ -36,8 +36,8 @@ Audit the repository for concrete problems by combining:
 
 ## Verification Commands
 
-- `pytest -q`
-- targeted `pytest` on failing or representative modules
+- `python -B -m pytest -q`
+- targeted `python -B -m pytest -q` on failing or representative modules
 - source inspection with `sed` / `rg`
 
 ## Delivery Acceptance Plan
