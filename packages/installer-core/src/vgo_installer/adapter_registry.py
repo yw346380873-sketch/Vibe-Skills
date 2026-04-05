@@ -156,6 +156,8 @@ def _target_root_signatures(host_id: str, entry: dict[str, Any]) -> tuple[str, .
     signatures = []
     if spec['rel']:
         signatures.append(spec['rel'])
+    if host_id == 'cursor':
+        signatures.append('.cursor')
     if host_id == 'opencode':
         signatures.append('.opencode')
     return tuple(signatures)

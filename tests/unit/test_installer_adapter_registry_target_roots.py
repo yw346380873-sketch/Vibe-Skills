@@ -14,6 +14,7 @@ for src in (INSTALLER_CORE_SRC, CONTRACTS_SRC):
 from vgo_installer.adapter_registry import (
     resolve_default_target_root,
     resolve_matching_target_root_hosts,
+    resolve_target_root_owner,
     resolve_target_root_spec,
 )
 
@@ -43,3 +44,9 @@ def test_resolve_matching_target_root_hosts_preserves_opencode_compatibility_sig
     matches = resolve_matching_target_root_hosts(REPO_ROOT, str(tmp_path / '.opencode'))
 
     assert matches == ['opencode']
+
+
+def test_resolve_target_root_owner_recognizes_cursor_home_signature(tmp_path: Path) -> None:
+    owner = resolve_target_root_owner(REPO_ROOT, str(tmp_path / '.cursor'))
+
+    assert owner == 'cursor'

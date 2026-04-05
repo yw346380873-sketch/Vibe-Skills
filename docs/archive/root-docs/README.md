@@ -11,20 +11,19 @@
 ## Current Archived Families
 
 - consolidation / watch / roadmap packets:
-  - `skills-consolidation-batch-plan.md`
   - `skills-consolidation-roadmap.md`
-  - `skills-overlap-matrix.md`
+  - `skills-overlap-matrix.md` (retained as audit evidence for active slimming work)
   - `watch-portfolio-rationalization.md`
   - `watch-lane-remaining-value-cases.md`
   - `wave15-18-execution-backlog.md`
   - `wave15-18-verification-spec.md`
-  - `ecosystem-remaining-value-roadmap.md`
 
 ## Rules
 
 - historical root docs should come here by default instead of staying flat in `docs/*.md`
 - archive preserves recoverability, not current authority
 - if a file becomes active again, restore it explicitly to a live family instead of relying on archive status
+- overlap matrix artifacts may be retained in archive when they are still referenced as audit evidence during current slimming phases
 
 Representative archived leaves:
 
