@@ -34,6 +34,31 @@ function Add-Assertion {
     }
 }
 
+function New-ChildDelegationEnvelopeForGate {
+    param(
+        [Parameter(Mandatory)] [object]$RootSummary,
+        [Parameter(Mandatory)] [string]$ChildRunId,
+        [AllowNull()] [string[]]$ApprovedSpecialists = @()
+    )
+
+    $sessionRoot = [string]$RootSummary.summary.session_root
+    $childSessionRoot = Join-Path ([System.IO.Path]::GetDirectoryName($sessionRoot)) $ChildRunId
+    New-Item -ItemType Directory -Path $childSessionRoot -Force | Out-Null
+    $envelopePath = Get-VibeGovernanceArtifactPath -SessionRoot $childSessionRoot -ArtifactName 'delegation_envelope'
+    Write-VibeDelegationEnvelope `
+        -Path $envelopePath `
+        -RootRunId ([string]$RootSummary.summary.run_id) `
+        -ParentRunId ([string]$RootSummary.summary.run_id) `
+        -ParentUnitId 'child-specialist-escalation-unit' `
+        -ChildRunId $ChildRunId `
+        -RequirementDocPath ([string]$RootSummary.summary.artifacts.requirement_doc) `
+        -ExecutionPlanPath ([string]$RootSummary.summary.artifacts.execution_plan) `
+        -WriteScope 'gate:child-specialist-escalation' `
+        -ApprovedSpecialists @($ApprovedSpecialists) `
+        -ReviewMode 'native_contract' | Out-Null
+    return $envelopePath
+}
+
 $context = Get-VgoGovernanceContext -ScriptPath $PSCommandPath -EnforceExecutionContext
 $repoRoot = $context.repoRoot
 $runtimeEntryPath = Get-VgoRuntimeEntrypointPath -RepoRoot $repoRoot -RuntimeConfig $context.runtimeConfig
@@ -86,16 +111,19 @@ if ($hasRootSummary) {
 
 $childSummary = $null
 if ($hasRootSummary) {
+    $childRunId = ("{0}-child" -f $runId)
+    $childDelegationEnvelopePath = New-ChildDelegationEnvelopeForGate -RootSummary $rootSummary -ChildRunId $childRunId -ApprovedSpecialists @($approvedForChild)
     $childSummary = & $runtimeEntryPath `
         -Task 'Child specialist escalation advisory smoke.' `
         -Mode interactive_governed `
         -GovernanceScope child `
-        -RunId ("{0}-child" -f $runId) `
+        -RunId $childRunId `
         -RootRunId ([string]$rootSummary.summary.run_id) `
         -ParentRunId ([string]$rootSummary.summary.run_id) `
         -ParentUnitId 'child-specialist-escalation-unit' `
         -InheritedRequirementDocPath ([string]$rootSummary.summary.artifacts.requirement_doc) `
         -InheritedExecutionPlanPath ([string]$rootSummary.summary.artifacts.execution_plan) `
+        -DelegationEnvelopePath $childDelegationEnvelopePath `
         -ApprovedSpecialistSkillIds $approvedForChild `
         -ArtifactRoot $artifactRoot
 }
@@ -110,6 +138,7 @@ $childClaims = @()
 if ($hasChildSummary) {
     $runtimeInputPacket = Get-Content -LiteralPath $childSummary.summary.artifacts.runtime_input_packet -Raw -Encoding UTF8 | ConvertFrom-Json
     $executionManifest = Get-Content -LiteralPath $childSummary.summary.artifacts.execution_manifest -Raw -Encoding UTF8 | ConvertFrom-Json
+    $delegationValidation = Get-Content -LiteralPath $childSummary.summary.artifacts.delegation_validation_receipt -Raw -Encoding UTF8 | ConvertFrom-Json
 
     $specialistDispatch = if ($runtimeInputPacket.PSObject.Properties.Name -contains 'specialist_dispatch') {
         $runtimeInputPacket.specialist_dispatch
@@ -135,6 +164,8 @@ if ($hasChildSummary) {
 
     Add-Assertion -Results ([ref]$results) -Condition ($runtimeInputPacket.governance_scope -eq 'child') -Message 'specialist escalation smoke runs in child scope'
     Add-Assertion -Results ([ref]$results) -Condition ($runtimeInputPacket.authority_flags.explicit_runtime_skill -eq 'vibe') -Message 'specialist escalation smoke keeps vibe runtime authority'
+    Add-Assertion -Results ([ref]$results) -Condition ([bool]$delegationValidation.write_scope_valid) -Message 'child specialist escalation smoke validates delegation write scope'
+    Add-Assertion -Results ([ref]$results) -Condition ([bool]$delegationValidation.prompt_tail_valid) -Message 'child specialist escalation smoke preserves $vibe prompt-tail discipline'
     Add-Assertion -Results ([ref]$results) -Condition (-not [bool]$runtimeInputPacket.authority_flags.allow_completion_claim) -Message 'child runtime input packet disallows final completion claim'
     Add-Assertion -Results ([ref]$results) -Condition ($null -ne $specialistDispatch) -Message 'runtime packet exposes specialist dispatch surface'
 

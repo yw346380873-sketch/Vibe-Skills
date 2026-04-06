@@ -432,6 +432,8 @@ class RuntimeContractSchemaTests(unittest.TestCase):
                 "$artifacts = New-VibeRuntimeSummaryArtifactProjection "
                 "-SkeletonReceiptPath '/tmp/skeleton.json' "
                 "-RuntimeInputPacketPath '/tmp/runtime-input.json' "
+                "-GovernanceCapsulePath '/tmp/governance-capsule.json' "
+                "-StageLineagePath '/tmp/stage-lineage.json' "
                 "-IntentContractPath '/tmp/intent.json' "
                 "-RequirementDocPath '/tmp/req.md' "
                 "-RequirementReceiptPath '/tmp/req-receipt.json' "
@@ -449,6 +451,8 @@ class RuntimeContractSchemaTests(unittest.TestCase):
                 "$relative = [pscustomobject]@{ "
                 "skeleton_receipt = 'outputs/runtime/vibe-sessions/run/skeleton.json'; "
                 "runtime_input_packet = 'outputs/runtime/vibe-sessions/run/runtime-input.json'; "
+                "governance_capsule = 'outputs/runtime/vibe-sessions/run/governance-capsule.json'; "
+                "stage_lineage = 'outputs/runtime/vibe-sessions/run/stage-lineage.json'; "
                 "intent_contract = 'outputs/runtime/vibe-sessions/run/intent.json'; "
                 "requirement_doc = 'docs/requirements/req.md'; "
                 "requirement_receipt = 'outputs/runtime/vibe-sessions/run/req-receipt.json'; "
@@ -500,7 +504,12 @@ class RuntimeContractSchemaTests(unittest.TestCase):
         self.assertEqual("interactive_governed", payload["mode"])
         self.assertEqual("task-9", payload["task"])
         self.assertEqual("outputs/runtime/vibe-sessions/run/skeleton.json", payload["artifacts_relative"]["skeleton_receipt"])
+        self.assertEqual(
+            "outputs/runtime/vibe-sessions/run/governance-capsule.json",
+            payload["artifacts_relative"]["governance_capsule"],
+        )
         self.assertEqual("/tmp/manifest.json", payload["artifacts"]["execution_manifest"])
+        self.assertEqual("/tmp/stage-lineage.json", payload["artifacts"]["stage_lineage"])
         self.assertEqual("root-9", payload["hierarchy"]["root_run_id"])
         self.assertEqual("parent-9", payload["hierarchy"]["parent_run_id"])
         self.assertEqual("unit-9", payload["hierarchy"]["parent_unit_id"])

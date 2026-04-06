@@ -9,6 +9,7 @@ param(
     [AllowEmptyString()] [string]$ParentUnitId = '',
     [AllowEmptyString()] [string]$InheritedRequirementDocPath = '',
     [AllowEmptyString()] [string]$InheritedExecutionPlanPath = '',
+    [AllowEmptyString()] [string]$DelegationEnvelopePath = '',
     [string[]]$ApprovedSpecialistSkillIds = @()
 )
 
@@ -560,6 +561,7 @@ $hierarchyState = Get-VibeHierarchyState `
     -ParentUnitId $ParentUnitId `
     -InheritedRequirementDocPath $InheritedRequirementDocPath `
     -InheritedExecutionPlanPath $InheritedExecutionPlanPath `
+    -DelegationEnvelopePath $DelegationEnvelopePath `
     -HierarchyContract $policy.hierarchy_contract
 
 $routeArgs = @(

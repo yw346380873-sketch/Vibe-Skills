@@ -35,7 +35,26 @@ function New-VibeDelegatedLaneSpec {
     $laneId = [string]($LaneEntry.lane_id)
     $laneRoot = Join-Path (Join-Path $SessionRoot 'child-lanes') $laneId
     $specPath = Join-Path $laneRoot 'lane-spec.json'
+    $envelopePath = Get-VibeGovernanceArtifactPath -SessionRoot $laneRoot -ArtifactName 'delegation_envelope'
     New-Item -ItemType Directory -Path $laneRoot -Force | Out-Null
+    $approvedSpecialists = @()
+    if ($LaneEntry.PSObject.Properties.Name -contains 'dispatch' -and $null -ne $LaneEntry.dispatch) {
+        $approvedSkillId = [string]$LaneEntry.dispatch.skill_id
+        if (-not [string]::IsNullOrWhiteSpace($approvedSkillId)) {
+            $approvedSpecialists += $approvedSkillId
+        }
+    }
+    Write-VibeDelegationEnvelope `
+        -Path $envelopePath `
+        -RootRunId ([string]($HierarchyState.root_run_id)) `
+        -ParentRunId $RunId `
+        -ParentUnitId ([string]($LaneEntry.source_unit_id)) `
+        -ChildRunId $laneId `
+        -RequirementDocPath $RequirementPath `
+        -ExecutionPlanPath $PlanPath `
+        -WriteScope ([string]($LaneEntry.write_scope)) `
+        -ApprovedSpecialists @($approvedSpecialists) `
+        -ReviewMode ([string]($LaneEntry.review_mode)) | Out-Null
     $laneSpec = [pscustomobject]@{
         lane_id = $laneId
         lane_kind = [string]($LaneEntry.lane_kind)
@@ -53,6 +72,7 @@ function New-VibeDelegatedLaneSpec {
         parallelizable = [bool]($LaneEntry.parallelizable)
         write_scope = [string]($LaneEntry.write_scope)
         review_mode = [string]($LaneEntry.review_mode)
+        delegation_envelope_path = $envelopePath
         tokens = [pscustomobject]$Tokens
         unit = if ($LaneEntry.PSObject.Properties.Name -contains 'unit') { $LaneEntry.unit } else { $null }
         dispatch = if ($LaneEntry.PSObject.Properties.Name -contains 'dispatch') { $LaneEntry.dispatch } else { $null }
@@ -724,6 +744,7 @@ $hierarchyState = Get-VibeHierarchyState `
     -ParentUnitId $(if ($runtimeInputPacket -and $runtimeInputPacket.hierarchy) { [string]$runtimeInputPacket.hierarchy.parent_unit_id } else { $ParentUnitId }) `
     -InheritedRequirementDocPath $(if ($runtimeInputPacket -and $runtimeInputPacket.hierarchy) { [string]$runtimeInputPacket.hierarchy.inherited_requirement_doc_path } else { $RequirementDocPath }) `
     -InheritedExecutionPlanPath $(if ($runtimeInputPacket -and $runtimeInputPacket.hierarchy) { [string]$runtimeInputPacket.hierarchy.inherited_execution_plan_path } else { $ExecutionPlanPath }) `
+    -DelegationEnvelopePath $(if ($runtimeInputPacket -and $runtimeInputPacket.hierarchy) { [string]$runtimeInputPacket.hierarchy.delegation_envelope_path } else { '' }) `
     -HierarchyContract $runtime.runtime_input_packet_policy.hierarchy_contract
 
 $policy = $runtime.execution_runtime_policy

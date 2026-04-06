@@ -61,6 +61,12 @@ XL delegation uses two governance scopes:
 
 Child-governed lanes keep `vibe` discipline but are not new top-level governors.
 
+Runtime enforcement for child lanes:
+
+- root emits a `delegation-envelope.json` before delegated child execution
+- child startup validates inherited requirement/plan truth against that envelope
+- child emits `delegation-validation-receipt.json` before executing the bounded unit
+
 Child-governed lanes must not:
 
 - create a second canonical requirement surface

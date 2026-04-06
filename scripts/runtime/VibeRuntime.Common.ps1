@@ -471,6 +471,7 @@ function Get-VibeHierarchyState {
         [AllowEmptyString()] [string]$ParentUnitId = '',
         [AllowEmptyString()] [string]$InheritedRequirementDocPath = '',
         [AllowEmptyString()] [string]$InheritedExecutionPlanPath = '',
+        [AllowEmptyString()] [string]$DelegationEnvelopePath = '',
         [Parameter(Mandatory)] [object]$HierarchyContract
     )
 
@@ -504,6 +505,7 @@ function Get-VibeHierarchyState {
         parent_unit_id = if ($scope -eq 'child' -and -not [string]::IsNullOrWhiteSpace($ParentUnitId)) { $ParentUnitId } else { $null }
         inherited_requirement_doc_path = if ($scope -eq 'child' -and -not [string]::IsNullOrWhiteSpace($InheritedRequirementDocPath)) { [System.IO.Path]::GetFullPath($InheritedRequirementDocPath) } else { $null }
         inherited_execution_plan_path = if ($scope -eq 'child' -and -not [string]::IsNullOrWhiteSpace($InheritedExecutionPlanPath)) { [System.IO.Path]::GetFullPath($InheritedExecutionPlanPath) } else { $null }
+        delegation_envelope_path = if ($scope -eq 'child' -and -not [string]::IsNullOrWhiteSpace($DelegationEnvelopePath)) { [System.IO.Path]::GetFullPath($DelegationEnvelopePath) } else { $null }
         allow_requirement_freeze = [bool]$authoritySource.allow_requirement_freeze
         allow_plan_freeze = [bool]$authoritySource.allow_plan_freeze
         allow_global_dispatch = [bool]$authoritySource.allow_global_dispatch
@@ -526,6 +528,7 @@ function New-VibeHierarchyProjection {
     $projection.parent_unit_id = if ($null -eq $HierarchyState.parent_unit_id) { $null } else { [string]$HierarchyState.parent_unit_id }
     $projection.inherited_requirement_doc_path = if ($null -eq $HierarchyState.inherited_requirement_doc_path) { $null } else { [string]$HierarchyState.inherited_requirement_doc_path }
     $projection.inherited_execution_plan_path = if ($null -eq $HierarchyState.inherited_execution_plan_path) { $null } else { [string]$HierarchyState.inherited_execution_plan_path }
+    $projection.delegation_envelope_path = if ((Test-VibeObjectHasProperty -InputObject $HierarchyState -PropertyName 'delegation_envelope_path') -and $null -ne $HierarchyState.delegation_envelope_path) { [string]$HierarchyState.delegation_envelope_path } else { $null }
     return [pscustomobject]$projection
 }
 
@@ -713,10 +716,281 @@ function Get-VibeGovernedRuntimeStageOrder {
     )
 }
 
+function Get-VibeGovernanceArtifactContract {
+    param(
+        [AllowNull()] [object]$HierarchyContract = $null
+    )
+
+    $artifacts = if (
+        $null -ne $HierarchyContract -and
+        $HierarchyContract.PSObject.Properties.Name -contains 'governance_artifacts' -and
+        $null -ne $HierarchyContract.governance_artifacts
+    ) {
+        $HierarchyContract.governance_artifacts
+    } else {
+        $null
+    }
+
+    return [pscustomobject]@{
+        capsule = if ($artifacts -and $artifacts.PSObject.Properties.Name -contains 'capsule' -and -not [string]::IsNullOrWhiteSpace([string]$artifacts.capsule)) { [string]$artifacts.capsule } else { 'governance-capsule.json' }
+        lineage = if ($artifacts -and $artifacts.PSObject.Properties.Name -contains 'lineage' -and -not [string]::IsNullOrWhiteSpace([string]$artifacts.lineage)) { [string]$artifacts.lineage } else { 'stage-lineage.json' }
+        delegation_envelope = if ($artifacts -and $artifacts.PSObject.Properties.Name -contains 'delegation_envelope' -and -not [string]::IsNullOrWhiteSpace([string]$artifacts.delegation_envelope)) { [string]$artifacts.delegation_envelope } else { 'delegation-envelope.json' }
+        delegation_validation = if ($artifacts -and $artifacts.PSObject.Properties.Name -contains 'delegation_validation' -and -not [string]::IsNullOrWhiteSpace([string]$artifacts.delegation_validation)) { [string]$artifacts.delegation_validation } else { 'delegation-validation-receipt.json' }
+    }
+}
+
+function Get-VibeGovernanceArtifactPath {
+    param(
+        [Parameter(Mandatory)] [string]$SessionRoot,
+        [Parameter(Mandatory)] [ValidateSet('capsule', 'lineage', 'delegation_envelope', 'delegation_validation')] [string]$ArtifactName,
+        [AllowNull()] [object]$HierarchyContract = $null
+    )
+
+    $contract = Get-VibeGovernanceArtifactContract -HierarchyContract $HierarchyContract
+    $fileName = [string]$contract.$ArtifactName
+    return [System.IO.Path]::GetFullPath((Join-Path $SessionRoot $fileName))
+}
+
+function Write-VibeGovernanceCapsule {
+    param(
+        [Parameter(Mandatory)] [string]$SessionRoot,
+        [Parameter(Mandatory)] [string]$RunId,
+        [Parameter(Mandatory)] [string]$RootRunId,
+        [Parameter(Mandatory)] [string]$GovernanceScope,
+        [AllowEmptyString()] [string]$RuntimeSelectedSkill = 'vibe',
+        [AllowNull()] [string[]]$AllowedStageSequence = $(Get-VibeGovernedRuntimeStageOrder),
+        [AllowNull()] [object]$HierarchyContract = $null
+    )
+
+    $capsulePath = Get-VibeGovernanceArtifactPath -SessionRoot $SessionRoot -ArtifactName 'capsule' -HierarchyContract $HierarchyContract
+    $capsule = [pscustomobject]@{
+        run_id = $RunId
+        root_run_id = $RootRunId
+        governance_scope = $GovernanceScope
+        runtime_selected_skill = if ([string]::IsNullOrWhiteSpace($RuntimeSelectedSkill)) { 'vibe' } else { [string]$RuntimeSelectedSkill }
+        state_machine_version = 'governed-runtime-v1'
+        allowed_stage_sequence = @($AllowedStageSequence)
+        requirement_truth_owner = if ($GovernanceScope -eq 'root') { 'root_governed' } else { 'root_governed_inherited' }
+        plan_truth_owner = if ($GovernanceScope -eq 'root') { 'root_governed' } else { 'root_governed_inherited' }
+        created_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    }
+    Write-VibeJsonArtifact -Path $capsulePath -Value $capsule
+
+    return [pscustomobject]@{
+        path = $capsulePath
+        capsule = $capsule
+    }
+}
+
+function Add-VibeStageLineageEntry {
+    param(
+        [Parameter(Mandatory)] [string]$SessionRoot,
+        [Parameter(Mandatory)] [string]$RunId,
+        [Parameter(Mandatory)] [string]$RootRunId,
+        [Parameter(Mandatory)] [string]$StageName,
+        [AllowEmptyString()] [string]$PreviousStageName = '',
+        [AllowEmptyString()] [string]$PreviousStageReceiptPath = '',
+        [AllowEmptyString()] [string]$CurrentReceiptPath = '',
+        [AllowNull()] [object]$HierarchyContract = $null
+    )
+
+    $lineagePath = Get-VibeGovernanceArtifactPath -SessionRoot $SessionRoot -ArtifactName 'lineage' -HierarchyContract $HierarchyContract
+    $document = if (Test-Path -LiteralPath $lineagePath) {
+        Get-Content -LiteralPath $lineagePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    } else {
+        [pscustomobject]@{
+            run_id = $RunId
+            root_run_id = $RootRunId
+            stages = @()
+        }
+    }
+
+    $stages = [System.Collections.ArrayList]::new()
+    foreach ($stage in @($document.stages)) {
+        [void]$stages.Add($stage)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($PreviousStageName)) {
+        if ($stages.Count -eq 0) {
+            throw ("Cannot record stage '{0}' before lineage contains previous stage '{1}'." -f $StageName, $PreviousStageName)
+        }
+        $lastStage = $stages[$stages.Count - 1]
+        if ([string]$lastStage.stage_name -ne $PreviousStageName) {
+            throw ("Stage lineage mismatch for '{0}'. Expected previous stage '{1}', found '{2}'." -f $StageName, $PreviousStageName, [string]$lastStage.stage_name)
+        }
+        if (-not [string]::IsNullOrWhiteSpace($PreviousStageReceiptPath) -and -not (Test-Path -LiteralPath $PreviousStageReceiptPath)) {
+            throw ("Stage lineage prerequisite receipt missing for '{0}': {1}" -f $StageName, $PreviousStageReceiptPath)
+        }
+    }
+    if (-not [string]::IsNullOrWhiteSpace($CurrentReceiptPath) -and -not (Test-Path -LiteralPath $CurrentReceiptPath)) {
+        throw ("Current stage receipt missing for '{0}': {1}" -f $StageName, $CurrentReceiptPath)
+    }
+
+    $entry = [pscustomobject]@{
+        stage_name = $StageName
+        run_id = $RunId
+        root_run_id = $RootRunId
+        previous_stage_name = if ([string]::IsNullOrWhiteSpace($PreviousStageName)) { $null } else { $PreviousStageName }
+        previous_stage_receipt_path = if ([string]::IsNullOrWhiteSpace($PreviousStageReceiptPath)) { $null } else { [System.IO.Path]::GetFullPath($PreviousStageReceiptPath) }
+        current_receipt_path = if ([string]::IsNullOrWhiteSpace($CurrentReceiptPath)) { $null } else { [System.IO.Path]::GetFullPath($CurrentReceiptPath) }
+        transition_validated = $true
+        validated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    }
+    [void]$stages.Add($entry)
+    $document = [pscustomobject]@{
+        run_id = $RunId
+        root_run_id = $RootRunId
+        stages = @($stages)
+        last_stage_name = $StageName
+        updated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    }
+    Write-VibeJsonArtifact -Path $lineagePath -Value $document
+
+    return [pscustomobject]@{
+        path = $lineagePath
+        lineage = $document
+        entry = $entry
+    }
+}
+
+function Write-VibeDelegationEnvelope {
+    param(
+        [Parameter(Mandatory)] [string]$Path,
+        [Parameter(Mandatory)] [string]$RootRunId,
+        [Parameter(Mandatory)] [string]$ParentRunId,
+        [Parameter(Mandatory)] [string]$ParentUnitId,
+        [Parameter(Mandatory)] [string]$ChildRunId,
+        [Parameter(Mandatory)] [string]$RequirementDocPath,
+        [Parameter(Mandatory)] [string]$ExecutionPlanPath,
+        [Parameter(Mandatory)] [string]$WriteScope,
+        [AllowNull()] [string[]]$ApprovedSpecialists = @(),
+        [AllowEmptyString()] [string]$ReviewMode = 'native_contract'
+    )
+
+    $envelope = [pscustomobject]@{
+        root_run_id = $RootRunId
+        parent_run_id = $ParentRunId
+        parent_unit_id = $ParentUnitId
+        child_run_id = $ChildRunId
+        governance_scope = 'child_governed'
+        requirement_doc_path = [System.IO.Path]::GetFullPath($RequirementDocPath)
+        execution_plan_path = [System.IO.Path]::GetFullPath($ExecutionPlanPath)
+        write_scope = $WriteScope
+        approved_specialists = @($ApprovedSpecialists | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
+        review_mode = if ([string]::IsNullOrWhiteSpace($ReviewMode)) { 'native_contract' } else { $ReviewMode }
+        prompt_tail_required = '$vibe'
+        allow_requirement_freeze = $false
+        allow_plan_freeze = $false
+        allow_root_completion_claim = $false
+    }
+    Write-VibeJsonArtifact -Path $Path -Value $envelope
+
+    return [pscustomobject]@{
+        path = [System.IO.Path]::GetFullPath($Path)
+        envelope = $envelope
+    }
+}
+
+function Assert-VibeDelegationEnvelope {
+    param(
+        [Parameter(Mandatory)] [string]$SessionRoot,
+        [Parameter(Mandatory)] [AllowEmptyString()] [string]$EnvelopePath,
+        [AllowNull()] [object]$HierarchyState = $null,
+        [AllowNull()] [object]$LaneSpec = $null,
+        [AllowEmptyString()] [string]$ExpectedWriteScope = '',
+        [AllowEmptyString()] [string]$ExpectedSkillId = '',
+        [AllowNull()] [object]$HierarchyContract = $null
+    )
+
+    if ([string]::IsNullOrWhiteSpace($EnvelopePath) -or -not (Test-Path -LiteralPath $EnvelopePath)) {
+        throw ("Child-governed runtime requires DelegationEnvelopePath and the referenced file must exist: {0}" -f $EnvelopePath)
+    }
+
+    $envelope = Get-Content -LiteralPath $EnvelopePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $writeScopeValue = if ($null -ne $LaneSpec -and $LaneSpec.PSObject.Properties.Name -contains 'write_scope') { [string]$LaneSpec.write_scope } elseif (-not [string]::IsNullOrWhiteSpace($ExpectedWriteScope)) { $ExpectedWriteScope } elseif ($envelope.PSObject.Properties.Name -contains 'write_scope') { [string]$envelope.write_scope } else { '' }
+    $approvedSpecialists = if ($envelope.PSObject.Properties.Name -contains 'approved_specialists' -and $null -ne $envelope.approved_specialists) {
+        @($envelope.approved_specialists | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+    } else {
+        @()
+    }
+
+    $requirementMatches = $true
+    $planMatches = $true
+    if ($null -ne $HierarchyState) {
+        if ($HierarchyState.inherited_requirement_doc_path) {
+            $requirementMatches = ([System.IO.Path]::GetFullPath([string]$envelope.requirement_doc_path) -eq [System.IO.Path]::GetFullPath([string]$HierarchyState.inherited_requirement_doc_path))
+        }
+        if ($HierarchyState.inherited_execution_plan_path) {
+            $planMatches = ([System.IO.Path]::GetFullPath([string]$envelope.execution_plan_path) -eq [System.IO.Path]::GetFullPath([string]$HierarchyState.inherited_execution_plan_path))
+        }
+    } elseif ($null -ne $LaneSpec) {
+        $requirementMatches = ([System.IO.Path]::GetFullPath([string]$envelope.requirement_doc_path) -eq [System.IO.Path]::GetFullPath([string]$LaneSpec.requirement_doc_path))
+        $planMatches = ([System.IO.Path]::GetFullPath([string]$envelope.execution_plan_path) -eq [System.IO.Path]::GetFullPath([string]$LaneSpec.execution_plan_path))
+    }
+
+    $writeScopeValid = -not [string]::IsNullOrWhiteSpace([string]$envelope.write_scope)
+    if (-not [string]::IsNullOrWhiteSpace($writeScopeValue)) {
+        $writeScopeValid = $writeScopeValid -and ([string]$envelope.write_scope -eq $writeScopeValue)
+    }
+
+    $specialistApprovalValid = $true
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedSkillId)) {
+        $specialistApprovalValid = ($approvedSpecialists -contains $ExpectedSkillId)
+    }
+    $promptTailValid = ([string]$envelope.prompt_tail_required -eq '$vibe')
+    $scopeValid = ([string]$envelope.governance_scope -eq 'child_governed')
+    $rootRunValid = $true
+    if ($null -ne $HierarchyState -and $HierarchyState.root_run_id) {
+        $rootRunValid = ([string]$envelope.root_run_id -eq [string]$HierarchyState.root_run_id)
+    } elseif ($null -ne $LaneSpec -and $LaneSpec.root_run_id) {
+        $rootRunValid = ([string]$envelope.root_run_id -eq [string]$LaneSpec.root_run_id)
+    }
+
+    if (-not $scopeValid) {
+        throw ("Delegation envelope governance scope must be child_governed: {0}" -f [string]$envelope.governance_scope)
+    }
+    if (-not $promptTailValid) {
+        throw 'Delegation envelope must require $vibe prompt tail discipline.'
+    }
+    if (-not $requirementMatches -or -not $planMatches) {
+        throw 'Delegation envelope does not match inherited canonical requirement/plan truth.'
+    }
+    if (-not $writeScopeValid) {
+        throw 'Delegation envelope must declare a non-empty matching write scope.'
+    }
+    if (-not $rootRunValid) {
+        throw 'Delegation envelope root run id does not match the governed child context.'
+    }
+    if (-not $specialistApprovalValid) {
+        throw ("Delegation envelope does not approve specialist dispatch: {0}" -f $ExpectedSkillId)
+    }
+
+    $receiptPath = Get-VibeGovernanceArtifactPath -SessionRoot $SessionRoot -ArtifactName 'delegation_validation' -HierarchyContract $HierarchyContract
+    $receipt = [pscustomobject]@{
+        child_run_id = if ($null -ne $LaneSpec -and $LaneSpec.PSObject.Properties.Name -contains 'run_id') { [string]$LaneSpec.run_id } elseif ($envelope.PSObject.Properties.Name -contains 'child_run_id') { [string]$envelope.child_run_id } else { $null }
+        root_run_id = [string]$envelope.root_run_id
+        envelope_path = [System.IO.Path]::GetFullPath($EnvelopePath)
+        requirement_doc_path = [System.IO.Path]::GetFullPath([string]$envelope.requirement_doc_path)
+        execution_plan_path = [System.IO.Path]::GetFullPath([string]$envelope.execution_plan_path)
+        write_scope_valid = [bool]$writeScopeValid
+        prompt_tail_valid = [bool]$promptTailValid
+        specialist_approval_valid = [bool]$specialistApprovalValid
+        validated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    }
+    Write-VibeJsonArtifact -Path $receiptPath -Value $receipt
+
+    return [pscustomobject]@{
+        receipt_path = $receiptPath
+        receipt = $receipt
+        envelope = $envelope
+    }
+}
+
 function New-VibeRuntimeSummaryArtifactProjection {
     param(
         [Parameter(Mandatory)] [string]$SkeletonReceiptPath,
         [Parameter(Mandatory)] [string]$RuntimeInputPacketPath,
+        [Parameter(Mandatory)] [string]$GovernanceCapsulePath,
+        [Parameter(Mandatory)] [string]$StageLineagePath,
         [Parameter(Mandatory)] [string]$IntentContractPath,
         [Parameter(Mandatory)] [string]$RequirementDocPath,
         [Parameter(Mandatory)] [string]$RequirementReceiptPath,
@@ -730,12 +1004,16 @@ function New-VibeRuntimeSummaryArtifactProjection {
         [Parameter(Mandatory)] [string]$DeliveryAcceptanceReportPath,
         [Parameter(Mandatory)] [string]$DeliveryAcceptanceMarkdownPath,
         [Parameter(Mandatory)] [string]$MemoryActivationReportPath,
-        [Parameter(Mandatory)] [string]$MemoryActivationMarkdownPath
+        [Parameter(Mandatory)] [string]$MemoryActivationMarkdownPath,
+        [AllowEmptyString()] [string]$DelegationEnvelopePath = '',
+        [AllowEmptyString()] [string]$DelegationValidationReceiptPath = ''
     )
 
     return [pscustomobject]@{
         skeleton_receipt = $SkeletonReceiptPath
         runtime_input_packet = $RuntimeInputPacketPath
+        governance_capsule = $GovernanceCapsulePath
+        stage_lineage = $StageLineagePath
         intent_contract = $IntentContractPath
         requirement_doc = $RequirementDocPath
         requirement_receipt = $RequirementReceiptPath
@@ -750,6 +1028,8 @@ function New-VibeRuntimeSummaryArtifactProjection {
         delivery_acceptance_markdown = $DeliveryAcceptanceMarkdownPath
         memory_activation_report = $MemoryActivationReportPath
         memory_activation_markdown = $MemoryActivationMarkdownPath
+        delegation_envelope = if ([string]::IsNullOrWhiteSpace($DelegationEnvelopePath)) { $null } else { $DelegationEnvelopePath }
+        delegation_validation_receipt = if ([string]::IsNullOrWhiteSpace($DelegationValidationReceiptPath)) { $null } else { $DelegationValidationReceiptPath }
     }
 }
 
@@ -761,6 +1041,10 @@ function New-VibeRuntimeSummaryRelativeArtifactProjection {
 
     $relativeArtifacts = [ordered]@{}
     foreach ($property in @($Artifacts.PSObject.Properties)) {
+        if ($null -eq $property.Value -or [string]::IsNullOrWhiteSpace([string]$property.Value)) {
+            $relativeArtifacts[[string]$property.Name] = $null
+            continue
+        }
         $relativeArtifacts[[string]$property.Name] = Get-VibeRelativePathCompat -BasePath $BasePath -TargetPath ([string]$property.Value)
     }
 

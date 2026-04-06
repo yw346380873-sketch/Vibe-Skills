@@ -56,6 +56,30 @@ function Convert-ToNormalizedPathToken {
     return ([System.IO.Path]::GetFullPath($PathValue)).Replace('\', '/')
 }
 
+function New-ChildDelegationEnvelopeForGate {
+    param(
+        [Parameter(Mandatory)] [object]$RootSummary,
+        [Parameter(Mandatory)] [string]$ChildRunId
+    )
+
+    $sessionRoot = [string]$RootSummary.summary.session_root
+    $childSessionRoot = Join-Path ([System.IO.Path]::GetDirectoryName($sessionRoot)) $ChildRunId
+    New-Item -ItemType Directory -Path $childSessionRoot -Force | Out-Null
+    $envelopePath = Get-VibeGovernanceArtifactPath -SessionRoot $childSessionRoot -ArtifactName 'delegation_envelope'
+    Write-VibeDelegationEnvelope `
+        -Path $envelopePath `
+        -RootRunId ([string]$RootSummary.summary.run_id) `
+        -ParentRunId ([string]$RootSummary.summary.run_id) `
+        -ParentUnitId 'canonical-surface-child-unit' `
+        -ChildRunId $ChildRunId `
+        -RequirementDocPath ([string]$RootSummary.summary.artifacts.requirement_doc) `
+        -ExecutionPlanPath ([string]$RootSummary.summary.artifacts.execution_plan) `
+        -WriteScope 'gate:canonical-surface' `
+        -ApprovedSpecialists @() `
+        -ReviewMode 'native_contract' | Out-Null
+    return $envelopePath
+}
+
 $context = Get-VgoGovernanceContext -ScriptPath $PSCommandPath -EnforceExecutionContext
 $repoRoot = $context.repoRoot
 $runtimeEntryPath = Get-VgoRuntimeEntrypointPath -RepoRoot $repoRoot -RuntimeConfig $context.runtimeConfig
@@ -98,6 +122,7 @@ if ($hasSummary) {
     Add-Assertion -Results ([ref]$results) -Condition ($stableDocText.Contains('one canonical execution-plan surface')) -Message 'stable hierarchy doc forbids duplicate execution-plan truth'
 
     $childRunId = "canonical-surface-child-" + [System.Guid]::NewGuid().ToString('N').Substring(0, 8)
+    $childDelegationEnvelopePath = New-ChildDelegationEnvelopeForGate -RootSummary $summary -ChildRunId $childRunId
     $childSummary = & $runtimeEntryPath `
         -Task ("Child canonical surface uniqueness probe {0}" -f $childRunId) `
         -Mode interactive_governed `
@@ -108,6 +133,7 @@ if ($hasSummary) {
         -ParentUnitId 'canonical-surface-child-unit' `
         -InheritedRequirementDocPath $requirementDocPath `
         -InheritedExecutionPlanPath $executionPlanPath `
+        -DelegationEnvelopePath $childDelegationEnvelopePath `
         -ArtifactRoot $artifactRoot
 
     Add-Assertion -Results ([ref]$results) -Condition ($null -ne $childSummary) -Message 'child canonical probe returned summary payload'
@@ -118,8 +144,12 @@ if ($hasSummary) {
         $childRequirementReceipt = Get-Content -LiteralPath $childSummary.summary.artifacts.requirement_receipt -Raw -Encoding UTF8 | ConvertFrom-Json
         $childExecutionPlanReceipt = Get-Content -LiteralPath $childSummary.summary.artifacts.execution_plan_receipt -Raw -Encoding UTF8 | ConvertFrom-Json
         $childExecutionManifest = Get-Content -LiteralPath $childSummary.summary.artifacts.execution_manifest -Raw -Encoding UTF8 | ConvertFrom-Json
+        $childDelegationValidation = Get-Content -LiteralPath $childSummary.summary.artifacts.delegation_validation_receipt -Raw -Encoding UTF8 | ConvertFrom-Json
 
         Add-Assertion -Results ([ref]$results) -Condition ($childSummary.summary.governance_scope -eq 'child') -Message 'child canonical probe runs in child governance scope'
+        Add-Assertion -Results ([ref]$results) -Condition (
+            [System.IO.Path]::GetFullPath([string]$childDelegationValidation.envelope_path) -eq [System.IO.Path]::GetFullPath([string]$childDelegationEnvelopePath)
+        ) -Message 'child canonical probe validates the root-authored delegation envelope'
         Add-Assertion -Results ([ref]$results) -Condition (-not [bool]$childRequirementReceipt.canonical_write_allowed) -Message 'child requirement stage cannot write canonical requirement surface'
         Add-Assertion -Results ([ref]$results) -Condition (-not [bool]$childExecutionPlanReceipt.canonical_write_allowed) -Message 'child plan stage cannot write canonical plan surface'
         Add-Assertion -Results ([ref]$results) -Condition (

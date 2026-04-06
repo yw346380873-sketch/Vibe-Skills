@@ -62,6 +62,18 @@ The only supported mode.
 - freeze a requirement document with user-visible assumptions
 - allow approval boundaries before execution
 
+## Runtime Lineage Artifacts
+
+Official governed entry is runtime-validated with artifact-backed lineage:
+
+- `governance-capsule.json`: root-authored runtime authority capsule for the governed run
+- `stage-lineage.json`: ordered stage-transition ledger for the current run
+- `delegation-envelope.json`: root-authored child startup contract for inherited requirement/plan truth
+- `delegation-validation-receipt.json`: child proof that envelope validation passed before bounded execution
+
+These artifacts strengthen the official governed path only.
+They do not claim OS-level or arbitrary shell-session enforcement.
+
 ## Fixed 6-Stage State Machine
 
 ### Stage 1: `skeleton_check`
@@ -141,6 +153,8 @@ Rules:
 - `L`: execute planned units serially by default; no blanket fan-out
 - `XL`: execute waves sequentially; allow bounded parallelism only for independent units inside a step
 - XL prefers Codex-native orchestration
+- official entry writes a governance capsule before stage-lineage validation proceeds
+- later stages must append a matching lineage entry for the same governed run
 - spawned subagent prompts must end with `$vibe`
 - milestone evidence must be written before phase completion
 - if the canonical router surfaces specialist skills, record them as bounded native specialist recommendations under `vibe` governance
@@ -151,6 +165,8 @@ Rules:
 - runtime-selected skill stays `vibe` for governed entry even when route truth points at a specialist
 - specialist use must preserve native workflow, required inputs, expected outputs, and validation style
 - child-governed lanes inherit root-frozen requirement/plan context and must not open second canonical requirement or plan truth surfaces
+- child-governed startup requires a root-authored `delegation-envelope.json`
+- child-governed startup must emit `delegation-validation-receipt.json` before bounded work
 - dangerous bulk deletion and blind recursive wipe commands against managed roots are forbidden by default during governed execution
 - destructive removal must be narrowed to explicit unique paths, surfaced with a standalone hazard alert, and recorded in receipts rather than hidden behind convenience cleanup
 - the run must emit a downstream delivery-acceptance report during closure so process success is not silently relabeled as project-delivery success

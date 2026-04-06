@@ -73,6 +73,7 @@ def run_child_runtime(
     inherited_execution_plan_path: Path,
     artifact_root: Path,
     approved_specialist_skill_ids: list[str] | None = None,
+    delegation_envelope_path: Path | None = None,
 ) -> dict[str, object]:
     shell = resolve_powershell()
     if shell is None:
@@ -85,6 +86,11 @@ def run_child_runtime(
         "@(" + ",".join("'" + skill.replace("'", "''") + "'" for skill in approved) + ")"
         if approved
         else "@()"
+    )
+    delegation_literal = (
+        f"-DelegationEnvelopePath '{delegation_envelope_path}' "
+        if delegation_envelope_path is not None
+        else ""
     )
     command = [
         shell,
@@ -104,6 +110,7 @@ def run_child_runtime(
             f"-InheritedRequirementDocPath '{inherited_requirement_doc_path}' "
             f"-InheritedExecutionPlanPath '{inherited_execution_plan_path}' "
             f"-ApprovedSpecialistSkillIds {approved_literal} "
+            f"{delegation_literal}"
             f"-ArtifactRoot '{artifact_root}'; "
             "$result | ConvertTo-Json -Depth 20 }"
         ),
@@ -122,6 +129,38 @@ def run_child_runtime(
             f"stderr={completed.stderr.strip()}"
         )
     return json.loads(stdout)
+
+
+def write_delegation_envelope_fixture(
+    artifact_root: Path,
+    root_payload: dict[str, object],
+    approved_specialists: list[str] | None = None,
+) -> Path:
+    approved = approved_specialists or []
+    root_summary = root_payload["summary"]
+    root_artifacts = root_summary["artifacts"]
+    child_run_id = "pytest-child-lane-" + uuid.uuid4().hex[:10]
+    session_root = artifact_root / "outputs" / "runtime" / "vibe-sessions" / child_run_id
+    session_root.mkdir(parents=True, exist_ok=True)
+    envelope_path = session_root / "delegation-envelope.json"
+    envelope = {
+        "root_run_id": str(root_summary["run_id"]),
+        "parent_run_id": str(root_summary["run_id"]),
+        "parent_unit_id": "pytest-child-unit",
+        "child_run_id": child_run_id,
+        "governance_scope": "child_governed",
+        "requirement_doc_path": str(Path(root_artifacts["requirement_doc"]).resolve()),
+        "execution_plan_path": str(Path(root_artifacts["execution_plan"]).resolve()),
+        "write_scope": "pytest:child-lane",
+        "approved_specialists": approved,
+        "review_mode": "native_contract",
+        "prompt_tail_required": "$vibe",
+        "allow_requirement_freeze": False,
+        "allow_plan_freeze": False,
+        "allow_root_completion_claim": False,
+    }
+    envelope_path.write_text(json.dumps(envelope, indent=2), encoding="utf-8")
+    return envelope_path
 
 
 class RootChildHierarchyBridgeTests(unittest.TestCase):
@@ -192,6 +231,23 @@ class RootChildHierarchyBridgeTests(unittest.TestCase):
             self.assertEqual("vibe", execution_manifest["route_runtime_alignment"]["runtime_selected_skill"])
             self.assertTrue(bool(execution_manifest["dispatch_integrity"]["proof_passed"]))
 
+    def test_child_runtime_requires_delegation_envelope(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            artifact_root = Path(tempdir)
+            root_payload = run_governed_runtime(
+                "Root child envelope seed for missing envelope rejection.",
+                artifact_root=artifact_root,
+            )
+
+            with self.assertRaises(subprocess.CalledProcessError):
+                run_child_runtime(
+                    task="Child governed runtime should require delegation envelope.",
+                    root_run_id=str(root_payload["summary"]["run_id"]),
+                    inherited_requirement_doc_path=Path(root_payload["summary"]["artifacts"]["requirement_doc"]),
+                    inherited_execution_plan_path=Path(root_payload["summary"]["artifacts"]["execution_plan"]),
+                    artifact_root=artifact_root,
+                )
+
     def test_child_specialist_suggestions_are_advisory_until_root_approval(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:
             artifact_root = Path(tempdir)
@@ -214,6 +270,12 @@ class RootChildHierarchyBridgeTests(unittest.TestCase):
                 if first_skill_id:
                     approved_skill_ids = [first_skill_id]
 
+            envelope_path = write_delegation_envelope_fixture(
+                artifact_root=artifact_root,
+                root_payload=root_payload,
+                approved_specialists=approved_skill_ids,
+            )
+
             child_payload = run_child_runtime(
                 task="Child specialist escalation advisory smoke.",
                 root_run_id=str(root_summary["run_id"]),
@@ -221,12 +283,16 @@ class RootChildHierarchyBridgeTests(unittest.TestCase):
                 inherited_execution_plan_path=Path(root_artifacts["execution_plan"]),
                 artifact_root=artifact_root,
                 approved_specialist_skill_ids=approved_skill_ids,
+                delegation_envelope_path=envelope_path,
             )
             child_summary = child_payload["summary"]
             runtime_input_packet = json.loads(Path(child_summary["artifacts"]["runtime_input_packet"]).read_text(encoding="utf-8"))
             execution_manifest = json.loads(Path(child_summary["artifacts"]["execution_manifest"]).read_text(encoding="utf-8"))
             requirement_receipt = json.loads(Path(child_summary["artifacts"]["requirement_receipt"]).read_text(encoding="utf-8"))
             plan_receipt = json.loads(Path(child_summary["artifacts"]["execution_plan_receipt"]).read_text(encoding="utf-8"))
+            delegation_validation_receipt = json.loads(
+                Path(child_summary["artifacts"]["delegation_validation_receipt"]).read_text(encoding="utf-8")
+            )
 
             self.assertEqual("child", child_summary["governance_scope"])
             self.assertEqual("child", runtime_input_packet["governance_scope"])
@@ -266,6 +332,9 @@ class RootChildHierarchyBridgeTests(unittest.TestCase):
             self.assertTrue(bool(execution_manifest["dispatch_integrity"]["proof_passed"]))
             self.assertTrue(bool(execution_manifest["dispatch_integrity"]["local_suggestions_contained"]))
             self.assertTrue(bool(execution_manifest["dispatch_integrity"]["executed_specialists_subset_of_approved_dispatch"]))
+            self.assertEqual(str(envelope_path.resolve()), str(Path(delegation_validation_receipt["envelope_path"]).resolve()))
+            self.assertTrue(bool(delegation_validation_receipt["write_scope_valid"]))
+            self.assertTrue(bool(delegation_validation_receipt["specialist_approval_valid"]))
 
 
 if __name__ == "__main__":

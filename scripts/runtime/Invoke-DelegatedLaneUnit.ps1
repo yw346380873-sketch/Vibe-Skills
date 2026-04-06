@@ -20,6 +20,21 @@ $notesPath = Join-Path $laneRoot 'lane-notes.md'
 $payloadPath = Join-Path $laneRoot 'lane-payload.json'
 $receipt = $null
 $resultPath = $null
+$expectedSkillId = if (
+    $laneKind -eq 'specialist_dispatch' -and
+    $laneSpec.PSObject.Properties.Name -contains 'dispatch' -and
+    $null -ne $laneSpec.dispatch
+) {
+    [string]$laneSpec.dispatch.skill_id
+} else {
+    ''
+}
+$delegationValidation = Assert-VibeDelegationEnvelope `
+    -SessionRoot $laneRoot `
+    -EnvelopePath ([string]$laneSpec.delegation_envelope_path) `
+    -LaneSpec $laneSpec `
+    -ExpectedWriteScope ([string]$laneSpec.write_scope) `
+    -ExpectedSkillId $expectedSkillId
 
 switch ($laneKind) {
     'execution_unit' {
@@ -154,6 +169,7 @@ $payload = [pscustomobject]@{
     lane_receipt_path = $receiptPath
     lane_notes_path = $notesPath
     lane_result_path = $resultPath
+    delegation_validation_receipt_path = [string]$delegationValidation.receipt_path
     receipt = $receipt
 }
 Write-VibeJsonArtifact -Path $payloadPath -Value $payload

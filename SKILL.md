@@ -55,6 +55,12 @@ Do not use `vibe` for:
 These stages are mandatory.
 They may become lighter for simple work, but they are not skipped as a matter of policy.
 
+Official governed entry also records runtime lineage:
+
+- root or child entry writes `governance-capsule.json`
+- each validated stage transition appends `stage-lineage.json`
+- child-governed startup validates inherited context through `delegation-envelope.json`
+
 ## Runtime Mode
 
 ### `interactive_governed`
@@ -87,6 +93,7 @@ Child-governed lanes must:
 - keep `$vibe` at prompt tail to preserve governed discipline
 - inherit frozen requirement and plan context from the root lane
 - stay within assigned ownership boundaries and write scopes
+- validate a root-authored `delegation-envelope.json` and emit a `delegation-validation-receipt.json` before bounded execution
 
 Child-governed lanes must not:
 

@@ -237,6 +237,8 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
             for key in (
                 "skeleton_receipt",
                 "runtime_input_packet",
+                "governance_capsule",
+                "stage_lineage",
                 "intent_contract",
                 "requirement_doc",
                 "requirement_receipt",
@@ -259,6 +261,8 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
             execution_manifest_path = resolve_artifact_path("execution_manifest")
             execution_proof_path = resolve_artifact_path("execution_proof_manifest")
             runtime_input_packet_path = resolve_artifact_path("runtime_input_packet")
+            governance_capsule_path = resolve_artifact_path("governance_capsule")
+            stage_lineage_path = resolve_artifact_path("stage_lineage")
 
             if requirement_doc_path.exists():
                 requirement_doc = requirement_doc_path.read_text(encoding="utf-8")
@@ -272,10 +276,15 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
             self.assertIn("## Specialist Skill Dispatch Plan", execution_plan)
 
             runtime_input_packet = json.loads(runtime_input_packet_path.read_text(encoding="utf-8"))
+            governance_capsule = json.loads(governance_capsule_path.read_text(encoding="utf-8"))
+            stage_lineage = json.loads(stage_lineage_path.read_text(encoding="utf-8"))
             execute_receipt = json.loads(execute_receipt_path.read_text(encoding="utf-8"))
             execution_manifest = json.loads(execution_manifest_path.read_text(encoding="utf-8"))
             execution_proof = json.loads(execution_proof_path.read_text(encoding="utf-8"))
 
+            self.assertEqual("vibe", governance_capsule["runtime_selected_skill"])
+            self.assertEqual(summary["run_id"], governance_capsule["run_id"])
+            self.assertEqual(EXPECTED_STAGE_IDS, [item["stage_name"] for item in stage_lineage["stages"]])
             self.assertEqual("runtime_input_freeze", runtime_input_packet["stage"])
             self.assertEqual("interactive_governed", runtime_input_packet["runtime_mode"])
             self.assertFalse(runtime_input_packet["canonical_router"]["unattended"])

@@ -11,7 +11,8 @@ param(
     [AllowEmptyString()] [string]$ParentRunId = '',
     [AllowEmptyString()] [string]$ParentUnitId = '',
     [AllowEmptyString()] [string]$InheritedRequirementDocPath = '',
-    [AllowEmptyString()] [string]$InheritedExecutionPlanPath = ''
+    [AllowEmptyString()] [string]$InheritedExecutionPlanPath = '',
+    [AllowEmptyString()] [string]$DelegationEnvelopePath = ''
 )
 
 Set-StrictMode -Version Latest
@@ -95,6 +96,7 @@ $hierarchyState = Get-VibeHierarchyState `
     -ParentUnitId $ParentUnitId `
     -InheritedRequirementDocPath $InheritedRequirementDocPath `
     -InheritedExecutionPlanPath $InheritedExecutionPlanPath `
+    -DelegationEnvelopePath $DelegationEnvelopePath `
     -HierarchyContract $runtime.runtime_input_packet_policy.hierarchy_contract
 if (-not [string]::IsNullOrWhiteSpace($IntentContractPath) -and (Test-Path -LiteralPath $IntentContractPath)) {
     $intentContract = Get-Content -LiteralPath $IntentContractPath -Raw -Encoding UTF8 | ConvertFrom-Json

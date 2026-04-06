@@ -94,9 +94,14 @@ Add-Assertion -Results ([ref]$results) -Condition (
     $skillText.Contains('plan_execute') -and
     $skillText.Contains('phase_cleanup')
 ) -Message 'SKILL.md documents the fixed stage machine'
+Add-Assertion -Results ([ref]$results) -Condition ($skillText.Contains('governance-capsule.json')) -Message 'SKILL.md documents governance capsule artifact'
+Add-Assertion -Results ([ref]$results) -Condition ($skillText.Contains('stage-lineage.json')) -Message 'SKILL.md documents stage-lineage artifact'
 
 $teamText = Get-Content -LiteralPath (Join-Path $repoRoot 'protocols\team.md') -Raw -Encoding UTF8
 Add-Assertion -Results ([ref]$results) -Condition ($teamText.Contains('$vibe')) -Message 'team protocol requires subagent prompts to end with $vibe'
+$runtimeText = Get-Content -LiteralPath (Join-Path $repoRoot 'protocols\runtime.md') -Raw -Encoding UTF8
+Add-Assertion -Results ([ref]$results) -Condition ($runtimeText.Contains('governance-capsule.json')) -Message 'runtime protocol documents governance capsule artifact'
+Add-Assertion -Results ([ref]$results) -Condition ($runtimeText.Contains('delegation-envelope.json')) -Message 'runtime protocol documents delegation envelope artifact'
 
 $runId = "contract-gate-" + [System.Guid]::NewGuid().ToString('N').Substring(0, 8)
 $artifactRoot = Join-Path $repoRoot (".tmp\governed-runtime-contract-{0}" -f $runId)
@@ -107,6 +112,8 @@ Add-Assertion -Results ([ref]$results) -Condition ($summary.mode -eq 'interactiv
 $artifactPaths = @(
     $summary.summary.artifacts.skeleton_receipt,
     $summary.summary.artifacts.intent_contract,
+    $summary.summary.artifacts.governance_capsule,
+    $summary.summary.artifacts.stage_lineage,
     $summary.summary.artifacts.requirement_doc,
     $summary.summary.artifacts.execution_plan,
     $summary.summary.artifacts.execute_receipt,
@@ -123,9 +130,13 @@ $executeReceipt = Get-Content -LiteralPath $summary.summary.artifacts.execute_re
 $executionManifest = Get-Content -LiteralPath $summary.summary.artifacts.execution_manifest -Raw -Encoding UTF8 | ConvertFrom-Json
 $proofManifest = Get-Content -LiteralPath $summary.summary.artifacts.execution_proof_manifest -Raw -Encoding UTF8 | ConvertFrom-Json
 $runtimeInputPacket = Get-Content -LiteralPath $summary.summary.artifacts.runtime_input_packet -Raw -Encoding UTF8 | ConvertFrom-Json
+$governanceCapsule = Get-Content -LiteralPath $summary.summary.artifacts.governance_capsule -Raw -Encoding UTF8 | ConvertFrom-Json
+$stageLineage = Get-Content -LiteralPath $summary.summary.artifacts.stage_lineage -Raw -Encoding UTF8 | ConvertFrom-Json
 $generatedRequirement = Get-Content -LiteralPath $summary.summary.artifacts.requirement_doc -Raw -Encoding UTF8
 $generatedPlan = Get-Content -LiteralPath $summary.summary.artifacts.execution_plan -Raw -Encoding UTF8
 
+Add-Assertion -Results ([ref]$results) -Condition ($governanceCapsule.runtime_selected_skill -eq 'vibe') -Message 'runtime smoke governance capsule keeps vibe authority'
+Add-Assertion -Results ([ref]$results) -Condition (@($stageLineage.stages).Count -eq 6) -Message 'runtime smoke stage-lineage records six governed stages'
 Add-Assertion -Results ([ref]$results) -Condition ($executeReceipt.status -ne 'execution-contract-prepared') -Message 'runtime smoke execute receipt is not receipt-only'
 Add-Assertion -Results ([ref]$results) -Condition ($executionManifest.status -eq 'completed') -Message 'runtime smoke execution manifest completed' -Details $executionManifest.status
 Add-Assertion -Results ([ref]$results) -Condition ([int]$executionManifest.executed_unit_count -ge 2) -Message 'runtime smoke executes at least two governed execution units' -Details $executionManifest.executed_unit_count

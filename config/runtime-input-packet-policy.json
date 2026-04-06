@@ -26,6 +26,12 @@
   ],
   "hierarchy_contract": {
     "default_governance_scope": "root",
+    "governance_artifacts": {
+      "capsule": "governance-capsule.json",
+      "lineage": "stage-lineage.json",
+      "delegation_envelope": "delegation-envelope.json",
+      "delegation_validation": "delegation-validation-receipt.json"
+    },
     "child_receipt_only_stages": [
       "requirement_doc",
       "xl_plan"

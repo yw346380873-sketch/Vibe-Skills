@@ -73,7 +73,9 @@ $runtimeText = Get-Content -LiteralPath (Join-Path $repoRoot 'protocols\runtime.
 $teamText = Get-Content -LiteralPath (Join-Path $repoRoot 'protocols\team.md') -Raw -Encoding UTF8
 $stableDocText = Get-Content -LiteralPath (Join-Path $repoRoot 'docs\root-child-vibe-hierarchy-governance.md') -Raw -Encoding UTF8
 Add-Assertion -Results ([ref]$results) -Condition ($runtimeText.Contains('runtime-selected skill stays `vibe`')) -Message 'runtime protocol documents explicit vibe authority preservation'
+Add-Assertion -Results ([ref]$results) -Condition ($runtimeText.Contains('delegation-envelope.json')) -Message 'runtime protocol documents child delegation envelope'
 Add-Assertion -Results ([ref]$results) -Condition ($teamText.Contains('`vibe` keeps final control')) -Message 'team protocol keeps vibe as final control'
+Add-Assertion -Results ([ref]$results) -Condition ($teamText.Contains('delegation-validation-receipt.json')) -Message 'team protocol documents child delegation validation receipts'
 Add-Assertion -Results ([ref]$results) -Condition ($stableDocText.Contains('root vibe governs, child vibe executes, specialists assist')) -Message 'stable hierarchy doc exposes root/child mental model'
 
 $runId = "root-child-hierarchy-" + [System.Guid]::NewGuid().ToString('N').Substring(0, 8)
@@ -87,10 +89,14 @@ Add-Assertion -Results ([ref]$results) -Condition $hasSummary -Message 'runtime 
 if ($hasSummary) {
     $runtimeInputPacket = Get-Content -LiteralPath $summary.summary.artifacts.runtime_input_packet -Raw -Encoding UTF8 | ConvertFrom-Json
     $executionManifest = Get-Content -LiteralPath $summary.summary.artifacts.execution_manifest -Raw -Encoding UTF8 | ConvertFrom-Json
+    $governanceCapsule = Get-Content -LiteralPath $summary.summary.artifacts.governance_capsule -Raw -Encoding UTF8 | ConvertFrom-Json
+    $stageLineage = Get-Content -LiteralPath $summary.summary.artifacts.stage_lineage -Raw -Encoding UTF8 | ConvertFrom-Json
 
     Add-Assertion -Results ([ref]$results) -Condition ($summary.mode -eq 'interactive_governed') -Message 'hierarchy smoke runs interactive_governed mode'
     Add-Assertion -Results ([ref]$results) -Condition ($runtimeInputPacket.route_snapshot.selected_skill -eq 'vibe') -Message 'root hierarchy smoke keeps vibe as frozen route skill'
     Add-Assertion -Results ([ref]$results) -Condition ($runtimeInputPacket.authority_flags.explicit_runtime_skill -eq 'vibe') -Message 'root hierarchy smoke keeps vibe as runtime authority'
+    Add-Assertion -Results ([ref]$results) -Condition ($governanceCapsule.runtime_selected_skill -eq 'vibe') -Message 'root hierarchy smoke governance capsule keeps vibe authority'
+    Add-Assertion -Results ([ref]$results) -Condition (@($stageLineage.stages).Count -eq 6) -Message 'root hierarchy smoke stage-lineage records six governed stages'
     Add-Assertion -Results ([ref]$results) -Condition ($runtimeInputPacket.governance_scope -eq 'root') -Message 'runtime packet marks root governance scope'
     Add-Assertion -Results ([ref]$results) -Condition ([bool]$runtimeInputPacket.authority_flags.allow_requirement_freeze) -Message 'root packet allows requirement freeze'
     Add-Assertion -Results ([ref]$results) -Condition ([bool]$runtimeInputPacket.authority_flags.allow_plan_freeze) -Message 'root packet allows plan freeze'
