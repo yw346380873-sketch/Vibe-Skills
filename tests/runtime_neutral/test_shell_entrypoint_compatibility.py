@@ -13,6 +13,16 @@ PYTHON_HELPERS = REPO_ROOT / "scripts" / "common" / "python_helpers.sh"
 
 
 class ShellEntrypointCompatibilityTests(unittest.TestCase):
+    def test_install_entrypoints_are_bash_parseable(self) -> None:
+        for relpath in ("install.sh", "check.sh", "scripts/bootstrap/one-shot-setup.sh"):
+            result = subprocess.run(
+                ["bash", "-n", str(REPO_ROOT / relpath)],
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(0, result.returncode, f"{relpath} should parse cleanly: {result.stderr}")
+
     def test_install_entrypoints_avoid_mapfile(self) -> None:
         for relpath in ("install.sh", "check.sh", "scripts/bootstrap/one-shot-setup.sh"):
             content = (REPO_ROOT / relpath).read_text(encoding="utf-8")

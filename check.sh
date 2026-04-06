@@ -724,7 +724,7 @@ if [[ "${HOST_ID}" == "claude-code" ]]; then
     echo "[FAIL] settings.json managed vibeskills node"
     FAIL=$((FAIL+1))
   fi
-}
+fi
 check_path "host closure manifest" "${TARGET_ROOT}/.vibeskills/host-closure.json"
 if [[ -f "${TARGET_ROOT}/.vibeskills/host-closure.json" ]]; then
   closure_state="$(json_query_scalar_from_file "${TARGET_ROOT}/.vibeskills/host-closure.json" 'host_closure_state' 2>/dev/null || true)"
@@ -740,7 +740,7 @@ if [[ -f "${TARGET_ROOT}/.vibeskills/host-closure.json" ]]; then
   if [[ -n "${wrapper_launcher}" ]]; then
     check_path "specialist wrapper launcher" "${wrapper_launcher}"
   fi
-}
+fi
 if [[ "${ADAPTER_CHECK_MODE}" == "governed" ]]; then
   check_path "plugins manifest" "${TARGET_ROOT}/config/plugins-manifest.codex.json"
 fi

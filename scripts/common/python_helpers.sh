@@ -62,9 +62,9 @@ print_python_requirement_error() {
     echo "[FAIL] No usable python3/python executable was found in PATH." >&2
   fi
   if [[ "$(uname -s 2>/dev/null)" == "Darwin" ]]; then
-    echo "[FAIL] macOS often provides zsh plus an old/missing system Python. Install a modern Python 3.10+ and ensure 'python3 --version' reports >= ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR} before rerunning." >&2
+    echo "[FAIL] macOS often provides zsh plus an old/missing system Python. Install a modern Python ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR}+ and ensure 'python3 --version' reports >= ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR} before rerunning." >&2
   else
-    echo "[FAIL] Install a modern Python 3.10+ and ensure 'python3 --version' reports >= ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR} before rerunning." >&2
+    echo "[FAIL] Install a modern Python ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR}+ and ensure 'python3 --version' reports >= ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR} before rerunning." >&2
   fi
 }
 
