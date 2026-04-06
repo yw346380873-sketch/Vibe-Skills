@@ -1,6 +1,10 @@
 param()
 
 $ErrorActionPreference = "Stop"
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+$routerModuleRoot = Join-Path $repoRoot "scripts\router\modules"
+. (Join-Path $routerModuleRoot "00-core-utils.ps1")
+. (Join-Path $routerModuleRoot "48-llm-acceleration-overlay.ps1")
 
 function Assert-True {
     param(
@@ -28,6 +32,23 @@ function Invoke-Route {
     $resolver = Join-Path $repoRoot "scripts\router\resolve-pack-route.ps1"
     $json = & $resolver -Prompt $Prompt -Grade $Grade -TaskType $TaskType
     return ($json | ConvertFrom-Json)
+}
+
+function Get-GitContextForTaskType {
+    param(
+        [string]$ConfigPath,
+        [string]$TaskType,
+        [string]$QueryText
+    )
+
+    Push-Location $repoRoot
+    try {
+        $policy = Get-Content -LiteralPath $ConfigPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $resolved = Get-LlmAccelerationPolicy -Policy $policy
+        return Get-VcoGitContextSnippet -PolicyResolved $resolved -VcoRepoRoot $repoRoot -QueryText $QueryText -TaskType $TaskType
+    } finally {
+        Pop-Location
+    }
 }
 
 function Set-LlmAccelerationPolicyStage {
@@ -61,9 +82,10 @@ function Set-LlmAccelerationPolicyStage {
     $policy.provider.temperature = 0.0
     $policy.provider.store = $false
 
-    $policy.context.mode = "none"
+    $policy.context.mode = if ($Stage -eq "shadow") { "diff_snippets_ok" } else { "none" }
     $policy.context.include_git_status = $false
-    $policy.context.include_git_diff = $false
+    $policy.context.include_git_diff = ($Stage -eq "shadow")
+    $policy.context.git_diff_task_allow = @("coding", "debug", "review")
 
     $policy.safety.allow_confirm_escalation = $true
     $policy.safety.allow_route_override = $false
@@ -72,7 +94,6 @@ function Set-LlmAccelerationPolicyStage {
     $policy | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ConfigPath -Encoding UTF8
 }
 
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $policyPath = Join-Path $repoRoot "config\llm-acceleration-policy.json"
 $mockPath = "scripts/verify/fixtures/llm-acceleration.mock.json"
 $originalBytes = [System.IO.File]::ReadAllBytes($policyPath)
@@ -100,6 +121,12 @@ try {
 
     $results += Assert-True -Condition ([string]$routeWithPrefix.route_reason -ne "llm_acceleration_confirm_required") -Message "[shadow] does not promote confirm_required via route_reason"
     $results += Assert-True -Condition ([string]$routeWithPrefix.route_reason -ne "llm_acceleration_override") -Message "[shadow] does not override pack via route_reason"
+
+    $planningGitContext = Get-GitContextForTaskType -ConfigPath $policyPath -TaskType "planning" -QueryText "inspect policy drift"
+    $results += Assert-True -Condition ([string]$planningGitContext.diff_mode -eq "skipped_task_type") -Message "[planning] git diff context is skipped by task type"
+
+    $codingGitContext = Get-GitContextForTaskType -ConfigPath $policyPath -TaskType "coding" -QueryText "fix policy drift"
+    $results += Assert-True -Condition ([string]$codingGitContext.diff_mode -eq "full") -Message "[coding] git diff context remains eligible"
 
     Set-LlmAccelerationPolicyStage -ConfigPath $policyPath -Stage "off" -MockResponsePath $mockPath
     $routeOff = Invoke-Route -Prompt "/vibe add login form validation" -Grade "M" -TaskType "coding"
