@@ -127,12 +127,14 @@ function Write-DoctorArtifacts {
         '# VCO Bootstrap Doctor Gate',
         '',
         ('- Gate Result: **{0}**' -f $Artifact.gate_result),
+        ('- Install State: **{0}**' -f $Artifact.install_state),
         ('- Readiness State: **{0}**' -f $Artifact.summary.readiness_state),
         ('- Blocking Issues: `{0}`' -f $Artifact.summary.blocking_issue_count),
         ('- Manual Actions Pending: `{0}`' -f $Artifact.summary.manual_action_count),
         ('- Warnings: `{0}`' -f $Artifact.summary.warning_count),
         ('- Target Root: `{0}`' -f $Artifact.target_root),
         ('- MCP Profile: `{0}`' -f $Artifact.mcp.profile),
+        ('- MCP Auto-Provision Attempted: `{0}`' -f $Artifact.mcp.auto_provision_attempted),
         ('- MCP Active File Exists: `{0}`' -f $Artifact.mcp.active_file_exists),
         ''
     )
@@ -229,6 +231,12 @@ if ($null -ne $settings -and $settings.PSObject.Properties.Name -contains 'vco' 
 }
 
 $activeMcpPath = Join-Path $TargetRoot 'mcp\servers.active.json'
+$mcpReceiptPath = Join-Path $TargetRoot '.vibeskills\mcp-auto-provision.json'
+$mcpReceipt = if (Test-Path -LiteralPath $mcpReceiptPath) {
+    Get-Content -LiteralPath $mcpReceiptPath -Raw -Encoding UTF8 | ConvertFrom-Json
+} else {
+    $null
+}
 $pluginsManifest = Get-Content -LiteralPath $pluginsManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $serversTemplate = Get-Content -LiteralPath $serversTemplatePath -Raw -Encoding UTF8 | ConvertFrom-Json
 $toolRegistry = Get-Content -LiteralPath $toolRegistryPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -288,47 +296,59 @@ $externalTools = @(
 )
 
 $mcpServers = @()
-foreach ($serverName in @($profileObject.enabled_servers)) {
-    $serverConfig = if ($serversTemplate.servers.PSObject.Properties.Name -contains $serverName) {
-        $serversTemplate.servers.$serverName
-    } else {
-        $null
-    }
-
-    if ($null -eq $serverConfig) {
+if ($null -ne $mcpReceipt -and $mcpReceipt.PSObject.Properties.Name -contains 'mcp_results') {
+    foreach ($server in @($mcpReceipt.mcp_results)) {
+        if ($null -eq $server) { continue }
         $mcpServers += [pscustomobject]@{
-            name = [string]$serverName
-            mode = 'unknown'
-            status = 'missing_from_template'
-            next_step = 'Fix mcp/profile definition mismatch.'
+            name = [string]$server.name
+            mode = if ($server.PSObject.Properties.Name -contains 'provision_path') { [string]$server.provision_path } else { 'unknown' }
+            status = if ($server.PSObject.Properties.Name -contains 'status') { [string]$server.status } else { 'unknown' }
+            next_step = if ($server.PSObject.Properties.Name -contains 'next_step') { [string]$server.next_step } else { 'none' }
         }
-        continue
     }
+} else {
+    foreach ($serverName in @($profileObject.enabled_servers)) {
+        $serverConfig = if ($serversTemplate.servers.PSObject.Properties.Name -contains $serverName) {
+            $serversTemplate.servers.$serverName
+        } else {
+            $null
+        }
 
-    $mode = [string]$serverConfig.mode
-    $status = 'ready'
-    $nextStep = 'none'
+        if ($null -eq $serverConfig) {
+            $mcpServers += [pscustomobject]@{
+                name = [string]$serverName
+                mode = 'unknown'
+                status = 'missing_from_template'
+                next_step = 'Fix mcp/profile definition mismatch.'
+            }
+            continue
+        }
 
-    if ($mode -eq 'plugin') {
-        $status = 'platform_plugin_required'
-        $nextStep = 'Provision the corresponding Codex plugin in the host runtime.'
-    } elseif ($mode -eq 'stdio') {
-        $commandName = [string]$serverConfig.command
-        if (-not (Test-CommandPresent -Name $commandName)) {
-            $status = 'manual_action_required'
-            $nextStep = if ($serverConfig.PSObject.Properties.Name -contains 'note' -and -not [string]::IsNullOrWhiteSpace([string]$serverConfig.note)) {
-                [string]$serverConfig.note
-            } else {
-                ("Install command '{0}' and register the MCP server in the host." -f $commandName)
+        $mode = [string]$serverConfig.mode
+        $status = 'ready'
+        $nextStep = 'none'
+
+        if ($mode -eq 'plugin') {
+            $status = 'platform_plugin_required'
+            $nextStep = 'Provision the corresponding Codex plugin in the host runtime.'
+        } elseif ($mode -eq 'stdio') {
+            $commandName = [string]$serverConfig.command
+            if (-not (Test-CommandPresent -Name $commandName)) {
+                $status = 'manual_action_required'
+                $nextStep = if ($serverConfig.PSObject.Properties.Name -contains 'note' -and -not [string]::IsNullOrWhiteSpace([string]$serverConfig.note)) {
+                    [string]$serverConfig.note
+                } else {
+                    ("Install command '{0}' and register the MCP server in the host." -f $commandName)
+                }
             }
         }
-    }
 
-    $mcpServers += [pscustomobject]@{
-        name = [string]$serverName
-        mode = $mode
-        status = $status
-        next_step = $nextStep
+        $mcpServers += [pscustomobject]@{
+            name = [string]$serverName
+            mode = $mode
+            status = $status
+            next_step = $nextStep
+        }
     }
 }
 
@@ -444,7 +464,7 @@ if (-not (Test-Path -LiteralPath $activeMcpPath)) {
 foreach ($plugin in $pluginResults | Where-Object { $_.status -eq 'platform_plugin_required' -and $_.required }) {
     $manualActions.Add(("Required host plugin pending: {0}" -f $plugin.name)) | Out-Null
 }
-foreach ($server in $mcpServers | Where-Object { $_.status -in @('platform_plugin_required', 'manual_action_required', 'missing_from_template') }) {
+foreach ($server in $mcpServers | Where-Object { $_.status -ne 'ready' }) {
     $manualActions.Add(("MCP server pending: {0}" -f $server.name)) | Out-Null
 }
 foreach ($tool in $externalTools | Where-Object { -not $_.present -and $_.name -in @('npm', 'claude-flow') }) {
@@ -464,6 +484,7 @@ $artifact = [ordered]@{
     generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
     repo_root = $repoRoot
     target_root = [System.IO.Path]::GetFullPath($TargetRoot)
+    install_state = if ($null -ne $mcpReceipt -and $mcpReceipt.PSObject.Properties.Name -contains 'install_state') { [string]$mcpReceipt.install_state } else { 'unknown' }
     gate_result = if ($blockingIssues.Count -eq 0) { 'PASS' } else { 'FAIL' }
     settings = [ordered]@{
         path = $settingsPath
@@ -487,6 +508,9 @@ $artifact = [ordered]@{
         profile_path = if (Test-Path -LiteralPath $profilePath) { (Get-VgoRelativePathPortable -BasePath $repoRoot -TargetPath $profilePath) } else { $null }
         active_file_path = $activeMcpPath
         active_file_exists = [bool](Test-Path -LiteralPath $activeMcpPath)
+        auto_provision_attempted = [bool]($null -ne $mcpReceipt -and $mcpReceipt.PSObject.Properties.Name -contains 'mcp_auto_provision_attempted' -and $mcpReceipt.mcp_auto_provision_attempted)
+        receipt_path = $mcpReceiptPath
+        receipt_exists = [bool](Test-Path -LiteralPath $mcpReceiptPath)
         servers = @($mcpServers)
     }
     integration_surfaces = @($integrationSurfaces)

@@ -10,6 +10,16 @@
 
 如果你的目标只是拿到更薄的预览安装路径，`opencode` 仍然可以直接走 `install.* + check.*`。但这不代表 one-shot 不能用于 `opencode`；它只是一个统一 wrapper，会按当前宿主的 `bootstrap_mode` 走对应分支。
 
+## MCP Auto-Provision Contract
+
+one-shot 现在会把 MCP auto-provision 视为安装流程的一部分，但它是非阻塞的：
+
+- 会尝试：`github`、`context7`、`serena`、`scrapling`、`claude-flow`
+- `github` / `context7` / `serena` 优先走 host-native registration
+- `scrapling` / `claude-flow` 优先走 scripted CLI / stdio
+- 如果尝试失败，不会中途刷屏阻塞你，而是在最后一段报告里统一写出 `manual follow-up`
+- 最终报告会明确区分 `installed locally`、MCP readiness、以及 `online-ready`
+
 如果你还不知道自己应该走哪种安装方式，先看：
 
 - [`cold-start-install-paths.md`](./cold-start-install-paths.md)

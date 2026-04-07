@@ -9,6 +9,16 @@
 
 This document summarizes the install commands, default target roots, and current host-mode wording for the six public hosts.
 
+## MCP Auto-Provision Contract
+
+All six public hosts now follow one shared, non-blocking MCP contract:
+
+- install or one-shot should attempt `github`, `context7`, `serena`, `scrapling`, and `claude-flow`
+- prefer host-native registration for `github`, `context7`, and `serena`
+- prefer scripted CLI / stdio installation for `scrapling` and `claude-flow`
+- failure does not block the base install; failures are summarized only in the final report
+- the final report separates `installed locally`, per-MCP readiness, `manual follow-up`, and `online-ready`
+
 Public Linux / macOS prerequisites:
 
 - the shell entrypoints are maintained against the macOS system Bash 3.2 baseline

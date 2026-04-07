@@ -9,6 +9,16 @@
 
 这份文档汇总当前六个公开宿主对应的安装命令、默认目标根目录与 host-mode 说明。
 
+## MCP 自动接入合同
+
+所有六个公开宿主都遵循同一条非阻塞 MCP 合同：
+
+- 安装或 one-shot 期间要尝试：`github`、`context7`、`serena`、`scrapling`、`claude-flow`
+- `github` / `context7` / `serena` 优先走 host-native registration
+- `scrapling` / `claude-flow` 优先走 scripted CLI / stdio 安装
+- 失败不会阻塞 base install；失败只会在最终报告里集中汇总
+- 最终报告会把 `installed locally`、每个 MCP readiness、`manual follow-up`、以及 `online-ready` 分开写清楚
+
 Linux / macOS 公共前置条件：
 
 - shell 入口按 **macOS 自带 Bash 3.2** 兼容维护
