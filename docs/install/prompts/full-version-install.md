@@ -52,4 +52,10 @@
    - 如用户本机已安装 PowerShell 7，可接受等价的 `pwsh` 版本，但不要把 `pwsh` 当作默认前提。
    - 并用一句话说明：`ok` 表示 AI 治理 advice 已连通；`missing_credentials`、`missing_model`、`provider_rejected_request` 等表示本地或在线配置仍未就绪。
 14. 安装完成后，用简洁中文汇报：目标宿主、公开版本、实际 profile、实际命令、已完成部分、仍需我手动处理的部分。
+
+补充 MCP 自动接入规则：
+- 在安装过程中，你必须尝试这五个 MCP：`github`、`context7`、`serena`、`scrapling`、`claude-flow`
+- `github`、`context7`、`serena` 优先走宿主原生注册；`scrapling`、`claude-flow` 优先走 scripted CLI / stdio 安装
+- 如果某个 MCP 尝试失败，不要在中途反复打断我；继续安装流程，只在 final install report / 最终安装报告里汇总失败和人工后续
+- final install report / 最终安装报告必须明确区分 `installed locally`、`mcp auto-provision attempted`、每个 MCP 的 readiness，以及 `online-ready`
 ```

@@ -52,4 +52,10 @@ Rules:
    - if the user already has PowerShell 7, an equivalent `pwsh` command is acceptable, but `pwsh` must not be treated as the default prerequisite.
    - also add one short sentence: `ok` means AI governance advice is online; `missing_credentials`, `missing_model`, or `provider_rejected_request` mean local or online readiness is still incomplete.
 14. End with a concise report covering host, public version, real profile, commands executed, completed parts, and manual follow-up.
+
+Supplemental MCP auto-provision rules:
+- During installation, you must attempt these five MCP surfaces: `github`, `context7`, `serena`, `scrapling`, and `claude-flow`
+- Prefer host-native registration first for `github`, `context7`, and `serena`; prefer scripted CLI / stdio installation first for `scrapling` and `claude-flow`
+- If any MCP attempt fails, do not interrupt me repeatedly mid-flow; continue the install path and summarize failures only in the final install report
+- The final install report must explicitly separate `installed locally`, `mcp auto-provision attempted`, per-MCP readiness, and `online-ready`
 ```

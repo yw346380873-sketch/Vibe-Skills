@@ -35,4 +35,10 @@
    - 可选 vector diff：`VCO_VECTOR_DIFF_API_KEY` + 可选 `VCO_VECTOR_DIFF_BASE_URL` + `VCO_VECTOR_DIFF_MODEL`
    - 说明旧 `OPENAI_*` 不再自动回填，必须手动映射到 `VCO_*`
 10. 更新完成后，额外提醒我：当前仍是治理框架底座模式，不等于默认 workflow core 已齐备。
+
+补充 MCP 自动接入规则：
+- 在更新流程中，你仍然必须尝试这五个 MCP：`github`、`context7`、`serena`、`scrapling`、`claude-flow`
+- `github`、`context7`、`serena` 优先走宿主原生注册；`scrapling`、`claude-flow` 优先走 scripted CLI / stdio 安装
+- 如果某个 MCP 尝试失败，不要在中途反复打断我；继续更新流程，只在 final install report / 最终安装报告里汇总失败和人工后续
+- 最终结论必须明确区分 `installed locally`、`mcp auto-provision attempted`、每个 MCP 的 readiness，以及 `online-ready`
 ```
