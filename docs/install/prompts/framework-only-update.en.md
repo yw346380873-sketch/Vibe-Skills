@@ -35,4 +35,10 @@ Rules:
    - optional vector diff embeddings: `VCO_VECTOR_DIFF_API_KEY`, optional `VCO_VECTOR_DIFF_BASE_URL`, plus `VCO_VECTOR_DIFF_MODEL`
    - the built-in AI governance layer supports OpenAI-compatible integration only
 10. Remind me that the result is still the governance-foundation mode, not the complete default workflow-core experience.
+
+Supplemental MCP auto-provision rules:
+- During the update flow, you must still attempt these five MCP surfaces: `github`, `context7`, `serena`, `scrapling`, and `claude-flow`
+- Prefer host-native registration first for `github`, `context7`, and `serena`; prefer scripted CLI / stdio installation first for `scrapling` and `claude-flow`
+- If any MCP attempt fails, do not interrupt me repeatedly mid-flow; continue the update path and summarize failures only in the final install report
+- The final install report must explicitly separate `installed locally`, `mcp auto-provision attempted`, per-MCP readiness, and `online-ready`
 ```
