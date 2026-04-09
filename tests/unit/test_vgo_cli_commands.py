@@ -369,7 +369,7 @@ def test_build_parser_exposes_upgrade_subcommand() -> None:
         [
             'upgrade',
             '--repo-root',
-            '/tmp/repo',
+            'repo-root',
             '--host',
             'codex',
         ]

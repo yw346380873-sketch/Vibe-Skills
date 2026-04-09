@@ -109,7 +109,11 @@ def reinstall_runtime(
     external_fallback_used = list(payload.get('external_fallback_used') or [])
 
     if install_external:
-        maybe_install_external_dependencies(repo_root, str(payload.get('install_mode') or install_mode))
+        maybe_install_external_dependencies(
+            repo_root,
+            str(payload.get('install_mode') or install_mode),
+            strict_offline=bool(strict_offline),
+        )
 
     reconcile_install_postconditions(
         repo_root,

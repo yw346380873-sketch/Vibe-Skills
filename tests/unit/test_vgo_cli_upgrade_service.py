@@ -13,7 +13,7 @@ if str(CLI_SRC) not in sys.path:
     sys.path.insert(0, str(CLI_SRC))
 
 from vgo_cli.errors import CliError
-from vgo_cli.upgrade_service import reset_repo_to_official_head, upgrade_runtime
+from vgo_cli.upgrade_service import reinstall_runtime, reset_repo_to_official_head, upgrade_runtime
 
 
 def test_upgrade_runtime_noops_when_install_is_already_current(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -184,6 +184,54 @@ def test_upgrade_runtime_propagates_check_failures(monkeypatch: pytest.MonkeyPat
             allow_external_skill_fallback=False,
             skip_runtime_freshness_gate=False,
         )
+
+
+def test_reinstall_runtime_propagates_strict_offline_to_optional_external_installs(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / 'repo'
+    target_root = tmp_path / 'target'
+    recorded: dict[str, object] = {}
+
+    monkeypatch.setattr('vgo_cli.upgrade_service.install_mode_for_host', lambda host_id: 'governed')
+    monkeypatch.setattr(
+        'vgo_cli.upgrade_service.run_installer_core',
+        lambda repo_root, command: subprocess.CompletedProcess(
+            args=command,
+            returncode=0,
+            stdout='{"install_mode":"governed","external_fallback_used":[]}\n',
+            stderr='',
+        ),
+    )
+    monkeypatch.setattr('vgo_cli.upgrade_service.parse_json_output', lambda result: {'install_mode': 'governed', 'external_fallback_used': []})
+
+    def fake_maybe_install_external_dependencies(repo_root: Path, install_mode: str, *, strict_offline: bool = False) -> None:
+        recorded['repo_root'] = repo_root
+        recorded['install_mode'] = install_mode
+        recorded['strict_offline'] = strict_offline
+
+    monkeypatch.setattr('vgo_cli.upgrade_service.maybe_install_external_dependencies', fake_maybe_install_external_dependencies)
+    monkeypatch.setattr('vgo_cli.upgrade_service.reconcile_install_postconditions', lambda *args, **kwargs: None)
+
+    reinstall_runtime(
+        repo_root=repo_root,
+        target_root=target_root,
+        host_id='codex',
+        profile='full',
+        frontend='shell',
+        install_external=True,
+        strict_offline=True,
+        require_closed_ready=False,
+        allow_external_skill_fallback=False,
+        skip_runtime_freshness_gate=False,
+    )
+
+    assert recorded == {
+        'repo_root': repo_root,
+        'install_mode': 'governed',
+        'strict_offline': True,
+    }
 
 
 def test_reset_repo_to_official_head_discards_local_changes_before_switch(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
