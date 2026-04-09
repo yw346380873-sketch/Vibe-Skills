@@ -73,6 +73,7 @@ Switch the native specialist execution default from opt-in to opt-out.
 **Files:**
 - Modify: `scripts/runtime/Freeze-RuntimeInputPacket.ps1`
 - Modify: `scripts/runtime/Invoke-PlanExecute.ps1`
+- Modify: `scripts/runtime/Write-RequirementDoc.ps1`
 - Modify: `scripts/runtime/Write-XlPlan.ps1`
 
 - [ ] **Step 1: Implement fallback specialist recommendation synthesis**
@@ -112,7 +113,7 @@ Expected: PASS
 
 - [ ] **Step 3: Inspect git diff for touched files only**
 
-Run: `git diff -- SKILL.md protocols/runtime.md protocols/team.md config/runtime-input-packet-policy.json config/skill-promotion-policy.json config/native-specialist-execution-policy.json scripts/runtime/Freeze-RuntimeInputPacket.ps1 scripts/runtime/Invoke-PlanExecute.ps1 scripts/runtime/Write-XlPlan.ps1 tests/runtime_neutral/test_skill_promotion_freeze_contract.py tests/runtime_neutral/test_root_child_hierarchy_bridge.py tests/runtime_neutral/test_l_xl_native_execution_topology.py tests/runtime_neutral/test_skill_promotion_destructive_gate.py`
+Run: `git diff -- SKILL.md protocols/runtime.md protocols/team.md config/runtime-input-packet-policy.json config/skill-promotion-policy.json config/native-specialist-execution-policy.json scripts/runtime/Freeze-RuntimeInputPacket.ps1 scripts/runtime/Invoke-PlanExecute.ps1 scripts/runtime/Write-RequirementDoc.ps1 scripts/runtime/Write-XlPlan.ps1 tests/runtime_neutral/test_skill_promotion_freeze_contract.py tests/runtime_neutral/test_root_child_hierarchy_bridge.py tests/runtime_neutral/test_l_xl_native_execution_topology.py tests/runtime_neutral/test_skill_promotion_destructive_gate.py`
 
 Expected: only aggressive specialist routing changes and aligned tests/docs.
 

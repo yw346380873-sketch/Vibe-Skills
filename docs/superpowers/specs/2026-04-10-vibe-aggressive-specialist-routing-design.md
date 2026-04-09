@@ -90,7 +90,7 @@ The governed runtime contract should say, in effect:
 
 - `vibe` must attempt specialist routing on every governed run
 - specialist recommendations are mandatory runtime output, not optional metadata
-- eligible recommendations should auto-promote to `approved_dispatch`
+- eligible recommendations must auto-promote to `approved_dispatch`
 - child lanes may auto-absorb bounded specialist help in the same round without waiting for a separately frozen root dispatch entry
 
 This wording should be reflected consistently in:

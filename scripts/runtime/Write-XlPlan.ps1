@@ -167,7 +167,7 @@ if (@($approvedDispatch).Count -gt 0 -or @($localSuggestions).Count -gt 0) {
         '',
         '## Specialist Skill Dispatch Plan',
         '- Specialist routing is mandatory and bounded inside governed `vibe`; it does not transfer runtime authority away from vibe.',
-        '- Eligible specialist recommendations should auto-promote into `approved_dispatch` by default.',
+        '- Eligible specialist recommendations must auto-promote into `approved_dispatch` by default.',
         '- Each specialist must be invoked through its native workflow, input contract, and validation style.',
         '- Specialist outputs remain subordinate to the frozen requirement and the governed plan.'
     )

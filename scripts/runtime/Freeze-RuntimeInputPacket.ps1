@@ -470,6 +470,23 @@ function Get-VibeSpecialistRecommendations {
     if ($Policy.PSObject.Properties.Name -contains 'specialist_recommendation_limit' -and $Policy.specialist_recommendation_limit -ne $null) {
         $limit = [int]$Policy.specialist_recommendation_limit
     }
+    $requiredRecommendationCount = 1
+    if ($Policy.PSObject.Properties.Name -contains 'required_specialist_recommendation_count' -and $Policy.required_specialist_recommendation_count -ne $null) {
+        $requiredRecommendationCount = [int]$Policy.required_specialist_recommendation_count
+    }
+    if ($limit -lt 1) {
+        throw ("Runtime input policy 'specialist_recommendation_limit' must be at least 1; actual={0}." -f $limit)
+    }
+    if ($requiredRecommendationCount -lt 1) {
+        throw ("Runtime input policy 'required_specialist_recommendation_count' must be at least 1; actual={0}." -f $requiredRecommendationCount)
+    }
+    if ($requiredRecommendationCount -gt $limit) {
+        throw (
+            "Runtime input policy requires at least {0} specialist recommendation(s), but 'specialist_recommendation_limit' is only {1}. Increase the limit or lower the required recommendation count." `
+                -f $requiredRecommendationCount, $limit
+        )
+    }
+
     $dispatchContract = if ($Policy.PSObject.Properties.Name -contains 'specialist_dispatch_contract' -and $null -ne $Policy.specialist_dispatch_contract) {
         $Policy.specialist_dispatch_contract
     } else {
@@ -606,10 +623,6 @@ function Get-VibeSpecialistRecommendations {
         $seen[$RouterSelectedSkill] = $true
     }
 
-    $requiredRecommendationCount = 1
-    if ($Policy.PSObject.Properties.Name -contains 'required_specialist_recommendation_count' -and $Policy.required_specialist_recommendation_count -ne $null) {
-        $requiredRecommendationCount = [int]$Policy.required_specialist_recommendation_count
-    }
     foreach ($fallbackSkillId in @(Get-VibeFallbackSpecialistSkillIds `
             -TaskType $TaskType `
             -Policy $Policy `

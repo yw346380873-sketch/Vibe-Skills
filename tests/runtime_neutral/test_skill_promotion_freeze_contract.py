@@ -113,15 +113,88 @@ def extract_split_specialist_dispatch_function() -> str:
     return match.group(1)
 
 
+def extract_get_specialist_recommendations_function() -> str:
+    content = FREEZE_SCRIPT.read_text(encoding="utf-8")
+    match = re.search(
+        r"(function Get-VibeSpecialistRecommendations \{.*?^\})\s*^function Split-VibeSpecialistDispatch",
+        content,
+        re.DOTALL | re.MULTILINE,
+    )
+    if not match:
+        raise AssertionError("Unable to locate Get-VibeSpecialistRecommendations in Freeze-RuntimeInputPacket.ps1")
+    return match.group(1)
+
+
 class SkillPromotionFreezeContractTests(unittest.TestCase):
     def test_runtime_input_policy_requires_recommendation_floor_and_fallback_specialists(self) -> None:
         policy = load_json(REPO_ROOT / "config" / "runtime-input-packet-policy.json")
 
         self.assertEqual(1, int(policy["required_specialist_recommendation_count"]))
+        self.assertLessEqual(
+            int(policy["required_specialist_recommendation_count"]),
+            int(policy["specialist_recommendation_limit"]),
+        )
         fallback_by_task_type = policy["fallback_specialists_by_task_type"]
         for task_type in ("planning", "debug", "research", "coding", "review", "default"):
             with self.subTest(task_type=task_type):
                 self.assertGreaterEqual(len(as_list(fallback_by_task_type[task_type])), 1)
+
+    def test_recommendation_builder_rejects_floor_above_limit(self) -> None:
+        shell = resolve_powershell()
+        if shell is None:
+            raise unittest.SkipTest("PowerShell executable not available in PATH")
+
+        get_recommendations_function = extract_get_specialist_recommendations_function()
+        script_body = (
+            "& { "
+            "function Get-VibeCustomAdmissionIndex { param([object]$RouteResult) return @{} } "
+            "function Get-VibeFallbackSpecialistSkillIds { "
+            "param([string]$TaskType, [object]$Policy, [string]$RouterSelectedSkill, [string]$RuntimeSelectedSkill) "
+            "return @('fallback-skill') "
+            "} "
+            "function New-VibeSpecialistRecommendation { "
+            "param("
+            "[string]$RepoRoot, [string]$Task, [string]$SkillId, [string]$Source, [string]$TaskType, "
+            "[string]$Reason, [AllowNull()][string]$PackId, [double]$Confidence, [int]$Rank, "
+            "[AllowNull()][object]$DispatchContract, [AllowNull()][object]$PromotionPolicy, "
+            "[AllowNull()][object]$CustomMetadata, [string]$TargetRoot, [string]$HostId"
+            ") "
+            "return [pscustomobject]@{ skill_id = $SkillId; source = $Source; rank = $Rank } "
+            "} "
+            f"{get_recommendations_function} "
+            "$routeResult = [pscustomobject]@{ ranked = @() }; "
+            "$policy = [pscustomobject]@{ "
+            "specialist_recommendation_limit = 1; "
+            "required_specialist_recommendation_count = 2; "
+            "overlay_fields = @(); "
+            "specialist_dispatch_contract = [pscustomobject]@{} "
+            "}; "
+            "Get-VibeSpecialistRecommendations "
+            "-RepoRoot '.' "
+            "-Task 'demo task' "
+            "-RouteResult $routeResult "
+            "-RuntimeSelectedSkill 'vibe' "
+            "-RouterSelectedSkill '' "
+            "-TaskType 'planning' "
+            "-Policy $policy | Out-Null "
+            "}"
+        )
+
+        with self.assertRaises(subprocess.CalledProcessError):
+            subprocess.run(
+                [
+                    shell,
+                    "-NoLogo",
+                    "-NoProfile",
+                    "-Command",
+                    script_body,
+                ],
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=True,
+            )
 
     def test_eligible_matched_skill_is_approved_and_not_ghosted(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:

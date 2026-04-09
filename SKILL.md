@@ -93,9 +93,9 @@ Use this when the system should still ask the user high-value questions, confirm
 
 That means:
 
-- governed `vibe` runs must surface bounded specialist recommendations and should treat router-selected specialist skills as route truth or executable recommendation candidates
+- governed `vibe` runs must surface bounded specialist recommendations and must treat router-selected specialist skills as route truth or executable recommendation candidates
 - runtime-selected skill remains `vibe` for governed entry
-- eligible specialist help should auto-promote into bounded native-mode assistance by default
+- eligible specialist help must auto-promote into bounded native-mode assistance by default
 - specialist help must preserve the specialist skill's own workflow, inputs, outputs, and validation style
 - specialist help must not create a second requirement doc, second plan surface, or second runtime authority
 
@@ -201,7 +201,7 @@ Execute the approved plan.
 L grade executes planned units serially in the native governed lane.
 XL grade executes waves sequentially and may run only independent units in bounded parallel within a step.
 If subagents are spawned, their prompts must end with `$vibe`.
-Governed `vibe` runs must emit specialist recommendations; eligible recommendations should auto-promote into bounded native dispatch units, and only blocked, degraded, or forced-escalation cases should remain `local_suggestion`.
+Governed `vibe` runs must emit specialist recommendations; eligible recommendations must auto-promote into bounded native dispatch units, and only blocked, degraded, or forced-escalation cases should remain `local_suggestion`.
 If subagents run in child-governed lanes, they must inherit root-frozen context and must not reopen canonical requirement or plan truth surfaces.
 
 ### 6. `phase_cleanup`

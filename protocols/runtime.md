@@ -157,8 +157,8 @@ Rules:
 - later stages must append a matching lineage entry for the same governed run
 - spawned subagent prompts must end with `$vibe`
 - milestone evidence must be written before phase completion
-- governed `vibe` runs must record bounded native specialist recommendations under `vibe` governance and should not leave the recommendation surface empty
-- eligible specialist recommendations should auto-promote into bounded native units; only blocked, degraded, or forced-escalation ideas remain advisory escalation requests
+- governed `vibe` runs must record bounded native specialist recommendations under `vibe` governance and must not leave the recommendation surface empty
+- eligible specialist recommendations must auto-promote into bounded native units; only blocked, degraded, or forced-escalation ideas remain advisory escalation requests
 - approved specialist dispatch must be phase-bound as `pre_execution`, `in_execution`, `post_execution`, or `verification`
 - approved specialist dispatch must carry lane policy, write scope, and review mode so execution remains deterministic and conflict-aware
 - `L` uses explicit serial specialist steps; `XL` may use bounded parallel specialist lanes only when root-approved and write-scope-safe
