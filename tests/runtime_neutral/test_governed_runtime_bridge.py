@@ -800,6 +800,7 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
             payload = json.loads(completed.stdout)
             requirement_doc_path = Path(payload["requirement_doc_path"])
             self.assertTrue(requirement_doc_path.exists())
+            requirement_receipt = payload["receipt"]
 
             requirement_doc = requirement_doc_path.read_text(encoding="utf-8")
             self.assertIn("## Artifact Review Requirements", requirement_doc)
@@ -813,6 +814,29 @@ class GovernedRuntimeBridgeTests(unittest.TestCase):
             self.assertIn("- Structure Integrity", requirement_doc)
             self.assertIn("## Baseline UI Quality Dimensions", requirement_doc)
             self.assertIn("No baseline UI quality dimensions were frozen for this run.", requirement_doc)
+            self.assertEqual(
+                {
+                    "artifact_review_requirements": [
+                        "Review the touched document artifact directly against each frozen baseline document quality dimension.",
+                        "Open, render, or export the touched document artifact at least once and confirm the touched scope remains intact.",
+                        "For formatting-only or layout-only work, confirm content fidelity explicitly before full completion wording is allowed.",
+                    ],
+                    "code_task_tdd_evidence_requirements": [],
+                    "code_task_tdd_exceptions": [],
+                    "baseline_document_quality_dimensions": [
+                        "Structure Integrity",
+                        "Formatting Consistency",
+                        "Content Completeness",
+                        "Link and Reference Integrity",
+                        "Layout and Asset Stability",
+                        "Output Fidelity",
+                    ],
+                    "baseline_ui_quality_dimensions": [],
+                    "task_specific_acceptance_extensions": [],
+                    "research_augmentation_sources": [],
+                },
+                requirement_receipt["frozen_requirement_sections"],
+            )
 
     def test_write_requirement_doc_treats_wireframe_tasks_as_visual_artifacts_without_tdd(self) -> None:
         script_path = REPO_ROOT / "scripts" / "runtime" / "Write-RequirementDoc.ps1"

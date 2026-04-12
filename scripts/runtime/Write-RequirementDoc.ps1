@@ -502,6 +502,15 @@ $receipt = [pscustomobject]@{
         $memoryContextPack.PSObject.Properties.Name -contains 'selected_capsules' -and
         $null -ne $memoryContextPack.selected_capsules
     ) { @($memoryContextPack.selected_capsules).Count } else { 0 }
+    frozen_requirement_sections = [ordered]@{
+        artifact_review_requirements = @($artifactReviewRequirements)
+        code_task_tdd_evidence_requirements = @($codeTaskTddEvidenceRequirements)
+        code_task_tdd_exceptions = @($codeTaskTddExceptions)
+        baseline_document_quality_dimensions = @($baselineDocumentQualityDimensions)
+        baseline_ui_quality_dimensions = @($baselineUiQualityDimensions)
+        task_specific_acceptance_extensions = @($taskSpecificAcceptanceExtensions)
+        research_augmentation_sources = @($researchAugmentationSources)
+    }
     generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 }
 $receiptPath = Join-Path $sessionRoot 'requirement-doc-receipt.json'
