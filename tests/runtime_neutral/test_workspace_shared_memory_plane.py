@@ -109,6 +109,46 @@ def run_driver(
     return json.loads(response_path.read_text(encoding="utf-8"))
 
 
+def run_workspace_memory_common_json(
+    command_body: str,
+    *,
+    check: bool = True,
+    env: dict[str, str] | None = None,
+) -> object | subprocess.CompletedProcess[str]:
+    shell = resolve_powershell()
+    if shell is None:
+        raise unittest.SkipTest("PowerShell executable not available in PATH")
+
+    completed = subprocess.run(
+        [
+            shell,
+            "-NoLogo",
+            "-NoProfile",
+            "-Command",
+            (
+                "& { "
+                f". {_ps_single_quote(str(GOVERNANCE_HELPERS))}; "
+                f". {_ps_single_quote(str(WORKSPACE_MEMORY_COMMON))}; "
+                f"{command_body} "
+                "}"
+            ),
+        ],
+        cwd=REPO_ROOT,
+        check=check,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env={**os.environ, **(env or {})},
+    )
+    if not check:
+        return completed
+
+    stdout = completed.stdout.strip()
+    if stdout in ("", "null"):
+        return None
+    return json.loads(stdout)
+
+
 class WorkspaceSharedMemoryPlaneTests(unittest.TestCase):
     def test_compatibility_shell_hard_fails_when_workspace_broker_is_unavailable(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:
@@ -371,6 +411,33 @@ class WorkspaceSharedMemoryPlaneTests(unittest.TestCase):
             self.assertEqual(1, result["capsule_count"])
             self.assertIn("workspace_id", result["workspace_memory_plane"])
             self.assertTrue(Path(result["workspace_memory_plane"]["plane_path"]).exists())
+
+    def test_workspace_memory_common_guards_missing_nested_driver_properties_under_strict_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            repo_root = Path(tempdir) / "workspace"
+            repo_root.mkdir(parents=True, exist_ok=True)
+
+            result = run_workspace_memory_common_json(
+                f"""
+                $runtime = [pscustomobject]@{{
+                    repo_root = {_ps_single_quote(str(repo_root))}
+                }}
+                $commandSpec = Resolve-VibeWorkspaceMemoryCommandSpec -Runtime $runtime
+                $result = [pscustomobject]@{{
+                    path = Get-VibeWorkspaceMemoryDriverScriptPath -Runtime $runtime
+                    host_path = $commandSpec.host_path
+                }}
+                $result | ConvertTo-Json -Depth 10
+                """,
+                env={"VGO_PYTHON": sys.executable},
+            )
+
+        assert isinstance(result, dict)
+        self.assertEqual(
+            str((repo_root / "scripts" / "runtime" / "workspace_memory_driver.py").resolve()),
+            result["path"],
+        )
+        self.assertEqual(sys.executable, result["host_path"])
 
     def test_compatibility_shell_accepts_workspace_driver_mode_cli(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:

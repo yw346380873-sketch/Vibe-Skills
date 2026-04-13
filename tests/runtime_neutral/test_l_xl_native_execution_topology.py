@@ -225,6 +225,8 @@ def run_plan_execute(
     requirement_doc_path: Path,
     execution_plan_path: Path,
     runtime_input_packet_path: Path,
+    *,
+    extra_env: dict[str, str] | None = None,
 ) -> dict[str, object]:
     shell = resolve_powershell()
     if shell is None:
@@ -256,6 +258,7 @@ def run_plan_execute(
         capture_output=True,
         text=True,
         check=True,
+        env={**os.environ, **(extra_env or {})},
     )
     return json.loads(completed.stdout)
 
@@ -306,6 +309,7 @@ def create_fake_codex_command(directory: Path, *, required_prompt_markers: list[
         command_path.write_text(
             "@echo off\r\n"
             "setlocal EnableDelayedExpansion\r\n"
+            "set RAW_ARGS=%*\r\n"
             "set OUT=\r\n"
             ":loop\r\n"
             "if \"%~1\"==\"\" goto done\r\n"
@@ -319,6 +323,12 @@ def create_fake_codex_command(directory: Path, *, required_prompt_markers: list[
             "goto loop\r\n"
             ":done\r\n"
             "if \"%OUT%\"==\"\" exit /b 2\r\n"
+            "echo %RAW_ARGS% | findstr /C:\"consultation_role:\" >nul\r\n"
+            "if %errorlevel%==0 (\r\n"
+            "  > \"%OUT%\" echo {\"status\":\"completed\",\"summary\":\"fake codex consultation executed\",\"consultation_notes\":[\"Validate the failing path before proposing a fix.\"],\"adoption_notes\":[\"Use the consultation guidance to shape the next frozen artifact.\"],\"verification_notes\":[\"Consultation stayed read-only and returned structured guidance.\"]}\r\n"
+            "  echo fake codex consultation ok\r\n"
+            "  exit /b 0\r\n"
+            ")\r\n"
             f"{marker_checks}"
             "> \"%OUT%\" echo {\"status\":\"completed\",\"summary\":\"fake codex specialist executed\",\"verification_notes\":[\"fake native specialist executed\"],\"changed_files\":[],\"bounded_output_notes\":[\"fake codex adapter\"]}\r\n"
             "echo fake codex ok\r\n"
@@ -335,6 +345,8 @@ def create_fake_codex_command(directory: Path, *, required_prompt_markers: list[
         command_path.write_text(
             "#!/usr/bin/env sh\n"
             "RAW_ARGS=\"$*\"\n"
+            "IS_CONSULTATION=0\n"
+            "printf '%s' \"$RAW_ARGS\" | grep -F \"consultation_role:\" >/dev/null && IS_CONSULTATION=1\n"
             "OUT=''\n"
             "while [ \"$#\" -gt 0 ]; do\n"
             "  case \"$1\" in\n"
@@ -349,6 +361,11 @@ def create_fake_codex_command(directory: Path, *, required_prompt_markers: list[
             "done\n"
             "if [ -z \"$OUT\" ]; then\n"
             "  exit 2\n"
+            "fi\n"
+            "if [ \"$IS_CONSULTATION\" -eq 1 ]; then\n"
+            "  printf '%s' '{\"status\":\"completed\",\"summary\":\"fake codex consultation executed\",\"consultation_notes\":[\"Validate the failing path before proposing a fix.\"],\"adoption_notes\":[\"Use the consultation guidance to shape the next frozen artifact.\"],\"verification_notes\":[\"Consultation stayed read-only and returned structured guidance.\"]}' > \"$OUT\"\n"
+            "  printf 'fake codex consultation ok\\n'\n"
+            "  exit 0\n"
             "fi\n"
             f"{marker_checks}"
             "printf '%s' '{\"status\":\"completed\",\"summary\":\"fake codex specialist executed\",\"verification_notes\":[\"fake native specialist executed\"],\"changed_files\":[],\"bounded_output_notes\":[\"fake codex adapter\"]}' > \"$OUT\"\n"
@@ -562,7 +579,8 @@ class NativeExecutionTopologyTests(unittest.TestCase):
 
             self.assertIn("## Specialist Recommendations", requirement_doc)
             self.assertIn("Binding: profile=", requirement_doc)
-            self.assertIn("## Specialist Skill Dispatch Plan", execution_plan)
+            self.assertIn("## Specialist Consultation", execution_plan)
+            self.assertIn("## Unified Specialist Lifecycle Disclosure", execution_plan)
             self.assertIn("Binding profile:", execution_plan)
 
             specialist_phase_bindings = execution_manifest["execution_topology"]["specialist_phase_bindings"]
@@ -571,6 +589,77 @@ class NativeExecutionTopologyTests(unittest.TestCase):
                 sum(len(list(specialist_phase_bindings.get(phase) or [])) for phase in specialist_phase_bindings),
                 len(approved_dispatch),
             )
+
+    def test_plan_shadow_recognizes_specialist_lifecycle_headers_without_legacy_dispatch_heading(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            artifact_root = Path(tempdir)
+            fake_codex = create_fake_codex_command(artifact_root)
+            payload = run_runtime(
+                task="I have a failing test and a stack trace. Help me debug systematically before proposing fixes.",
+                artifact_root=artifact_root,
+                governance_scope="root",
+            )
+            summary = payload["summary"]
+            requirement_doc_path = Path(summary["artifacts"]["requirement_doc"])
+            execution_plan_path = Path(summary["artifacts"]["execution_plan"])
+            runtime_input_packet_path = Path(summary["artifacts"]["runtime_input_packet"])
+
+            execution_plan = execution_plan_path.read_text(encoding="utf-8")
+            self.assertIn("## Specialist Skill Dispatch Plan", execution_plan)
+            self.assertIn("## Specialist Consultation", execution_plan)
+            self.assertIn("## Unified Specialist Lifecycle Disclosure", execution_plan)
+            rewritten_plan = (
+                execution_plan.replace(
+                    "## Unified Specialist Lifecycle Disclosure",
+                    "## Lifecycle Notes",
+                    1,
+                )
+                .replace(
+                    "## Specialist Consultation",
+                    "## Consultation Notes",
+                    1,
+                )
+                .replace(
+                    "## Specialist Skill Dispatch Plan",
+                    "## Unified Specialist Lifecycle Disclosure",
+                    1,
+                )
+            )
+            self.assertEqual(1, rewritten_plan.count("## Unified Specialist Lifecycle Disclosure"))
+            self.assertNotIn("## Specialist Skill Dispatch Plan", rewritten_plan)
+            self.assertNotIn("## Specialist Consultation", rewritten_plan)
+            execution_plan_path.write_text(
+                rewritten_plan,
+                encoding="utf-8",
+            )
+
+            execution_payload = run_plan_execute(
+                task="I have a failing test and a stack trace. Help me debug systematically before proposing fixes.",
+                artifact_root=artifact_root,
+                requirement_doc_path=requirement_doc_path,
+                execution_plan_path=execution_plan_path,
+                runtime_input_packet_path=runtime_input_packet_path,
+                extra_env={
+                    "VGO_ENABLE_NATIVE_SPECIALIST_EXECUTION": "1",
+                    "VGO_DISABLE_NATIVE_SPECIALIST_EXECUTION": "0",
+                    "VGO_CODEX_EXECUTABLE": str(fake_codex),
+                },
+            )
+            execution_manifest = load_json(execution_payload["execution_manifest_path"])
+            plan_shadow = load_json(execution_manifest["plan_shadow"]["path"])
+
+            specialist_units = [
+                unit
+                for unit in plan_shadow["units"]
+                if unit["classification"] == "specialist_dispatch_unit"
+            ]
+
+            self.assertGreaterEqual(len(specialist_units), 1)
+            self.assertEqual(
+                {"Unified Specialist Lifecycle Disclosure"},
+                {unit["source_section"] for unit in specialist_units},
+            )
+            self.assertGreaterEqual(execution_manifest["plan_shadow"]["candidate_unit_count"], 1)
 
     def test_l_grade_requires_native_serial_child_lane_execution(self) -> None:
         with tempfile.TemporaryDirectory() as tempdir:

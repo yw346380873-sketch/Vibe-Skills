@@ -237,7 +237,8 @@ def serena_write(payload: dict[str, Any], store_path: Path, project_key: str | N
             {
                 "record_id": hashlib.sha256(record_basis.encode("utf-8")).hexdigest()[:16],
                 "project_key": project_key,
-                "kind": "decision",
+                "kind": "architecture_decision",
+                "signal_type": "architecture_decision",
                 "summary": str(decision.get("summary") or "").strip(),
                 "evidence_paths": [str(v) for v in decision.get("evidence_paths") or [] if str(v).strip()],
                 "keywords": [str(v) for v in decision.get("keywords") or [] if str(v).strip()],
@@ -305,7 +306,7 @@ def cognee_read(payload: dict[str, Any], store_path: Path, project_key: str | No
         project_key=project_key,
         query=str(payload.get("task") or ""),
         top_k=int(payload.get("top_k") or 1),
-        filter_kind="relation",
+        filter_kind="entity_relation_ingest",
     )
     items = [
         f"Cognee relation: {row.get('source')} {row.get('relation')} {row.get('target')}"
@@ -334,7 +335,8 @@ def cognee_write(payload: dict[str, Any], store_path: Path, project_key: str | N
             {
                 "record_id": hashlib.sha256(record_basis.encode("utf-8")).hexdigest()[:16],
                 "project_key": project_key,
-                "kind": "relation",
+                "kind": "entity_relation_ingest",
+                "signal_type": "entity_relation_ingest",
                 "source": str(relation.get("source") or "").strip(),
                 "relation": str(relation.get("relation") or "").strip(),
                 "target": str(relation.get("target") or "").strip(),

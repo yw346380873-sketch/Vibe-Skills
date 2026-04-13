@@ -238,7 +238,7 @@ def run_progressive_disclosure_context_pack(
         "$runtime.memory_disclosure_policy.defaults.max_capsules = 2; "
         "$runtime.memory_disclosure_policy.defaults.max_chars_per_capsule = 64; "
         "$runtime.memory_disclosure_policy.stages.requirement_doc = "
-        "[pscustomobject]@{ level = 'L2_capsule_summary'; max_capsules = 2; max_chars_per_capsule = 64 }; "
+        "[pscustomobject]@{ level = 'decision_focused'; max_capsules = 2; max_chars_per_capsule = 64 }; "
         f"$readActions = {_ps_single_quote(read_actions_json)} | ConvertFrom-Json -Depth 20; "
         "$result = New-VibeProgressiveDisclosureContextPack "
         "-Runtime $runtime "
@@ -450,7 +450,7 @@ class MemoryProgressiveDisclosureTests(unittest.TestCase):
             context_path.write_text(
                 json.dumps(
                     {
-                        "disclosure_level": "L2_capsule_summary",
+                        "disclosure_level": "decision_focused",
                         "selected_capsules": [
                             {
                                 "capsule_id": "cap-001",
@@ -503,7 +503,7 @@ class MemoryProgressiveDisclosureTests(unittest.TestCase):
             context_path.write_text(
                 json.dumps(
                     {
-                        "disclosure_level": "L2_capsule_summary",
+                        "disclosure_level": "decision_focused",
                         "selected_capsules": None,
                         "items": [],
                         "estimated_tokens": 0,

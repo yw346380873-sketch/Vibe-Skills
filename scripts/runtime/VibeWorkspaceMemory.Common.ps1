@@ -6,16 +6,16 @@ function Get-VibeWorkspaceMemoryDriverConfig {
         [Parameter(Mandatory)] [object]$Runtime
     )
 
-    if ($null -eq $Runtime -or -not ($Runtime.PSObject.Properties.Name -contains 'memory_backend_adapters')) {
+    if ($null -eq $Runtime -or $null -eq $Runtime.PSObject -or -not ($Runtime.PSObject.Properties.Name -contains 'memory_backend_adapters')) {
         return $null
     }
 
-    $adapters = $Runtime.memory_backend_adapters
-    if ($null -eq $adapters -or -not ($adapters.PSObject.Properties.Name -contains 'driver')) {
+    $memoryBackendAdapters = $Runtime.memory_backend_adapters
+    if ($null -eq $memoryBackendAdapters -or $null -eq $memoryBackendAdapters.PSObject -or -not ($memoryBackendAdapters.PSObject.Properties.Name -contains 'driver')) {
         return $null
     }
 
-    return $adapters.driver
+    return $memoryBackendAdapters.driver
 }
 
 function Get-VibeWorkspaceMemoryDriverScriptPath {
@@ -25,7 +25,8 @@ function Get-VibeWorkspaceMemoryDriverScriptPath {
 
     $driver = Get-VibeWorkspaceMemoryDriverConfig -Runtime $Runtime
     $driverPath = if (
-        $driver -and
+        $null -ne $driver -and
+        $null -ne $driver.PSObject -and
         $driver.PSObject.Properties.Name -contains 'script_path' -and
         -not [string]::IsNullOrWhiteSpace([string]$driver.script_path)
     ) {
@@ -44,7 +45,16 @@ function Resolve-VibeWorkspaceMemoryCommandSpec {
     )
 
     $driver = Get-VibeWorkspaceMemoryDriverConfig -Runtime $Runtime
-    $command = if ($driver -and $driver.command) { [string]$driver.command } else { '${VGO_PYTHON}' }
+    $command = if (
+        $null -ne $driver -and
+        $null -ne $driver.PSObject -and
+        $driver.PSObject.Properties.Name -contains 'command' -and
+        -not [string]::IsNullOrWhiteSpace([string]$driver.command)
+    ) {
+        [string]$driver.command
+    } else {
+        '${VGO_PYTHON}'
+    }
     return Resolve-VgoPythonCommandSpec -Command $command
 }
 
@@ -147,10 +157,7 @@ function Invoke-VibeWorkspaceMemoryAction {
             items = @($response.items)
             item_count = [int]$response.item_count
             capsule_count = [int]$response.capsule_count
-            capsules = if (
-                ($response.PSObject.Properties.Name -contains 'capsules') -and
-                $null -ne $response.capsules
-            ) { @($response.capsules) } else { @() }
+            capsules = if ($response.PSObject.Properties.Name -contains 'capsules') { @($response.capsules) } else { @() }
             suppressed_count = [int]$response.suppressed_count
             workspace_memory_plane = $response.workspace_memory_plane
             artifact_path = $responsePath

@@ -6,11 +6,24 @@ function Get-VibeMemoryBackendAdaptersConfig {
         [Parameter(Mandatory)] [object]$Runtime
     )
 
-    if ($null -eq $Runtime -or -not ($Runtime.PSObject.Properties.Name -contains 'memory_backend_adapters')) {
+    if ($null -eq $Runtime -or $null -eq $Runtime.PSObject -or -not ($Runtime.PSObject.Properties.Name -contains 'memory_backend_adapters')) {
         return $null
     }
 
     return $Runtime.memory_backend_adapters
+}
+
+function Get-VibeMemoryBackendDriverConfig {
+    param(
+        [Parameter(Mandatory)] [object]$Runtime
+    )
+
+    $memoryBackendAdapters = Get-VibeMemoryBackendAdaptersConfig -Runtime $Runtime
+    if ($null -eq $memoryBackendAdapters -or $null -eq $memoryBackendAdapters.PSObject -or -not ($memoryBackendAdapters.PSObject.Properties.Name -contains 'driver')) {
+        return $null
+    }
+
+    return $memoryBackendAdapters.driver
 }
 
 function Test-VibeMemoryTruthyEnvironmentValue {
@@ -30,13 +43,14 @@ function Resolve-VibeMemoryBackendRoot {
         [Parameter(Mandatory)] [object]$Runtime
     )
 
-    $adapters = Get-VibeMemoryBackendAdaptersConfig -Runtime $Runtime
+    $memoryBackendAdapters = Get-VibeMemoryBackendAdaptersConfig -Runtime $Runtime
     $rootEnvName = if (
-        $adapters -and
-        $adapters.PSObject.Properties.Name -contains 'backend_root_env' -and
-        -not [string]::IsNullOrWhiteSpace([string]$adapters.backend_root_env)
+        $null -ne $memoryBackendAdapters -and
+        $null -ne $memoryBackendAdapters.PSObject -and
+        $memoryBackendAdapters.PSObject.Properties.Name -contains 'backend_root_env' -and
+        -not [string]::IsNullOrWhiteSpace([string]$memoryBackendAdapters.backend_root_env)
     ) {
-        [string]$adapters.backend_root_env
+        [string]$memoryBackendAdapters.backend_root_env
     } else {
         'VIBE_MEMORY_BACKEND_ROOT'
     }
@@ -54,9 +68,13 @@ function Get-VibeMemoryLaneConfig {
         [Parameter(Mandatory)] [string]$LaneId
     )
 
-    $adapters = Get-VibeMemoryBackendAdaptersConfig -Runtime $Runtime
-    $lanes = if ($adapters -and $adapters.PSObject.Properties.Name -contains 'lanes') {
-        $adapters.lanes
+    $memoryBackendAdapters = Get-VibeMemoryBackendAdaptersConfig -Runtime $Runtime
+    $lanes = if (
+        $null -ne $memoryBackendAdapters -and
+        $null -ne $memoryBackendAdapters.PSObject -and
+        $memoryBackendAdapters.PSObject.Properties.Name -contains 'lanes'
+    ) {
+        $memoryBackendAdapters.lanes
     } else {
         $null
     }
@@ -103,13 +121,17 @@ function Resolve-VibeMemoryBackendCommand {
         [Parameter(Mandatory)] [object]$Runtime
     )
 
-    $adapters = Get-VibeMemoryBackendAdaptersConfig -Runtime $Runtime
-    $driver = if ($adapters -and $adapters.PSObject.Properties.Name -contains 'driver') {
-        $adapters.driver
+    $driver = Get-VibeMemoryBackendDriverConfig -Runtime $Runtime
+    $command = if (
+        $null -ne $driver -and
+        $null -ne $driver.PSObject -and
+        $driver.PSObject.Properties.Name -contains 'command' -and
+        -not [string]::IsNullOrWhiteSpace([string]$driver.command)
+    ) {
+        [string]$driver.command
     } else {
-        $null
+        '${VGO_PYTHON}'
     }
-    $command = if ($driver -and $driver.command) { [string]$driver.command } else { '${VGO_PYTHON}' }
     return Resolve-VgoPythonCommandSpec -Command $command
 }
 
@@ -177,8 +199,18 @@ function Invoke-VibeMemoryBackendAction {
         }
     }
 
-    $driver = $Runtime.memory_backend_adapters.driver
-    $driverScript = [System.IO.Path]::GetFullPath((Join-Path ([string]$Runtime.repo_root) ([string]$driver.script_path)))
+    $driver = Get-VibeMemoryBackendDriverConfig -Runtime $Runtime
+    $driverScriptRelative = if (
+        $null -ne $driver -and
+        $null -ne $driver.PSObject -and
+        $driver.PSObject.Properties.Name -contains 'script_path' -and
+        -not [string]::IsNullOrWhiteSpace([string]$driver.script_path)
+    ) {
+        [string]$driver.script_path
+    } else {
+        'scripts/runtime/memory_backend_driver.py'
+    }
+    $driverScript = [System.IO.Path]::GetFullPath((Join-Path ([string]$Runtime.repo_root) $driverScriptRelative))
     if (-not (Test-Path -LiteralPath $driverScript)) {
         return [pscustomobject]@{
             ok = $false
@@ -267,10 +299,7 @@ function Invoke-VibeMemoryBackendAction {
             items = @($response.items)
             item_count = [int]$response.item_count
             capsule_count = if ($response.PSObject.Properties.Name -contains 'capsule_count') { [int]$response.capsule_count } else { 0 }
-            capsules = if (
-                ($response.PSObject.Properties.Name -contains 'capsules') -and
-                $null -ne $response.capsules
-            ) { @($response.capsules) } else { @() }
+            capsules = if ($response.PSObject.Properties.Name -contains 'capsules') { @($response.capsules) } else { @() }
             suppressed_count = if ($response.PSObject.Properties.Name -contains 'suppressed_count') { [int]$response.suppressed_count } else { 0 }
             workspace_memory_plane = if ($response.PSObject.Properties.Name -contains 'workspace_memory_plane') { $response.workspace_memory_plane } else { $null }
             artifact_path = $responsePath

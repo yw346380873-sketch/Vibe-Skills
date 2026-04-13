@@ -429,8 +429,8 @@ class CodexMemoryUserSimulationTests(unittest.TestCase):
 
             self.assertIn("quartz-scheduler", selected_text)
             self.assertNotIn("billing-export", selected_text)
-            self.assertEqual("L2_capsule_summary", requirement_context["disclosure_level"])
-            self.assertEqual("L3_evidence_pack", execute_context["disclosure_level"])
+            self.assertEqual("decision_focused", requirement_context["disclosure_level"])
+            self.assertEqual("execution_relevant", execute_context["disclosure_level"])
             self.assertLessEqual(
                 len(requirement_context["selected_capsules"]),
                 int(requirement_context["budget"]["top_k"]),
